@@ -6,7 +6,7 @@
 // This architecture makes it incompatible with runtime hooking methods used by most hooking applications.
 
 // TODO: unhardcode TOC
-#define SHK_TOC 0xd01288 
+#define SHK_ELF_TOC 0xd01288 
 
 #ifdef __cplusplus
     #define SHK_API extern "C"
@@ -37,24 +37,24 @@ typedef struct
 // - name: Name of the hook
 // - ...: Parameter list, including both type and parameter name.
 #define SHK_HOOK( ret, name, ... ) \
-    extern ret _shk_trampoline_##name( __VA_ARGS__ ); \
-    extern volatile void* _shk_ptr_##name; \
+    extern ret _shk_prx_trampoline_##name( __VA_ARGS__ ); \
+    extern volatile void* _shk_prx_ptr_##name; \
     typedef ret(*_shk_##name##_t)( __VA_ARGS__ ); \
-    volatile _shk_##name##_t _shk_trampoline_##name##_ptr = _shk_trampoline_##name 
+    volatile _shk_##name##_t _shk_prx_trampoline_##name##_ptr = _shk_prx_trampoline_##name 
 
 // Binds an SHK hook to the specified handler
 // Parameters:
 // - name: Name of the hook
 // - handler: Callback used to handle the hook. Must match the calling convention of the hook
 #define SHK_BIND_HOOK( name, handler ) \
-    _shk_ptr_##name = (void*)( handler )
+    _shk_prx_ptr_##name = (void*)( handler )
 
 // Calls the original unhooked function of a function that is hooked by SHK.
 // Parameters:
 // - name: Name of the hook
 // - ...: Argument list
 #define SHK_CALL_HOOK( name, ... ) \
-    _shk_trampoline_##name##_ptr( __VA_ARGS__ )
+    _shk_prx_trampoline_##name##_ptr( __VA_ARGS__ )
 
 // // Registers a function for calling.
 // // Prepares a function wrapper (OPD) to make the function eligible for calling from a PRX.
@@ -64,9 +64,9 @@ typedef struct
 // // - name: Name of the function
 // // TODO: unhardcode TOC
 // #define SHK_FUNCTION_( addr, ret, name, ... ) \
-//     const void* _shk_ptr_##name = ( const void* )addr; \
+//     const void* _shk_prx_ptr_##name = ( const void* )addr; \
 //     typedef ret(*_shk_##name##_t)( __VA_ARGS__ ); \
-//     const shkOpd _shk_opd_##name = { ( void* )addr, ( void* )SHK_TOC }
+//     const shkOpd _shk_opd_##name = { ( void* )addr, ( void* )SHK_ELF_TOC }
 
 // #define SHK_CALL_FUNCTION( name, ... ) \
 //     ( ( _shk_##name##_t )&_shk_opd_##name )( __VA_ARGS__ )
