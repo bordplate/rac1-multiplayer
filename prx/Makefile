@@ -2,15 +2,15 @@ BUILD_DIR = build
 BIN_DIR = $(BUILD_DIR)\bin
 TMP_DIR = $(BUILD_DIR)\tmp
 
-include $(TMP_DIR)\shk.gen.mk
+include $(TMP_DIR)\shk_prx.gen.mk
 
 EXE_SUFFIX = .exe
 PPU_LIB_DIR = $(PS3_SDK)\target\ppu\lib
 CC = $(PS3_SDK)\host-win32\ppu\bin\ppu-lv2-gcc$(EXE_SUFFIX)
 MAKE_FSELF = $(PS3_SDK)\host-win32\bin\make_fself$(EXE_SUFFIX)
 CFILES = runtime\runtime.c mod.c lib\common.c lib\printf\printf.c
-SFILES = runtime\runtime.s $(TMP_DIR)\shk.gen.s mod.s
-CCFLAGS = $(SHK_DEFSYMS) $(SFILES) $(CFILES) -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)\mod.map
+SFILES = $(TMP_DIR)\shk_prx.gen.s runtime\runtime.s mod.s
+CCFLAGS = $(SHK_PRX_DEFSYMS) $(SFILES) $(CFILES) -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)\mod.map
 
 elf:
 	$(CC) $(CCFLAGS) -nostartfiles -o $(BIN_DIR)\mod.elf

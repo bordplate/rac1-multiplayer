@@ -47,7 +47,7 @@ HOOK_SHARED_DATA_END_ADDR 	= 0xCE2D60
 
 BIN2RPCS3PATCHARGS = \
 	--input $(LOADER_DIR)\build\loader.text.inject.bin $(LOADER_DIR)\build\loader.text.bin --address $(INJECT_ADDR) $(LOADER_START_ADDR) \
-	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_loader
+	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_elf_loader
 
 SHKGENARGS = \
 	--tools_dir "$(TOOLS_DIR)" --out_dir "$(OUT_DIR)" --build_in_dir "$(BUILD_IN_DIR)" --build_tmp_dir "$(BUILD_TMP_DIR)" \
@@ -63,7 +63,7 @@ all:
 	cd tools && $(PYTHON) shkgen.py $(SHKGENARGS)
 
 # build injection patch
-	cd $(BUILD_TMP_DIR) && $(MAKE) -f shk_inject.gen.mk patch
+	cd $(BUILD_TMP_DIR) && $(MAKE) -f shk_elf.gen.mk patch
 
 # build sprx
 	cd $(PRX_DIR) && $(MAKE) sprx
