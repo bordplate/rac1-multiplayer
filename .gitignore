@@ -1,0 +1,5 @@
+*.7z
+userconfig.mk
+.vscode/*
+loader/build/*
+prx/build/*
