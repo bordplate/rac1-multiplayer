@@ -28,13 +28,14 @@ SYS_MODULE_INFO( modPrx, 0, 1, 1 );
 SYS_MODULE_START( _start );
 SYS_MODULE_STOP( _stop );
 
+//
 // Variable examples
-
+//
 // Example string
-const char* exampleString = "Hello World";
+const char* helloWorld = "Hello World";
 
 // Example string array
-const char* exampleStringArray[] =
+const char* partyMemberNames[] =
 {
     "None",
     "Joker",
@@ -47,6 +48,12 @@ const char* exampleStringArray[] =
     "Futaba",
     "Akechi"
 };
+
+// You'd use it like so:
+const char* getPartyMemberName( s32 id )
+{
+    return partyMemberNames[ id ];
+}
 
 // Example global variables
 // Note: to make these accessible in other C files, you'll have to add their 
@@ -82,9 +89,11 @@ SHK_HOOK( void, setBgm, s32 id );
 // It's linked to the hook in _start, through SHK_BIND_HOOK
 void setBgmHook( s32 id )
 {
+    // prints current bgm id
     printf( "set bgm: %d\n", id );
 
     // Copied & adapted from IDA decompiler output
+    // Simple functions decompile pretty accurately
     s32 v1; // r31
     s32 result; // r3
 
