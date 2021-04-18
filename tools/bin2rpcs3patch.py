@@ -171,7 +171,18 @@ def main():
                 val = readU64BE( fIn )
                 valType = 'be64'
         else:
-            for i in range( valSize ):
+            # valSize is assumed to be less than 8
+            off = 0
+            remValSize = valSize
+            if remValSize >= 4:
+                writePatchVal( baseAddr, 4 )
+                remValSize -= 4
+                
+            if remValSize >= 2:
+                writePatchVal( baseAddr, 2 )
+                remValSize -= 2
+            
+            for i in range( remValSize ):
                 writePatchVal( baseAddr, 1 )
             return
         
@@ -185,7 +196,7 @@ def main():
             # write temp binary file
             with open( "temp.bin", "wb" ) as fOut:
                 fOut.write( inputPath.encode( "ascii" ) )
-                fOut.write( b'0' )
+                fOut.write( b'\x00' )
                 inputPath = "temp.bin"
                 isTempFile = True
                 

@@ -19,8 +19,8 @@ ASM_INJECT_HOOK_THUNK_TEMPLATE = \
 .section .text.shk_elf_shared, "x"
 .global ._shk_elf_thunk_{HOOK}
 ._shk_elf_thunk_{HOOK}:
-li      r12, {HOOK_PTR_OFFSET}  # 0xFFFF / 4 = 16383 hooks.... should suffice
-b       ._shk_elf_thunk         # jump to function that calls the function index in r12
+li      r0, {HOOK_PTR_OFFSET}  # 0xFFFF / 4 = 16383 hooks.... should suffice
+b       ._shk_elf_thunk         # jump to function that calls the function index in r0
 '''
 
 # maybe this could be moved to the prx too
@@ -29,7 +29,7 @@ ASM_INJECT_HOOK_SHARED_TEMPLATE = \
 # function hook data
 .section .text.shk_elf_shared, "x"
 
-# calls a hook function index stored in r12
+# calls a hook function index stored in r0
 .global ._shk_elf_thunk
 ._shk_elf_thunk:
 .set back_chain, -0x80
@@ -37,31 +37,30 @@ ASM_INJECT_HOOK_SHARED_TEMPLATE = \
 .set saved_r31, -8
 .set sender_lr,  0x10
 # prolog
-stdu      r1, back_chain(r1)                # create stack frame
-mflr      r0                                # put lr in r0
-std       r31, 0x80+saved_r31(r1)           # save r31
-std       r0, 0x80+sender_lr(r1)            # save lr
-mr        r31, r1                           # save current fp in r31
+stdu      r1, back_chain(r1)                    # create stack frame
+std       r31, 0x80+saved_r31(r1)               # save r31
+mflr      r31                                   # put lr in r31
+std       r31, 0x80+sender_lr(r1)               # save lr
 # body
-mr        r0, r12                               # move r12 to r0
-lis       r12, _shk_elf_prx_ptr_table@h         # load elf func ptr table ptr
-ori       r12, r12, _shk_elf_prx_ptr_table@l    # cont.
-lwz       r12, 0(r12)                           # load prx func ptr table
-add       r12, r0, r12                          # add ptr offset
-lwz       r12, 0(r12)                           # load opd ptr
-lwz       r0, 0(r12)                            # load func ptr
+lis       r31, _shk_elf_prx_ptr_table@h         # load elf func ptr table ptr
+ori       r31, r31, _shk_elf_prx_ptr_table@l    # cont.
+lwz       r31, 0(r31)                           # load prx func ptr table
+add       r31, r0, r31                          # add ptr offset
+lwz       r31, 0(r31)                           # load opd ptr
+lwz       r0, 0(r31)                            # load func ptr
 mtctr     r0                                    # move func ptr to control register
 std       r2, 0x80+saved_toc(r1)                # save toc
-lwz       r2, 4(r12)                            # load new toc
+lwz       r2, 4(r31)                            # load new toc
+mr        r31, r1                               # save current fp in r31
 bctrl                                           # call func tpr
 # epilog
-ld        r2, 0x80+saved_toc(r1)            # restore toc
-ld        r11, 0x80+back_chain(r1)          # load old stack ptr
-ld        r0, sender_lr(r11)                # load saved lr
-mtlr      r0                                # restore lr
-ld        r31, saved_r31(r11)               # restore r31
-mr        r1, r11                           # restore r1
-blr                                         # return to caller
+ld        r2, 0x80+saved_toc(r1)                # restore toc
+ld        r31, 0x80+back_chain(r1)              # load old stack ptr
+ld        r0, sender_lr(r31)                    # load saved lr
+mtlr      r0                                    # restore lr
+mr        r1, r31                               # restore r1
+ld        r31, saved_r31(r31)                   # restore r31
+blr                                             # return to caller
 '''
 
 #.section .text.shk_module_shared, "x"
@@ -86,7 +85,7 @@ ASM_INJECT_HOOK_PTR_TABLE_TEMPLATE = \
 .section .data.shk_elf_shared, "w"
 .global _shk_elf_prx_ptr_table
 _shk_elf_prx_ptr_table:
-.int 0xDEADBABE
+.int 0x0BADF00D
 '''
 
 ASM_PRX_HOOK_PTR_TABLE_TEMPLATE = \
