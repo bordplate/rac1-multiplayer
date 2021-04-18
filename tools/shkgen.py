@@ -123,7 +123,7 @@ PATCH_FILE = {PATCH_FILE}
 BIN2RPCS3PATCH = $(TOOLS_DIR)/bin2rpcs3patch.py
 
 compile:
-	$(CC) "$(IN_DIR)/shk_elf.gen.s" -o "$(TMP_DIR)/shk_elf.o" -T "$(IN_DIR)/shk_elf.gen.ld" -v -Wa,-mregnames -nostartfiles -nodefaultlibs
+	$(CC) "$(IN_DIR)/shk_elf.gen.s" -o "$(TMP_DIR)/shk_elf.o" -T "$(IN_DIR)/shk_elf.gen.ld" -v -Xlinker -Map=$(TMP_DIR)\shk_elf.map -Wa,-mregnames -nostartfiles -nodefaultlibs
 
 binary: compile{HOOK_OUTPUTS}
 	$(OBJCOPY) -O binary --only-section=.text.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_shared.bin" -v
@@ -188,6 +188,11 @@ def writeLdSection( f, name, addr ):
 def writeLdDefSym( f, name, val ):
     f.write( f"-Wl,--defsym,{name}={val} " )
     
+class LinkerSectionInfo:
+    def __init__( self, name, addr ):
+        self.addr = addr
+        self.name = name
+    
 class HookInfo:
     def __init__( self, name: str, addr: int, replacedInstr: list ):
         self.name = name
@@ -214,13 +219,20 @@ def main():
     parser.add_argument( '--patch_file', type=str, required=True, help='rpcs3 patch file in which the compiled patch is inserted' )
     args = parser.parse_args()
     
+    sections = []
+    sections.append( LinkerSectionInfo( ".text.shk_elf_shared", args.hook_shared_text_range[0] ) )
+    sections.append( LinkerSectionInfo( ".data.shk_elf_shared", args.hook_shared_data_range[0] ) )
+    
     hooks = []
     for hookStr in args.hooks:
         toks = hookStr.split( "/" )
-        hooks.append( HookInfo( toks[0], int( toks[1], 0 ), [toks[2]] ) )
+        hook = HookInfo( toks[0], int( toks[1], 0 ), [toks[2]] ) 
+        hooks.append( hook )
+        # we add a section for every hook patch
+        sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
        
-    # sort hooks by address so the linker doesn't mess up the addresses 
-    hooks = sorted( hooks, key=lambda h: h.addr )
+    # sort sections by address so the linker doesn't mess up the addresses 
+    sections = sorted( sections, key=lambda s: s.addr )
     
     # precalculate values for hooks
     for i in range( len( hooks ) ):
@@ -245,13 +257,9 @@ def main():
         
         f.write( "SECTIONS {\n" )
         
-        # write hook patch sections
-        for hook in hooks:
-            writeLdSection( f, f".text.shk_elf_patch_{hook.name}", hook.addr )
-        
-        # write shared hook sections
-        writeLdSection( f, ".text.shk_elf_shared", args.hook_shared_text_range[0] )
-        writeLdSection( f, ".data.shk_elf_shared", args.hook_shared_data_range[0] )
+        # write sections
+        for section in sections:
+            writeLdSection( f, section.name, section.addr )
         
         f.write( "}\n" )
         
