@@ -1,5 +1,5 @@
-#include "../lib/common.h"
-#include "../lib/shk.h"
+#include "common.h"
+#include "shk.h"
 #include "runtime.h"
 
 extern void* _shk_elf_prx_ptr_table;
@@ -15,5 +15,7 @@ void runtimeInit()
 
     // initialize pointer to prx function pointer table in elf
     *(void**)&_shk_elf_prx_ptr_table = &_shk_prx_ptr_table;
+
+    // bind hook to function that was substituted (copied to the prx) to make room for the loader
     SHK_BIND_HOOK( runtimeSubstitute1, runtimeSubstitute1Impl );
 }

@@ -8,8 +8,8 @@ EXE_SUFFIX = .exe
 PPU_LIB_DIR = $(PS3_SDK)\target\ppu\lib
 CC = $(PS3_SDK)\host-win32\ppu\bin\ppu-lv2-gcc$(EXE_SUFFIX)
 MAKE_FSELF = $(PS3_SDK)\host-win32\bin\make_fself$(EXE_SUFFIX)
-CFILES = runtime\runtime.c mod.c lib\common.c lib\printf\printf.c
-SFILES = $(TMP_DIR)\shk_prx.gen.s runtime\runtime.s mod.s
+CFILES = lib\runtime.c lib\common.c lib\external\printf\printf.c mod.c
+SFILES = $(TMP_DIR)\shk_prx.gen.s lib\runtime.s mod.s
 CCFLAGS = $(SHK_PRX_DEFSYMS) $(SFILES) $(CFILES) -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)\mod.map
 
 elf:

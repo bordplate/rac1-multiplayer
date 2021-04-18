@@ -5,6 +5,11 @@
 // Due to it's highly optimized LLVM recompilation model, all of the code has to be known at game boot.
 // This architecture makes it incompatible with runtime hooking methods used by most hooking applications.
 
+#ifndef SHK_H
+#define SHK_H
+
+#include "common.h"
+
 // TODO: unhardcode TOC
 #define SHK_ELF_TOC 0xd01288 
 
@@ -55,6 +60,7 @@ typedef struct
 // - ...: Argument list
 #define SHK_CALL_HOOK( name, ... ) \
     _shk_prx_trampoline_##name##_ptr( __VA_ARGS__ )
+    //(( volatile _shk_##name##_t )_shk_prx_trampoline_##name )( __VA_ARGS__ )
 
 // // Registers a function for calling.
 // // Prepares a function wrapper (OPD) to make the function eligible for calling from a PRX.
@@ -72,3 +78,5 @@ typedef struct
 //     ( ( _shk_##name##_t )&_shk_opd_##name )( __VA_ARGS__ )
 
 #include "shk.gen.h"
+
+#endif
