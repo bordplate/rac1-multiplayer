@@ -14,19 +14,12 @@
 // SHK (Static Hook library)
 #include "lib/shk.h"
 
-// include PRX runtime header
-#include "lib/runtime.h"
+// Include this to use config variables
+#include "lib/config.h"
 
 // Include the header file in which type are defined
 // See the header file for more information
-#include "mod.h"
-
-// PRX initialization boilerplate
-// Dont touch this unless you know what you're doing
-s32 _start( void );
-SYS_MODULE_INFO( modPrx, 0, 1, 1 );
-SYS_MODULE_START( _start );
-SYS_MODULE_STOP( _stop );
+#include "testmodule.h"
 
 //
 // Variable examples
@@ -132,14 +125,18 @@ long factorial( s32 n )
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
-s32 _start( void )
+void testModuleInit( void )
 {
     // These prints show up in the TTY log if everything is working as it should.
-    printf( "hello world from prx\n" );
+    printf( "mod: hello world\n" );
 
-    // Make sure to initialize the runtime
-    // If you don't do this, the mod will crash at boot with a 0x0BADF00D error.
-    runtimeInit();
+    if ( CONFIG_ENABLED( debug ) )
+    {
+        // Example 
+        printf( "mod: debug enabled via config\n" );
+    }
+
+    printf( "mod: Message of the day: %s\n", CONFIG_STRING( motd ) );
 
     // Example of printing values with printf.
     // See printf format reference on google for more info.
@@ -171,12 +168,10 @@ s32 _start( void )
     // TODO: create example thread
 
     // Our job is done. 
-    printf( "goodbye world from prx\n" );
-    return SYS_PRX_START_OK;
+    printf( "mod: goodbye world\n" );
 }
 
-s32 _stop( void )
+void testModuleShutdown( void )
 {
-    // Executed when the PRX module is unloaded.
-    return SYS_PRX_STOP_OK;
+    // Executed when the PRX module is unloaded.    
 }

@@ -1,11 +1,16 @@
 
 // Make sure you include header guards for all your header files like this.
 // They're in the format of 'FILENAME_EXTENSION'
-#ifndef MOD_H
-#define MOD_H
+#ifndef TESTMODULE_H
+#define TESTMODULE_H
 
 // Make sure to include the common header
 #include "lib/common.h"
+
+// This is how you export functions for other C files to use.
+// The PRX loader calls these functions for you.
+void testModuleInit( void );
+void testModuleShutdown( void );
 
 // You define your structs, functions, and other declarations here.
 // Note: do not put any definitions here. Meaning, no code, no assigned variables, only declarations.

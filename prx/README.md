@@ -1,0 +1,142 @@
+# Adding a new module #
+In order to add a new module, you must add a new entry to the module list.
+
+The module list, located in modulelist.h, contains information about every module that can be loaded and unloaded by the loader. 
+
+To add your own module, for example 'foobar', first you must create 2 source files: foobar.c and foobar.h
+
+After creating those, make sure to declare and define the 'foobarInit' and the 'foobarShutdown' functions, both taking no parameters and returning no value.
+
+Your header file (foobar.h) should look like something like this:
+```c
+#ifndef FOOBAR_H
+#define FOOBAR_H
+
+// Pre-prepared libraries exist in lib
+// Common includes things like printf for printf, strlen, etc.
+// PRX dont have access to the usual C libraries, so any functionality that you need from it
+// will have to be reimplemented in there.
+// Make sure you include headers in the right order!
+// You can only use things that have been declared before their usage.
+#include "lib/common.h"
+
+// This is how you export functions for other C files to use.
+// The PRX loader calls these 2 functions for you.
+
+// The module initialisation function.
+void foobarInit( void );
+
+// The module shutdown function.
+void foobarShutdown( void );
+
+#endif
+```
+
+Your source file (foobar.c) should look something like this:
+```c
+// Include the header file in which type are defined
+// See the header file for more information
+#include "foobar.h"
+
+// Include this to use hooks
+// SHK (Static Hook library)
+#include "lib/shk.h"
+
+// Include this to use config variables
+#include "lib/config.h"
+
+// The start function of the PRX. This gets executed when the loader loads the PRX at boot.
+// This means game data is not initialized yet! If you want to modify anything that is initialized after boot, hook a function that is called after initialisation.
+void foobarInit( void )
+{
+    // These prints show up in the TTY log if everything is working as it should.
+    printf( "foobar: hello world :)\n" );
+}
+
+void foobarShutdown( void )
+{
+    // Executed when the PRX module is unloaded.    
+    printf( "foobar: goodbye world :(\n" );
+}
+```
+
+If you are unsure on how to do this, refer to the testmodule for a practical example.
+
+Second, include your newly created header file in modulelist.h, like in this example:
+```c
+#include "foobar.h"
+```
+
+Finally, simply add an entry to the Module list following the given format:
+
+```c
+{ "foobar", "The Foobar module", "enableFoobar", foobarInit, foobarShutdown },
+```
+
+The values are as follows:
+- The short name used to refer to the module
+- The longer descriptive name used to describe the module to the user
+- The name of the config setting used to enable the module
+- The name of the module initialization function
+- The name of the module shutdown/deinitialization function
+
+If you have followed these steps correctly and have added a new config setting to enable your module, your module name should come up during the initialisation stage in the RPCS3 TTY log, like in the following example:
+```
+config: Enables the test module (enableTestModule): true
+config: Enable debugging features (debug): false
+config: Message of the day (motd): Hello World
+modprx: initialising modules
+modprx: initialising module The Foobar module (foobar)
+foobar: hello world
+```
+
+# Adding a C file #
+In order to properly add a C file, you must add it to Makefile. The Makefile contains a variable named CFILES, listing all of the C files used in the project. 
+
+To include your C file, simply add the name of your C file to this list.
+
+# Adding an S file #
+Similar to C files, S files, assembly source files, are specified in the Makefile as well. 
+
+To include your S file, simply add the name of your S file to the SFILES variable.
+
+# Adding a config setting #
+Want to add a feature toggle for your mod? Add it to the config file by editing config.inc.
+
+Each config setting follows the format of:
+
+```
+CONFIG_OPTION( type, shortName, "Long, descriptive user friendly name", default value )
+```
+
+Example:
+```c
+CONFIG_OPTION( BOOL, enableTestModule, "Enables the test module", true )
+```
+
+The available types are:
+- BOOL: boolean true/false values for on/off toggles
+- INT: integer values
+- FLOAT: decimal values
+- STRING: text values
+
+You can access the config files by using the following access macros defined in lib/config.h:
+- ``CONFIG_ENABLED( shortName )``
+    - returns boolean value true/false
+- ``CONFIG_BOOL( shortName )``
+    - alternative for bools
+- ``CONFIG_INT( shortName )``
+    - returns integer value
+- ``CONFIG_FLOAT( shortName )``
+    - returns decimal (float) value
+
+Example usage:
+```c
+if ( CONFIG_ENABLED( debug ) )
+{
+    // Example 
+    printf( "debug enabled via config\n" );
+}
+
+printf( "Message of the day: %s\n", CONFIG_STRING( motd ) );
+```
