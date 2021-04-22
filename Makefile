@@ -76,6 +76,9 @@ clean:
 	cd "$(PRX_DIR)" && "$(MAKE)" clean
 
 setup:
+# copy userconfig from template
+	-if not exist userconfig.mk copy userconfig.template.mk userconfig.mk
+
 # create folders used during build
 	-mkdir "$(LOADER_BUILD_DIR)"
 	-mkdir "$(PRX_BUILD_DIR)"

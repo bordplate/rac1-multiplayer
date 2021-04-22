@@ -60,10 +60,20 @@ This is for the european PSN version of the game, but other versions should work
       # bin2rpcs3patch end
 ```
 
-To perform the build, open a command prompt in the root folder of the project and execute:
+To perform the initial setup of the build environment, open a command prompt in the root folder of the project and execute:
+```sh
+make setup
+```
+
+To perform the build, execute:
 ```
 make
 ```
 
 If all goes well there shouldn't be any errors, and the USRDIR of your Persona 5 installation should contain mod.sprx. Moreover, your base patch should be been populated with the generated code.
+
+To clean up any generated build files, execute:
+```
+make clean
+```
 
