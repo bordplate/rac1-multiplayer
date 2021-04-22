@@ -19,6 +19,9 @@ elf:
 prx:
 	$(CC) -mprx $(CCFLAGS) -o $(BIN_DIR)\mod.prx
 
+preprocessed:
+	$(CC) $(CCFLAGS) -E -o $(BIN_DIR)\mod.i
+
 sprx: prx
 	$(MAKE_FSELF) $(BIN_DIR)\mod.prx $(BIN_DIR)\mod.sprx
 

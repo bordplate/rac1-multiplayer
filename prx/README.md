@@ -1,3 +1,41 @@
+# (S)PRX module source code #
+In here you'll find the source code for mod.sprx
+It is structured in 3 main parts:
+- The loader (initialisation)
+- The modules 
+- The library
+
+## The loader
+The loader is contained in part in _init.c, but mostly inside the ELF in which the sprx is injected.
+The PRX side of the loader is responsible for passing data to the ELF side of the loader, such as function addresses.
+
+During initialisation of the PRX module, necessary data is written to ELF memory, the config is loaded and the enabled modules are initialised.
+
+The configuration is handled by the config.inc file.
+
+## The (sub)modules
+The main functionality of the SPRX is implemented through (sub)modules. Each module has an init function and a shutdown function, executed by the loader. Each module will be responsible for hooking functions, writing data to memory, and communicating with other modules. One example of suh a module is the test module (testmodule.c).
+
+The list of modules to load is defined in the module list (modulelist.h).
+
+## The library (lib/)
+Due to technical restrictions, the PRX does not have access to the full C library. In order to overcome this, replacements for some of the C standard library API have been added in lib folder. Due to the limited nature of the C library, additional functions write created to help ease the transition to a lower level language such as C and to boost productivity. 
+
+Notable examples include:
+- clib.h
+    - Contains implementations for a handful of common C library functions, such as printf, sprintf, memcpy, strlen, rand, etc.
+- config.h
+    - Contains the API used to read configuration settings at runtime.
+- shk.h
+    - Contains the API used for hooking functions and calling them from the PRX
+- utils.h
+    - Contains various useful functions to help speed up development, including:
+        - string functions based off the .NET string API (Substring, Replace, IndexOf, etc.)
+        - range (min, max) based random functions 
+- common.h
+    - Includes most of the most frequently used headers for ease of use.
+
+
 # Adding a new module #
 In order to add a new module, you must add a new entry to the module list.
 

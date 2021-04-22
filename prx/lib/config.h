@@ -77,6 +77,7 @@ void configLoad( const char* path );
 // Saves the current configuration to a file.
 void configSave( const char* path );
 
+// Converts the given config value to a string.
 char* configValueToString( char* dest, size_t destLen, ConfigValueType type, ConfigValue* value );
 
 // Config option access macros
