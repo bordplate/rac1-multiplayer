@@ -3,12 +3,14 @@ include userconfig.mk
 # dirs
 BASE_DIR = $(CURDIR)
 LOADER_DIR = $(BASE_DIR)\loader
+LOADER_BUILD_DIR = $(LOADER_DIR)\build
 TOOLS_DIR = $(BASE_DIR)\tools
 PRX_DIR = $(BASE_DIR)\prx
-OUT_DIR = $(BASE_DIR)\prx\build\tmp
-BUILD_IN_DIR = $(BASE_DIR)\prx\build\tmp
-BUILD_TMP_DIR = $(BASE_DIR)\prx\build\tmp
-BUILD_OUT_DIR = $(BASE_DIR)\prx\build\bin
+PRX_BUILD_DIR = $(PRX_DIR)\build
+PRX_OUT_DIR = $(PRX_BUILD_DIR)\tmp
+PRX_BUILD_IN_DIR = $(PRX_BUILD_DIR)\tmp
+PRX_BUILD_TMP_DIR = $(PRX_BUILD_DIR)\tmp
+PRX_BUILD_OUT_DIR = $(PRX_BUILD_DIR)\bin
 BIN2RPCS3PATCH = $(TOOLS_DIR)\bin2rpcs3patch.py
 
 # addresses
@@ -25,7 +27,7 @@ TOC 						= 0xD01288
 # NOTE: if you change these, also change them in the loader linker script
 INJECT_ADDR 				= 0x10250
 LOADER_START_ADDR 			= 0xA3BE70 # .sub_A3BAD0 + 4
-LOADER_END_ADDR 			= 0xA3BEF0 # + 0x80
+LOADER_END_ADDR 			= 0xA3BEF0 # + 0x80s
 
 # 745 instructions, around ~200 hooks
 HOOK_SHARED_TEXT_BEGIN_ADDR = 0xA3BEF0 # LOADER_START_ADDR + 0x80
@@ -46,12 +48,12 @@ HOOK_SHARED_DATA_END_ADDR 	= 0xCE2D60
 #HOOK_SHARED_DATA_2_END_ADDR = 0xB464DC
 
 BIN2RPCS3PATCHARGS = \
-	--input "$(LOADER_DIR)\build\loader.text.inject.bin" "$(LOADER_DIR)\build\loader.text.bin" --address $(INJECT_ADDR) $(LOADER_START_ADDR) \
+	--input "$(LOADER_BUILD_DIR)\loader.text.inject.bin" "$(LOADER_BUILD_DIR)\loader.text.bin" --address $(INJECT_ADDR) $(LOADER_START_ADDR) \
 	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_elf_loader
 
 SHKGENARGS = \
-	--tools_dir "$(TOOLS_DIR)" --out_dir "$(OUT_DIR)" --build_in_dir "$(BUILD_IN_DIR)" --build_tmp_dir "$(BUILD_TMP_DIR)" \
-	--build_out_dir "$(BUILD_OUT_DIR)" --toc $(TOC) --hook_shared_text_range $(HOOK_SHARED_TEXT_BEGIN_ADDR) $(HOOK_SHARED_TEXT_END_ADDR) \
+	--tools_dir "$(TOOLS_DIR)" --out_dir "$(PRX_OUT_DIR)" --build_in_dir "$(PRX_BUILD_IN_DIR)" --build_tmp_dir "$(PRX_BUILD_TMP_DIR)" \
+	--build_out_dir "$(PRX_BUILD_OUT_DIR)" --toc $(TOC) --hook_shared_text_range $(HOOK_SHARED_TEXT_BEGIN_ADDR) $(HOOK_SHARED_TEXT_END_ADDR) \
 	--hook_shared_data_range $(HOOK_SHARED_DATA_BEGIN_ADDR) $(HOOK_SHARED_DATA_END_ADDR) --patch_file "$(PATCH_FILE)" --hooks $(HOOKS)
 
 all:
@@ -63,12 +65,22 @@ all:
 	cd tools && $(PYTHON) shkgen.py $(SHKGENARGS)
 
 # build injection patch
-	cd "$(BUILD_TMP_DIR)" && "$(MAKE)" -f shk_elf.gen.mk patch
+	cd "$(PRX_BUILD_TMP_DIR)" && "$(MAKE)" -f shk_elf.gen.mk patch
 
 # build sprx
 	cd "$(PRX_DIR)" && "$(MAKE)" sprx
-	copy "$(BUILD_OUT_DIR)\mod.sprx" "$(GAME_DIR)" /Y
+	copy "$(PRX_BUILD_OUT_DIR)\mod.sprx" "$(GAME_DIR)" /Y
 
 clean:
 	cd "$(LOADER_DIR)" && "$(MAKE)" clean
 	cd "$(PRX_DIR)" && "$(MAKE)" clean
+
+setup:
+# create folders used during build
+	-mkdir "$(LOADER_BUILD_DIR)"
+	-mkdir "$(PRX_BUILD_DIR)"
+	-mkdir "$(PRX_BUILD_IN_DIR)"
+	-mkdir "$(PRX_BUILD_TMP_DIR)" 
+	-mkdir "$(PRX_BUILD_OUT_DIR)"
+
+
