@@ -123,19 +123,19 @@ PATCH_FILE = {PATCH_FILE}
 BIN2RPCS3PATCH = $(TOOLS_DIR)/bin2rpcs3patch.py
 
 compile:
-	$(CC) "$(IN_DIR)/shk_elf.gen.s" -o "$(TMP_DIR)/shk_elf.o" -T "$(IN_DIR)/shk_elf.gen.ld" -v -Xlinker -Map=$(TMP_DIR)\shk_elf.map -Wa,-mregnames -nostartfiles -nodefaultlibs
+	"$(CC)" "$(IN_DIR)/shk_elf.gen.s" -o "$(TMP_DIR)/shk_elf.o" -T "$(IN_DIR)/shk_elf.gen.ld" -v -Xlinker -Map="$(TMP_DIR)\shk_elf.map" -Wa,-mregnames -nostartfiles -nodefaultlibs
 
 binary: compile{HOOK_OUTPUTS}
-	$(OBJCOPY) -O binary --only-section=.text.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_shared.bin" -v
-	$(OBJCOPY) -O binary --only-section=.data.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.data.shk_elf_shared.bin" -v
+	"$(OBJCOPY)" -O binary --only-section=.text.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_shared.bin" -v
+	"$(OBJCOPY)" -O binary --only-section=.data.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.data.shk_elf_shared.bin" -v
 
 patch: binary
-	$(PYTHON) $(BIN2RPCS3PATCH) --input{HOOK_INPUTS} "$(TMP_DIR)/.text.shk_elf_shared.bin" "$(TMP_DIR)/.data.shk_elf_shared.bin" --address{HOOK_ADDRESSES} $(SHARED_TEXT_ADDRESS) $(SHARED_DATA_ADDRESS) --output "$(PATCH_FILE)" --replace_patch shk_elf_inject --indent 3
+	$(PYTHON) "$(BIN2RPCS3PATCH)" --input{HOOK_INPUTS} "$(TMP_DIR)/.text.shk_elf_shared.bin" "$(TMP_DIR)/.data.shk_elf_shared.bin" --address{HOOK_ADDRESSES} $(SHARED_TEXT_ADDRESS) $(SHARED_DATA_ADDRESS) --output "$(PATCH_FILE)" --replace_patch shk_elf_inject --indent 3
 '''
 
 MK_INJECT_HOOK_OUTPUT_TEMPLATE = \
 '''
-	$(OBJCOPY) -O binary --only-section=.text.shk_elf_patch_{HOOK} "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_patch_{HOOK}.bin" -v
+	"$(OBJCOPY)" -O binary --only-section=.text.shk_elf_patch_{HOOK} "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_patch_{HOOK}.bin" -v
 '''
 
 MK_INJECT_HOOK_INPUT_TEMPLATE = \
