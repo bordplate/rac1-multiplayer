@@ -46,7 +46,7 @@ HOOK_SHARED_DATA_END_ADDR 	= 0xCE2D60
 #HOOK_SHARED_DATA_2_END_ADDR = 0xB464DC
 
 BIN2RPCS3PATCHARGS = \
-	--input $(LOADER_DIR)\build\loader.text.inject.bin $(LOADER_DIR)\build\loader.text.bin --address $(INJECT_ADDR) $(LOADER_START_ADDR) \
+	--input "$(LOADER_DIR)\build\loader.text.inject.bin" "$(LOADER_DIR)\build\loader.text.bin" --address $(INJECT_ADDR) $(LOADER_START_ADDR) \
 	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_elf_loader
 
 SHKGENARGS = \
@@ -56,19 +56,19 @@ SHKGENARGS = \
 
 all:
 # build loader
-	cd $(LOADER_DIR) && $(MAKE) binary INJECT_ADDR=$(INJECT_ADDR) LOADER_START_ADDR=$(LOADER_START_ADDR)
+	cd "$(LOADER_DIR)" && "$(MAKE)" binary INJECT_ADDR=$(INJECT_ADDR) LOADER_START_ADDR=$(LOADER_START_ADDR)
 	$(PYTHON) "$(BIN2RPCS3PATCH)" $(BIN2RPCS3PATCHARGS)
 
 # generate shk files
 	cd tools && $(PYTHON) shkgen.py $(SHKGENARGS)
 
 # build injection patch
-	cd $(BUILD_TMP_DIR) && $(MAKE) -f shk_elf.gen.mk patch
+	cd "$(BUILD_TMP_DIR)" && "$(MAKE)" -f shk_elf.gen.mk patch
 
 # build sprx
-	cd $(PRX_DIR) && $(MAKE) sprx
+	cd "$(PRX_DIR)" && "$(MAKE)" sprx
 	copy "$(BUILD_OUT_DIR)\mod.sprx" "$(GAME_DIR)" /Y
 
 clean:
-	cd $(LOADER_DIR) && $(MAKE) clean
-	cd $(PRX_DIR) && $(MAKE) clean
+	cd "$(LOADER_DIR)" && "$(MAKE)" clean
+	cd "$(PRX_DIR)" && "$(MAKE)" clean
