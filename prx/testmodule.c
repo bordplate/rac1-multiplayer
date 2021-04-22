@@ -128,15 +128,15 @@ long factorial( s32 n )
 void testModuleInit( void )
 {
     // These prints show up in the TTY log if everything is working as it should.
-    printf( "mod: hello world\n" );
+    printf( "testmodule: hello world\n" );
 
     if ( CONFIG_ENABLED( debug ) )
     {
         // Example 
-        printf( "mod: debug enabled via config\n" );
+        printf( "testmodule: debug enabled via config\n" );
     }
 
-    printf( "mod: Message of the day: %s\n", CONFIG_STRING( motd ) );
+    printf( "testmodule: Message of the day: %s\n", CONFIG_STRING( motd ) );
 
     // Example of printing values with printf.
     // See printf format reference on google for more info.
@@ -168,7 +168,7 @@ void testModuleInit( void )
     // TODO: create example thread
 
     // Our job is done. 
-    printf( "mod: goodbye world\n" );
+    printf( "testmodule: goodbye world\n" );
 }
 
 void testModuleShutdown( void )
