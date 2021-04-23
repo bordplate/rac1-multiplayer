@@ -36,7 +36,7 @@ u32 configGetSettingCount()
 ConfigSetting* configGetSettingByIndex( u32 index )
 {
     assert( index < configGetSettingCount() );
-    return (ConfigSetting*)&config + index;
+    return ((ConfigSetting*)&config) + index;
 }
 
 ConfigSetting* configGetSettingByName( const char* name )

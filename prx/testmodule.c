@@ -73,7 +73,7 @@ exStruct exampleStructArray[] =
 // R, meaning result, and 6, the number of parameters
 // A void function does not return anything, and requires you to use SHK_FUNCTION_V<N> instead.
 // If you use vscode youll get descriptive tooltips when you hover these macros.
-SHK_FUNCTION_R6( 0x10F0D4, s32, sndManPlaySfx, s32, a0, s32, a1, s32, a2, s32, a3, s32, a4, s32, a5 );
+SHK_FUNCTION_R6( 0x10F0D4, s32, testPlaySfx, s32, a0, s32, a1, s32, a2, s32, a3, s32, a4, s32, a5 );
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( void, setBgm, s32 id );
@@ -91,7 +91,7 @@ void setBgmHook( s32 id )
     s32 result; // r3
 
     v1 = id;
-    sndManPlaySfx( 0, 0, id, 0, -1, -1 );
+    testPlaySfx( 0, 0, id, 0, -1, -1 );
 
     // This is how you write to memory addresses in C
     *(s32*)0xCFF4C0 = result;

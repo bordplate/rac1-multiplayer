@@ -24,7 +24,7 @@ extern void* _shk_prx_ptr_table;
 extern void _runtimeSubstitute1Impl();
 SHK_HOOK( void, _runtimeSubstitute1 );
 
-void _runtimeInit()
+void initRuntime()
 {
     printf( "modprx: initialising runtime\n" );
 
@@ -37,32 +37,101 @@ void _runtimeInit()
     printf( "modprx: runtime initialised\n" );
 }
 
+// Loads & initialises a module
+ModuleInitStatus initModule( ModuleInfo* module )
+{
+    //printf( "modprx: initModule() '%s' (%s)\n", module->longName, module->shortName );
+
+    if ( module->flags & MODULE_FLAG_INIT )
+    {
+        // module has already been loaded before
+        if ( module->flags & MODULE_FLAG_ENABLED )
+            return MODULE_INIT_STATUS_ENABLED;
+        else
+            return MODULE_INIT_STATUS_DISABLED;
+    }
+
+    // set init flag early to prevent infinite recursion
+    module->flags |= MODULE_FLAG_INIT;
+
+    // check if enabled
+    ConfigSetting* toggleSetting = configGetSettingByName( module->toggleSettingName );
+    if ( toggleSetting == NULL || toggleSetting->valueType != CONFIG_VALUE_TYPE_BOOL || !toggleSetting->value.boolValue )
+    {
+        printf( "modprx: module '%s' (%s) is not loaded because it has been disabled through the config\n", module->longName, module->shortName );
+        return MODULE_INIT_STATUS_DISABLED;
+    }
+
+    // mark as enabled for now to satisfy recursive loads
+    // if an error occurs while resolving dependencies, the flag is unset
+    module->flags |= MODULE_FLAG_ENABLED;
+
+    // init dependencies first
+    printf( "modprx: module '%s' (%s) loading dependencies\n", module->longName, module->shortName );
+    const char** dependency = module->dependencies;
+    while ( *dependency != NULL )
+    {
+        printf( "modprx: module '%s' (%s) loading dependency %s\n", module->longName, module->shortName, *dependency );
+
+        ModuleInfo* dependencyModule = moduleGetModuleByName( *dependency );
+        if ( !dependencyModule )
+        {
+            printf( "modprx: module '%s' (%s) is not loaded because dependency module '%s' is not found\n", 
+                module->longName, module->shortName, *dependency );
+            return MODULE_INIT_STATUS_DEPENDENCY_INVALID;
+        }
+
+        ModuleInitStatus status = initModule( dependencyModule );
+
+        // handle status
+        switch ( status )
+        {
+            case MODULE_INIT_STATUS_DEPENDENCY_DISABLED:
+                printf( "modprx: module '%s' (%s) not loaded because dependency module %s (%s) failed to load a dependency\n",
+                     module->longName, module->shortName, dependencyModule->longName, dependencyModule->shortName );
+
+                module->flags &= ~MODULE_FLAG_ENABLED;
+                return MODULE_INIT_STATUS_DEPENDENCY_DISABLED;
+
+            case MODULE_INIT_STATUS_DEPENDENCY_INVALID:
+                printf( "modprx: module '%s' (%s) not loaded because dependency module %s (%s) failed to load a dependency\n",
+                     module->longName, module->shortName, dependencyModule->longName, dependencyModule->shortName );
+
+                module->flags &= ~MODULE_FLAG_ENABLED;
+                return MODULE_INIT_STATUS_DEPENDENCY_INVALID;
+
+            case MODULE_INIT_STATUS_DISABLED:
+                printf( "modprx: module '%s' (%s) not loaded because dependency module %s (%s) is disabled\n",
+                     module->longName, module->shortName, dependencyModule->longName, dependencyModule->shortName );
+
+                module->flags &= ~MODULE_FLAG_ENABLED;
+                return MODULE_INIT_STATUS_DEPENDENCY_DISABLED;
+
+            case MODULE_INIT_STATUS_ENABLED:
+                // good
+                break;
+        }
+
+        dependency++;
+    }
+
+    // call module init
+    printf( "modprx: initialising module '%s' (%s)\n", module->longName, module->shortName );
+    if ( module->init ) module->init();
+}
+
 s32 _start( void )
 {
     printf( "modprx: initialising\n" );
-    _runtimeInit();
+    initRuntime();
 
     // load config
     printf( "modprx: loading config\n" );
     configLoad( "config.yml" );
 
     printf( "modprx: initialising modules\n" );
-    u32 moduleCount = sizeof( Modules ) / sizeof( ModuleInfo );
-    for ( u32 i = 0; i < moduleCount; ++i )
-    {
-        ModuleInfo* info = &Modules[i];
-        ConfigSetting* toggleSetting = configGetSettingByName( info->toggleSettingName );
-
-        if ( toggleSetting && toggleSetting->valueType == CONFIG_VALUE_TYPE_BOOL && toggleSetting->value.boolValue )
-        {
-            printf( "modprx: initialising module %s (%s)\n", info->longName, info->shortName );
-            info->init();
-        }
-        else
-        {
-            printf( "modprx: module %s (%s) disabled in config, skipping\n", info->longName, info->shortName );
-        }
-    }
+    for ( u32 i = 0; i < moduleGetModuleCount(); ++i )
+        initModule( moduleGetModuleByIndex( i ) );
     
     return SYS_PRX_START_OK;
 }
@@ -72,16 +141,16 @@ s32 _stop( void )
     printf( "modprx: shutting down\n" );
 
     printf( "modprx: shutting down modules\n" );
-    u32 moduleCount = sizeof( Modules ) / sizeof( ModuleInfo );
-    for ( u32 i = 0; i < moduleCount; ++i )
+    for ( u32 i = 0; i < moduleGetModuleCount(); ++i )
     {
-        ModuleInfo* info = &Modules[i];
-        ConfigSetting* toggleSetting = configGetSettingByName( info->toggleSettingName );
+        ModuleInfo* module = moduleGetModuleByIndex( i );
 
-        if ( toggleSetting && toggleSetting->valueType == CONFIG_VALUE_TYPE_BOOL && toggleSetting->value.boolValue )
+        if ( module->flags & MODULE_FLAG_ENABLED && 
+            !( module->flags & MODULE_FLAG_SHUTDOWN ) )
         {
-            printf( "modprx: shutting down module %s (%s)\n", info->longName, info->shortName );
-            info->shutdown();
+            printf( "modprx: shutting down module %s (%s)\n", module->longName, module->shortName );
+            if ( module->shutdown ) module->shutdown();
+            module->flags |= MODULE_FLAG_SHUTDOWN;
         }
     }
 
