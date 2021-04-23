@@ -53,7 +53,7 @@ typedef struct
     ConfigSetting option_##shortName;
 
 #pragma pack(1)
-#include CONFIG_SET_FILENAME
+#include "../config.inc"
 #pragma pop
 
 #undef CONFIG_OPTION

@@ -6,7 +6,7 @@ It is structured in 3 main parts:
 - The library
 
 ## The loader
-The loader is contained in part in _init.c, but mostly inside the ELF in which the sprx is injected.
+The loader is contained in part in runtime/init.c, but mostly inside the ELF in which the sprx is injected.
 The PRX side of the loader is responsible for passing data to the ELF side of the loader, such as function addresses.
 
 During initialisation of the PRX module, necessary data is written to ELF memory, the config is loaded and the enabled modules are initialised.
@@ -14,7 +14,7 @@ During initialisation of the PRX module, necessary data is written to ELF memory
 The configuration is handled by the config.inc file.
 
 ## The (sub)modules
-The main functionality of the SPRX is implemented through (sub)modules. Each module has an init function and a shutdown function, executed by the loader. Each module will be responsible for hooking functions, writing data to memory, and communicating with other modules. One example of suh a module is the test module (testmodule.c).
+The main functionality of the SPRX is implemented through (sub)modules. Each module has an init function and a shutdown function, executed by the loader. Each module will be responsible for hooking functions, writing data to memory, and communicating with other modules. One example of suh a module is the test module (testmodule.c). 
 
 The list of modules to load is defined in the module list (modulelist.h).
 
@@ -108,7 +108,7 @@ Second, include your newly created header file in modulelist.h, like in this exa
 Finally, simply add an entry to the Module list following the given format:
 
 ```c
-{ "foobar", "The Foobar module", "enableFoobar", foobarInit, foobarShutdown },
+{ "foobar", "The Foobar module", "enableFoobar", foobarInit, foobarShutdown, {} },
 ```
 
 The values are as follows:
@@ -117,6 +117,14 @@ The values are as follows:
 - The name of the config setting used to enable the module
 - The name of the module initialization function
 - The name of the module shutdown/deinitialization function
+- List of module dependencies. 
+    - The short names of modules are added to the list to force them to be loaded as a dependency, for example:
+        ```c
+        { "foobar", "The Foobar module", "enableFoobar", foobarInit, foobarShutdown, { "moduleA", "moduleB" } }
+        { "moduleA", ... }
+        { "moduleB", ... }
+        ```
+    - If the dependency is not enabled, or can't be loaded, then the dependent module won't be loaded. Check the log to troubleshoot why your module isn't loading.
 
 If you have followed these steps correctly and have added a new config setting to enable your module, your module name should come up during the initialisation stage in the RPCS3 TTY log, like in the following example:
 ```

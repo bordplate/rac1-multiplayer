@@ -23,7 +23,7 @@ const char* ConfigValueTypeNames[] =
 #define CONFIG_OPTION( type, shortName, longName, defaultValue ) \
     { #shortName, longName, CONFIG_VALUE_TYPE_##type, { .type##_value = defaultValue } },
 
-#include CONFIG_SET_FILENAME
+#include "../config.inc"
 
 #undef CONFIG_OPTION
 

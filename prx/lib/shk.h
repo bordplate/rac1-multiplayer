@@ -11,7 +11,10 @@
 #include "common.h"
 
 // TODO: unhardcode TOC
-#define SHK_ELF_TOC 0xd01288 
+
+// ELF TOC pointer
+extern void* _shk_elf_toc;
+#define SHK_ELF_TOC (&_shk_elf_toc) 
 
 #ifdef __cplusplus
     #define SHK_API extern "C"

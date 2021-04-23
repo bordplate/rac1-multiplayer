@@ -22,7 +22,7 @@ def readF32BE( f: io.FileIO ):
 def readF64BE( f: io.FileIO ):
     return struct.unpack( ">d", f.read( 8 ) )[0]
 
-def hexToInt( s ):
+def hexToInt( s: str ):
     return int( s, 0 )
 
 PATCH_SECTION_START = r'bin2rpcs3patch begin (\w+)$'
@@ -171,19 +171,24 @@ def main():
                 val = readU64BE( fIn )
                 valType = 'be64'
         else:
-            # valSize is assumed to be less than 8
             off = 0
             remValSize = valSize
-            if remValSize >= 4:
-                writePatchVal( baseAddr, 4 )
-                remValSize -= 4
-                
-            if remValSize >= 2:
-                writePatchVal( baseAddr, 2 )
-                remValSize -= 2
-            
-            for i in range( remValSize ):
-                writePatchVal( baseAddr, 1 )
+            while remValSize >= 0:
+                if remValSize >= 8:
+                    writePatchVal( baseAddr, 8 )
+                    remValSize -= 8
+                    
+                if remValSize >= 4:
+                    writePatchVal( baseAddr, 4 )
+                    remValSize -= 4
+                    
+                if remValSize >= 2:
+                    writePatchVal( baseAddr, 2 )
+                    remValSize -= 2
+                    
+                if remValSize >= 1:
+                    writePatchVal( baseAddr, 1 )
+                    remValSize -= 1
             return
         
         write( indent, f'- [ {valType}, {hex(baseAddr + valOff)}, {hex(val)} ]')
