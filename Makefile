@@ -1,4 +1,4 @@
-include userconfig.mk
+-include userconfig.mk
 
 # dirs
 BASE_DIR = $(CURDIR)
@@ -34,8 +34,6 @@ HOOK_SHARED_DATA_END_ADDR 	= 0xCE2D60
 
 # ASM function ported to PRX to make room for the loader
 HOOK_SUBSTITUTE = _shk_prx_elf_substitute/0xA3BE6C/""
-else
-	$(error Game target '$(GAME)' is not supported or not set)
 endif
 
 HOOKS := $(HOOK_SUBSTITUTE) $(HOOKS)
