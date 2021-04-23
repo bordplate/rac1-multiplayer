@@ -16,7 +16,7 @@ The configuration is handled by the config.inc file.
 ## The (sub)modules
 The main functionality of the SPRX is implemented through (sub)modules. Each module has an init function and a shutdown function, executed by the loader. Each module will be responsible for hooking functions, writing data to memory, and communicating with other modules. One example of suh a module is the test module (testmodule.c). 
 
-The list of modules to load is defined in the module list (modulelist.h).
+The list of modules to load is defined in the module list (modules.inc).
 
 ## The library (lib/)
 Due to technical restrictions, the PRX does not have access to the full C library. In order to overcome this, replacements for some of the C standard library API have been added in lib folder. Due to the limited nature of the C library, additional functions write created to help ease the transition to a lower level language such as C and to boost productivity. 
@@ -39,16 +39,20 @@ Notable examples include:
 # Adding a new module #
 In order to add a new module, you must add a new entry to the module list.
 
-The module list, located in modulelist.h, contains information about every module that can be loaded and unloaded by the loader. 
+The module list, located in modules.inc, contains information about every module that can be loaded and unloaded by the loader. 
 
-To add your own module, for example 'foobar', first you must create 2 source files: foobar.c and foobar.h
+To add your own module, for example 'foo' for game 'bar', first you must create 2 source files: foo.c and foo.h
 
-After creating those, make sure to declare and define the 'foobarInit' and the 'foobarShutdown' functions, both taking no parameters and returning no value.
+After creating those, make sure to declare and define the 'fooInit' and the 'fooShutdown' functions, both taking no parameters and returning no value.
 
-Your header file (foobar.h) should look like something like this:
+Your header file (foo.h) should look like something like this:
 ```c
-#ifndef FOOBAR_H
-#define FOOBAR_H
+// Make sure include the include guard to ensure only files
+// for the specific game are included during the build
+#ifdef GAME_BAR
+
+#ifndef FOO_H
+#define FOO_H
 
 // Pre-prepared libraries exist in lib
 // Common includes things like printf for printf, strlen, etc.
@@ -62,19 +66,24 @@ Your header file (foobar.h) should look like something like this:
 // The PRX loader calls these 2 functions for you.
 
 // The module initialisation function.
-void foobarInit( void );
+void fooInit( void );
 
 // The module shutdown function.
-void foobarShutdown( void );
+void fooShutdown( void );
 
-#endif
+#endif // FOO_H
+#endif // GAME_BAR
 ```
 
-Your source file (foobar.c) should look something like this:
+Your source file (foo.c) should look something like this:
 ```c
+// Make sure include the include guard to ensure only files
+// for the specific game are included during the build
+#ifdef GAME_BAR
+
 // Include the header file in which type are defined
 // See the header file for more information
-#include "foobar.h"
+#include "foo.h"
 
 // Include this to use hooks
 // SHK (Static Hook library)
@@ -85,31 +94,39 @@ Your source file (foobar.c) should look something like this:
 
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot, hook a function that is called after initialisation.
-void foobarInit( void )
+void fooInit( void )
 {
     // These prints show up in the TTY log if everything is working as it should.
-    printf( "foobar: hello world :)\n" );
+    printf( "foo: hello world :)\n" );
 }
 
-void foobarShutdown( void )
+void fooShutdown( void )
 {
     // Executed when the PRX module is unloaded.    
-    printf( "foobar: goodbye world :(\n" );
+    printf( "foo: goodbye world :(\n" );
 }
+
+#endif
 ```
 
 If you are unsure on how to do this, refer to the testmodule for a practical example.
 
-Second, include your newly created header file in modulelist.h, like in this example:
+Second, include your newly created header file in modules.inc, like in this example:
 ```c
-#include "foobar.h"
+#ifdef GAME_BAR
+#include "modules/bar/foo.h"
+#endif
 ```
 
 Finally, simply add an entry to the Module list following the given format:
 
 ```c
-{ "foobar", "The Foobar module", "enableFoobar", foobarInit, foobarShutdown, {} },
+#ifdef GAME_BAR
+{ "foo", "The Foo module", "enableFoo", fooInit, fooShutdown, {} },
+#endif
 ```
+
+In case the ifdef guard already exists for the game, you add the code inside it instead of adding another one.
 
 The values are as follows:
 - The short name used to refer to the module
@@ -120,9 +137,9 @@ The values are as follows:
 - List of module dependencies. 
     - The short names of modules are added to the list to force them to be loaded as a dependency, for example:
         ```c
-        { "foobar", "The Foobar module", "enableFoobar", foobarInit, foobarShutdown, { "moduleA", "moduleB" } }
-        { "moduleA", ... }
-        { "moduleB", ... }
+        { "foo", "The Foo module", "enableFoo", fooInit, fooShutdown, { "bar", "qux" } }
+        { "bar", ... }
+        { "qux", ... }
         ```
     - If the dependency is not enabled, or can't be loaded, then the dependent module won't be loaded. Check the log to troubleshoot why your module isn't loading.
 
@@ -132,14 +149,9 @@ config: Enables the test module (enableTestModule): true
 config: Enable debugging features (debug): false
 config: Message of the day (motd): Hello World
 modprx: initialising modules
-modprx: initialising module The Foobar module (foobar)
-foobar: hello world
+modprx: initialising module The Foo module (foo)
+foo: hello world
 ```
-
-# Adding a C file #
-In order to properly add a C file, you must add it to Makefile. The Makefile contains a variable named CFILES, listing all of the C files used in the project. 
-
-To include your C file, simply add the name of your C file to this list.
 
 # Adding an S file #
 Similar to C files, S files, assembly source files, are specified in the Makefile as well. 
@@ -157,8 +169,12 @@ CONFIG_OPTION( type, shortName, "Long, descriptive user friendly name", default 
 
 Example:
 ```c
+#ifdef GAME_NAME
 CONFIG_OPTION( BOOL, enableTestModule, "Enables the test module", true )
+#endif
 ```
+
+In case the ifdef guard already exists for the game, you add the code inside it instead of adding another one.
 
 The available types are:
 - BOOL: boolean true/false values for on/off toggles
