@@ -143,4 +143,10 @@ s32 randomIntBetween( s32 min, s32 max );
 // Generates a random float between min (inclusive) and max (inclusive).
 f32 randomFloatBetween( f32 min, f32 max );
 
+// Prints a hex dump of the specified memory range to the console.
+// description: The description of the hex dump
+// address: The starting address of the memory to dump
+// length: The length/size of the memory range, starting from the start address, to dump.
+void hexDump( char *description, void *address, u32 length );
+
 #endif
