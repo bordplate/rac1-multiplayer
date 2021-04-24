@@ -21,12 +21,15 @@ const char* ConfigValueTypeNames[] =
     };
 
 #define CONFIG_OPTION( type, shortName, longName, defaultValue ) \
-    { #shortName, longName, CONFIG_VALUE_TYPE_##type, { .type##_value = defaultValue } },
+    { #shortName, longName, CONFIG_VALUE_TYPE_##type, CONFIG_VALUE_CLASS_SINGLE, 1, { .type##_value = defaultValue } },
+
+#define CONFIG_OPTION_ARRAY( type, shortName, longName, defaultValueCount, ... ) \
+     { #shortName, longName, CONFIG_VALUE_TYPE_##type, CONFIG_VALUE_CLASS_ARRAY, defaultValueCount, { .type##_array = { __VA_ARGS__ } } },
 
 #include "../config.inc"
 
+#undef CONFIG_OPTION_ARRAY
 #undef CONFIG_OPTION
-
 
 u32 configGetSettingCount()
 {
@@ -56,33 +59,6 @@ const Config* const configGet()
     return &config;
 }
 
-char* configValueToString( char* dest, size_t destLen, ConfigValueType type, ConfigValue* value )
-{
-    switch ( type )
-    {
-    case CONFIG_VALUE_TYPE_BOOL:
-        stringFormat( dest, destLen, "%s", value->BOOL_value ? "true" : "false" );
-        break;
-
-    case CONFIG_VALUE_TYPE_INT:
-        stringFormat( dest, destLen, "%d", value->INT_value );
-        break;
-
-    case CONFIG_VALUE_TYPE_FLOAT:
-        stringFormat( dest, destLen, "%f", value->FLOAT_value );
-        break;
-
-    case CONFIG_VALUE_TYPE_STRING:
-        stringFormat( dest, destLen, "%s", value->STRING_value );
-        break;
-    
-    default:
-        break;
-    }
-
-    return dest;
-}
-
 void configLoad( const char* path )
 {
     printf( "config: loading config from %s (NOT IMPLEMENTED)\n", path );
@@ -94,8 +70,42 @@ void configLoad( const char* path )
     for ( size_t i = 0; i < settingCount; i++ )
     {
         char valueBuffer[64];
-        printf( "config: %s (%s): %s\n", setting->longName, setting->shortName,
-            configValueToString( valueBuffer, sizeof( valueBuffer ), setting->valueType, &setting->value ) );
+        printf( "config: %s (%s): ", setting->longName, setting->shortName );
+        
+        if ( setting->valueCount > 0 )
+        {
+            for ( u32 j = 0; j < setting->valueCount; ++j )
+            {
+                if ( j != 0 )
+                    printf( ", " );
+
+                switch ( setting->valueType )
+                {
+                case CONFIG_VALUE_TYPE_BOOL:
+                    printf( "%s", setting->value.boolArray[j] ? "true" : "false" );
+                    break;
+
+                case CONFIG_VALUE_TYPE_INT:
+                    printf( "%d", setting->value.intArray[j] );
+                    break;
+
+                case CONFIG_VALUE_TYPE_FLOAT:
+                    printf( "%f", setting->value.floatArray[j] );
+                    break;
+
+                case CONFIG_VALUE_TYPE_STRING:
+                    printf( "%s", setting->value.stringArray[j] );
+                    break;
+                
+                default:
+                    break;
+                }
+
+                printf( valueBuffer );
+            }
+        }
+
+        printf( "\n" );
         ++setting;
     }
     

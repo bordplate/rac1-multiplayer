@@ -14,14 +14,24 @@ typedef enum
     CONFIG_VALUE_TYPE_COUNT,
 } ConfigValueType;
 
+typedef enum
+{
+    CONFIG_VALUE_CLASS_SINGLE,
+    CONFIG_VALUE_CLASS_ARRAY
+} ConfigValueClass;
+
 const char* ConfigValueTypeNames[CONFIG_VALUE_TYPE_COUNT];
+
+#define CONFIG_VALUE_ARRAY_MAX 32
 
 // Config value union
 // Used to dynamically store the value of a config option.
 // Member names must match type suffix of ConfigValueType
 #define CONFIG_VALUE_MEMBER( type, shortName, typeSuffix ) \
     type shortName##Value; \
-    type typeSuffix##_value
+    type shortName##Array[CONFIG_VALUE_ARRAY_MAX]; \
+    type typeSuffix##_value; \
+    type typeSuffix##_array[CONFIG_VALUE_ARRAY_MAX]
 
 typedef union
 {
@@ -39,6 +49,8 @@ typedef struct
     const char* shortName;
     const char* longName;
     ConfigValueType valueType;
+    ConfigValueClass valueClass;
+    u32 valueCount;
     ConfigValue value;
 } ConfigSetting;
 
@@ -52,10 +64,14 @@ typedef struct
 #define CONFIG_OPTION( type, shortName, longName, defaultValue ) \
     ConfigSetting option_##shortName;
 
+#define CONFIG_OPTION_ARRAY( type, shortName, longName, defaultValueCount, ... ) \
+    ConfigSetting option_##shortName;
+
 #pragma pack(1)
 #include "../config.inc"
 #pragma pop
 
+#undef CONFIG_OPTION_ARRAY
 #undef CONFIG_OPTION
 
 // Get the number of setting in the current config.
@@ -95,5 +111,20 @@ char* configValueToString( char* dest, size_t destLen, ConfigValueType type, Con
 
 #define CONFIG_STRING( name ) \
     configGet()->option_##name.value.stringValue
+
+#define CONFIG_BOOL_ARRAY( name ) \
+    configGet()->option_##name.value.boolArray
+
+#define CONFIG_FLOAT_ARRAY( name ) \
+    configGet()->option_##name.value.floatArray
+
+#define CONFIG_INT_ARRAY( name ) \
+    configGet()->option_##name.value.intArray
+
+#define CONFIG_STRING_ARRAY( name ) \
+    configGet()->option_##name.value.stringArray
+
+#define CONFIG_ARRAY_COUNT( name ) \
+    configGet()->option_##name.valueCount
 
 #endif
