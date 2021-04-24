@@ -20,16 +20,21 @@ const char* ConfigValueTypeNames[] =
 #define CONFIG_END() \
     };
 
-#define CONFIG_OPTION( type, shortName, longName, defaultValue ) \
+#define CONFIG_SETTING( type, shortName, longName, defaultValue ) \
     { #shortName, longName, CONFIG_VALUE_TYPE_##type, CONFIG_VALUE_CLASS_SINGLE, 1, { .type##_value = defaultValue } },
 
-#define CONFIG_OPTION_ARRAY( type, shortName, longName, defaultValueCount, ... ) \
+#define CONFIG_SETTING_ARRAY( type, shortName, longName, defaultValueCount, ... ) \
      { #shortName, longName, CONFIG_VALUE_TYPE_##type, CONFIG_VALUE_CLASS_ARRAY, defaultValueCount, { .type##_array = { __VA_ARGS__ } } },
+
+#define CONFIG_OPTION CONFIG_SETTING
+#define CONFIG_OPTION_ARRAY CONFIG_SETTING_ARRAY
 
 #include "../config.inc"
 
 #undef CONFIG_OPTION_ARRAY
 #undef CONFIG_OPTION
+#undef CONFIG_SETTING_ARRAY
+#undef CONFIG_SETTING
 
 u32 configGetSettingCount()
 {

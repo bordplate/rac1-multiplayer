@@ -61,11 +61,14 @@ typedef struct
 #define CONFIG_END() \
     } Config;
 
-#define CONFIG_OPTION( type, shortName, longName, defaultValue ) \
-    ConfigSetting option_##shortName;
+#define CONFIG_SETTING( type, shortName, longName, defaultValue ) \
+    ConfigSetting setting_##shortName;
 
-#define CONFIG_OPTION_ARRAY( type, shortName, longName, defaultValueCount, ... ) \
-    ConfigSetting option_##shortName;
+#define CONFIG_SETTING_ARRAY( type, shortName, longName, defaultValueCount, ... ) \
+    ConfigSetting setting_##shortName;
+
+#define CONFIG_OPTION CONFIG_SETTING
+#define CONFIG_OPTION_ARRAY CONFIG_SETTING_ARRAY
 
 #pragma pack(1)
 #include "../config.inc"
@@ -73,6 +76,8 @@ typedef struct
 
 #undef CONFIG_OPTION_ARRAY
 #undef CONFIG_OPTION
+#undef CONFIG_SETTING_ARRAY
+#undef CONFIG_SETTING
 
 // Get the number of setting in the current config.
 u32 configGetSettingCount();
@@ -93,38 +98,35 @@ void configLoad( const char* path );
 // Saves the current configuration to a file.
 void configSave( const char* path );
 
-// Converts the given config value to a string.
-char* configValueToString( char* dest, size_t destLen, ConfigValueType type, ConfigValue* value );
-
 // Config option access macros
 #define CONFIG_ENABLED( name ) \
-    configGet()->option_##name.value.boolValue
+    configGet()->setting_##name.value.boolValue
 
 #define CONFIG_BOOL( name ) \
-    configGet()->option_##name.value.boolValue
+    configGet()->setting_##name.value.boolValue
 
 #define CONFIG_FLOAT( name ) \
-    configGet()->option_##name.value.floatValue
+    configGet()->setting_##name.value.floatValue
 
 #define CONFIG_INT( name ) \
-    configGet()->option_##name.value.intValue
+    configGet()->setting_##name.value.intValue
 
 #define CONFIG_STRING( name ) \
-    configGet()->option_##name.value.stringValue
+    configGet()->setting_##name.value.stringValue
 
 #define CONFIG_BOOL_ARRAY( name ) \
-    configGet()->option_##name.value.boolArray
+    configGet()->setting_##name.value.boolArray
 
 #define CONFIG_FLOAT_ARRAY( name ) \
-    configGet()->option_##name.value.floatArray
+    configGet()->setting_##name.value.floatArray
 
 #define CONFIG_INT_ARRAY( name ) \
-    configGet()->option_##name.value.intArray
+    configGet()->setting_##name.value.intArray
 
 #define CONFIG_STRING_ARRAY( name ) \
-    configGet()->option_##name.value.stringArray
+    configGet()->setting_##name.value.stringArray
 
 #define CONFIG_ARRAY_COUNT( name ) \
-    configGet()->option_##name.valueCount
+    configGet()->setting_##name.valueCount
 
 #endif
