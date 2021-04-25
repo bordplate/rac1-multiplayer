@@ -33,7 +33,7 @@ HOOK_SHARED_DATA_BEGIN_ADDR = 0xCE2CB8
 HOOK_SHARED_DATA_END_ADDR 	= 0xCE2D60
 endif
 
-HOOKS_FILES := $(PRX_DIR)\modules\$(GAME)\hooks.yml
+HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)\modules\$(GAME)\hooks.yml
 
 ifneq ($(HOOKS),)
 HOOKSARG = --hooks $(HOOKS)
