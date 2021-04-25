@@ -28,10 +28,10 @@
 // Variable examples
 //
 // Example string
-const char* helloWorld = "Hello World";
+static const char* helloWorld = "Hello World";
 
 // Example string array
-const char* partyMemberNames[] =
+static const char* partyMemberNames[] =
 {
     "None",
     "Joker",
@@ -46,7 +46,7 @@ const char* partyMemberNames[] =
 };
 
 // You'd use it like so:
-const char* getPartyMemberName( s32 id )
+static const char* getPartyMemberName( s32 id )
 {
     return partyMemberNames[ id ];
 }
@@ -54,18 +54,18 @@ const char* getPartyMemberName( s32 id )
 // Example global variables
 // Note: to make these accessible in other C files, you'll have to add their 
 // declaration (that is everything without the value) to the header file.
-u32 exampleIntGlobal = 1;
-f32 exampleFloatGlobal = 1.0f;
+static u32 exampleIntGlobal = 1;
+static f32 exampleFloatGlobal = 1.0f;
 
 // you can initialize structs like this
 // each value corresponds to a field
 // in this case: intValue, floatValue, structPointerValue
-exStruct exampleStructGlobal = { 420, 69.420f, NULL }; 
-exStruct2 exampleStructGlobal2 = { "TEST" };
+static exStruct exampleStructGlobal = { 420, 69.420f, NULL }; 
+static exStruct2 exampleStructGlobal2 = { "TEST" };
 
 // You can make an array of structs too
 // Useful for tables of related data, like skill ids.
-exStruct exampleStructArray[] = 
+static exStruct exampleStructArray[] = 
 {
     // In this example instead of null, the address of the exStruct2 is used to fill in the value
     { 1, 2.0f, &exampleStructGlobal2 },
@@ -84,7 +84,7 @@ SHK_HOOK( void, setBgm, s32 id );
 
 // This is the handler function for the setBgm hook.
 // It's linked to the hook in _start, through SHK_BIND_HOOK
-void setBgmHook( s32 id )
+static void setBgmHook( s32 id )
 {
     // prints current bgm id
     printf( "set bgm: %d\n", id );
@@ -107,7 +107,7 @@ void setBgmHook( s32 id )
 }
 
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
-s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
+static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
 {
     // Prints the current sequence id
     printf( "set seq: %d\n", seqId );
@@ -119,7 +119,7 @@ s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
 
 // Calculates the factorial of N
 // Used to illustrate that you can define functions as normal in the PRX code as well, aside from hooks.
-long factorial( s32 n )
+static long factorial( s32 n )
 {
     if ( n == 0 )
         return 1;

@@ -8,5 +8,6 @@
 #include "config.h"
 #include "string.h"
 #include "random.h" 
+#include "shk.h"
 
 #endif
