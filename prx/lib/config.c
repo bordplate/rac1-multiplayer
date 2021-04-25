@@ -262,6 +262,7 @@ void configLoad( const char* path )
                 CONFIG_TRACE( "array value: '%s'\n", arrayValue );
 
                 // parse value
+                assert( arrayValueIndex < CONFIG_VALUE_ARRAY_MAX && "too many values in the settings array" );
                 configParseYamlValue( setting, arrayValue, arrayValueIndex++ );
                 arrayValueStartIndex = arrayValueEndIndex + 1;
             }

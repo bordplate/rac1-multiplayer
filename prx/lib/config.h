@@ -22,7 +22,7 @@ typedef enum ConfigValueClass
 
 const char* ConfigValueTypeNames[CONFIG_VALUE_TYPE_COUNT];
 
-#define CONFIG_VALUE_ARRAY_MAX 32
+#define CONFIG_VALUE_ARRAY_MAX 256
 
 // Config value union
 // Used to dynamically store the value of a config option.
