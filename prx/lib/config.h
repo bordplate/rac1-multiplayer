@@ -5,7 +5,7 @@
 
 // Config value type enum
 // Used for dynamic serialization
-typedef enum
+typedef enum ConfigValueType
 {
     CONFIG_VALUE_TYPE_BOOL,
     CONFIG_VALUE_TYPE_INT,
@@ -14,7 +14,7 @@ typedef enum
     CONFIG_VALUE_TYPE_COUNT,
 } ConfigValueType;
 
-typedef enum
+typedef enum ConfigValueClass
 {
     CONFIG_VALUE_CLASS_SINGLE,
     CONFIG_VALUE_CLASS_ARRAY
@@ -33,7 +33,7 @@ const char* ConfigValueTypeNames[CONFIG_VALUE_TYPE_COUNT];
     type typeSuffix##_value; \
     type typeSuffix##_array[CONFIG_VALUE_ARRAY_MAX]
 
-typedef union
+typedef union ConfigValue
 {
     CONFIG_VALUE_MEMBER( bool, bool, BOOL );
     CONFIG_VALUE_MEMBER( int, int, INT );
@@ -44,7 +44,7 @@ typedef union
 #undef CONFIG_VALUE_MEMBER
 
 // Config setting struct. Describes a config setting.
-typedef struct
+typedef struct ConfigSetting
 {
     const char* shortName;
     const char* longName;
@@ -87,6 +87,9 @@ ConfigSetting* configGetSettingByIndex( u32 index );
 
 // Gets the setting with the specified short name, or NULL.
 ConfigSetting* configGetSettingByName( const char* name );
+
+// Gets the setting with the specified short name, or NULL.
+ConfigSetting* configGetSettingByLongName( const char* name );
 
 // Gets a read-only pointer to the config.
 // Don't use this unless you know what you're doing

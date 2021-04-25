@@ -42,7 +42,7 @@ s32 _start( void )
 
     // load config
     printf( "modprx: loading config\n" );
-    configLoad( "config.yml" );
+    configLoad( "/app_home/config.yml" );
 
     printf( "modprx: initialising modules\n" );
     for ( u32 i = 0; i < moduleGetModuleCount(); ++i )

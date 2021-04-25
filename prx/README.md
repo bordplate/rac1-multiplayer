@@ -164,13 +164,13 @@ Want to add a feature toggle for your mod? Add it to the config file by editing 
 Each config setting follows the format of:
 
 ```
-CONFIG_OPTION( type, shortName, "Long, descriptive user friendly name", default value )
+CONFIG_SETTING( type, shortName, "Long, descriptive user friendly name", default value )
 ```
 
 Example:
 ```c
 #ifdef GAME_NAME
-CONFIG_OPTION( BOOL, enableTestModule, "Enables the test module", true )
+CONFIG_SETTING( BOOL, enableTestModule, "Enables the test module", true )
 #endif
 ```
 

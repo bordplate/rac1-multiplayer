@@ -141,11 +141,11 @@ void testModuleInit( void )
         printf( "testmodule: debug enabled via config\n" );
     }
 
-    printf( "testmodule: Message of the day: %s\n", CONFIG_STRING( motd ) );
+    printf( "testmodule: Message of the day: %s\n", CONFIG_STRING( testMessage ) );
 
-    u32 maxRandomMessageIndex = CONFIG_ARRAY_COUNT( rmotd ) - 1;
+    u32 maxRandomMessageIndex = CONFIG_ARRAY_COUNT( testRmotd ) - 1;
     u32 randomMessageIndex = ( randomIntBetween(0, maxRandomMessageIndex) + 1 ) % maxRandomMessageIndex;
-    printf( "testmodule: Random message of the day: %s\n", CONFIG_STRING_ARRAY( rmotd )[randomMessageIndex] );
+    printf( "testmodule: Random message of the day: %s\n", CONFIG_STRING_ARRAY( testRmotd )[randomMessageIndex] );
 
     // Example of printing values with printf.
     // See printf format reference on google for more info.
