@@ -14,12 +14,6 @@
 // You can only use things that have been declared before their usage.
 #include "lib/common.h"
 
-// SHK (Static Hook library)
-#include "lib/shk.h"
-
-// Include this to use config variables
-#include "lib/config.h"
-
 // Include the header file in which type are defined
 // See the header file for more information
 #include "testmodule.h"
