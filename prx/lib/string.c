@@ -1,11 +1,5 @@
 #include "lib/string.h"
 
-// Gets the number of characters in the string.
-u32 stringGetLength( const char* s )
-{
-    return strlen( s );
-}
-
 static s32 _stringCompareIgnoreCase( const char* s1, const char* s2 )
 {
     while ( ( *s1 ) && ( charToLower( *s1 ) == charToLower( *s2 ) ) )
@@ -15,6 +9,12 @@ static s32 _stringCompareIgnoreCase( const char* s1, const char* s2 )
     }
 
     return ( *( unsigned char* )s1 - *( unsigned char* )s2 );
+}
+
+// Gets the number of characters in the string.
+u32 stringGetLength( const char* s )
+{
+    return strlen( s );
 }
 
 // Compares two specified String objects, ignoring or honoring their case, and returns an integer that indicates their relative position in the sort order.

@@ -9,7 +9,7 @@ CONFIG_START()
     CONFIG_SETTING( STRING,  testMessage,      "Test message",  "Hello World" )
 
     // Example config setting array values
-    // Default max array size is 32.
+    // Default max array size is 256.
     //                    value type  short name       long name                         # default values  default values
     CONFIG_SETTING_ARRAY( BOOL,       testBoolArray,   "Test bool array",                0 )
     CONFIG_SETTING_ARRAY( INT,        testIntArray,    "Test int array",                 0 )
