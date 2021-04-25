@@ -1,6 +1,7 @@
 import os
 import argparse
 import sys
+import yaml
 
 # limited to one instruction to make hooking stubs possible
 ASM_INJECT_HOOK_PATCH_TEMPLATE = \
@@ -258,9 +259,10 @@ def main():
     parser.add_argument( '--toc', type=hexInt, required=True, help='TOC (r2) address of the functions to patch' )
     parser.add_argument( '--hook_shared_text_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared code for hooking is stored when injected' )
     parser.add_argument( '--hook_shared_data_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared data for hooking is stored when injected' )
-    parser.add_argument( '--hooks', type=str, nargs='+', required=True, help='space separated list of hooks in the format of HOOKNAME,0xADDRESS,REPLACED_INSTRUCTION' )
+    parser.add_argument( '--hooks', type=str, nargs='+', required=False, help='space separated list of hooks in the format of HOOKNAME,0xADDRESS,REPLACED_INSTRUCTION' )
     parser.add_argument( '--patch_file', type=str, required=True, help='rpcs3 patch file in which the compiled patch is inserted' )
     parser.add_argument( '--game', type=str, required=True, help='name of the game target')
+    parser.add_argument( '--hooks_file', type=str, nargs="+", required=False, help='path(s) to yaml hooks file(s)')
     args = parser.parse_args()
     
     # generate loader makefile
@@ -284,20 +286,48 @@ def main():
     sections.append( LinkerSectionInfo( ".data.shk_elf_shared", args.hook_shared_data_range[0] ) )
     
     hooks = []
-    for hookStr in args.hooks:
-        toks = hookStr.split( "/" )
-        name = toks[0]
-        addr = int( toks[1], 0 )
-        replacedInstr = [toks[2]]
-        emitTrampoline = True
+    if args.hooks != None and len( args.hooks ) > 0:
+        for hookStr in args.hooks:
+            toks = hookStr.split( "/" )
+            name = toks[0]
+            addr = int( toks[1], 0 )
+            replacedInstr = [toks[2]]
+            emitTrampoline = True
+            
+            if len( replacedInstr ) == 0 or replacedInstr[0] == "":
+                emitTrampoline = False            
+            
+            hook = HookInfo( name, addr, replacedInstr, emitTrampoline ) 
+            hooks.append( hook )
+            # we add a section for every hook patch
+            sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
         
-        if len( replacedInstr ) == 0 or replacedInstr[0] == "":
-            emitTrampoline = False            
-        
-        hook = HookInfo( name, addr, replacedInstr, emitTrampoline ) 
-        hooks.append( hook )
-        # we add a section for every hook patch
-        sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
+    if args.hooks_file != None and len( args.hooks_file ) > 0:
+        for hooksFile in args.hooks_file:
+            with open( hooksFile ) as f:
+                yamlDict = yaml.load( f )
+                for key, value in yamlDict.items():
+                    if "addr" not in value:
+                        raise Exception( f"Hook {key}: Missing address" )
+                    
+                    addr = value["addr"]
+                    replacedInstr = ""
+                    if "replacedInstr" in value:
+                        replacedInstr = value["replacedInstr"]
+                    
+                    emitTrampoline = True
+                    if "emitTrampoline" in value and not value["emitTrampoline"]:
+                        emitTrampoline = False
+                    
+                    # if no replaced instr, then emitTrampoline must be false
+                    if replacedInstr == "" and emitTrampoline:
+                        raise Exception( f"Hook {key}: Replaced instruction must be specified when emitTrampoline: on" ) 
+                    
+                    hook = HookInfo( key, addr, [replacedInstr], emitTrampoline )
+                    hooks.append( hook )
+                    # we add a section for every hook patch
+                    sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
+                
        
     # sort sections by address so the linker doesn't mess up the addresses 
     sections = sorted( sections, key=lambda s: s.addr )

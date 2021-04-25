@@ -31,12 +31,9 @@ HOOK_SHARED_TEXT_END_ADDR 	= 0xA3CA94
 # 0xA8 / 4 = 42 words
 HOOK_SHARED_DATA_BEGIN_ADDR = 0xCE2CB8
 HOOK_SHARED_DATA_END_ADDR 	= 0xCE2D60
-
-# ASM function ported to PRX to make room for the loader
-HOOK_SUBSTITUTE = _shk_prx_elf_substitute/0xA3BE6C/""
 endif
 
-HOOKS := $(HOOK_SUBSTITUTE) $(HOOKS)
+HOOKS_FILES := $(PRX_DIR)\modules\$(GAME)\hooks.yml
 
 BIN2RPCS3PATCHARGS = \
 	--input "$(LOADER_BUILD_DIR)\loader.text.inject.bin" "$(LOADER_BUILD_DIR)\loader.text.bin" --address $(LOADER_INJECT_ADDR) $(LOADER_START_ADDR) \
@@ -45,7 +42,7 @@ BIN2RPCS3PATCHARGS = \
 SHKGENARGS = \
 	--tools_dir "$(TOOLS_DIR)" --elf_out_dir "$(LOADER_BUILD_DIR)" --prx_out_dir "$(PRX_OUT_DIR)" \
 	--toc $(TOC) --hook_shared_text_range $(HOOK_SHARED_TEXT_BEGIN_ADDR) $(HOOK_SHARED_TEXT_END_ADDR) \
-	--hook_shared_data_range $(HOOK_SHARED_DATA_BEGIN_ADDR) $(HOOK_SHARED_DATA_END_ADDR) --patch_file "$(PATCH_FILE)" --hooks $(HOOKS) \
+	--hook_shared_data_range $(HOOK_SHARED_DATA_BEGIN_ADDR) $(HOOK_SHARED_DATA_END_ADDR) --patch_file "$(PATCH_FILE)" --hooks_file $(HOOKS_FILES) \
 	--game $(GAME) --loader_inject_addr $(LOADER_INJECT_ADDR) --loader_text_range $(LOADER_START_ADDR) $(LOADER_END_ADDR) \
 	--sys_prx_load_module_addr $(LOADER_SYS_PRX_MODULE_LOAD_ADDR) --sys_prx_start_module_addr $(LOADER_SYS_PRX_MODULE_START_ADDR)
 
