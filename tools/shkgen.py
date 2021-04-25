@@ -103,7 +103,7 @@ ASM_PRX_HOOK_PTR_TABLE_ENTRY_TEMPLATE = \
 '''
 .global _shk_prx_ptr_{HOOK} 
 _shk_prx_ptr_{HOOK}:
-.int 0xDEADBABE
+.int _shk_prx_trampoline_{HOOK}
 '''
 
 MK_INJECT_TEMPLATE = \
