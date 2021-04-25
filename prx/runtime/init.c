@@ -22,9 +22,17 @@ extern void* _shk_prx_ptr_table;
 extern void _shk_prx_elf_substitute_impl();
 SHK_HOOK( void, _shk_prx_elf_substitute );
 
+#define LOADER_TRACE_LOG 0
+#define LOADER_LOG( msg, ... ) printf( "modprx loader: " msg, ##__VA_ARGS__ )
+#if LOADER_TRACE_LOG
+#define LOADER_TRACE( msg, ... ) printf( "modprx loader: " msg, ##__VA_ARGS__ )
+#else
+#define LOADER_TRACE( msg, ... ) do {} while ( false )
+#endif
+
 void initRuntime()
 {
-    printf( "modprx: initialising runtime\n" );
+    LOADER_LOG( "initialising runtime\n" );
 
     // initialize pointer to prx function pointer table in elf
     *(void**)&_shk_elf_prx_ptr_table = &_shk_prx_ptr_table;
@@ -32,19 +40,19 @@ void initRuntime()
     // bind hook to function that was substituted (copied to the prx) to make room for the loader
     SHK_BIND_HOOK( _shk_prx_elf_substitute, _shk_prx_elf_substitute_impl );
     
-    printf( "modprx: runtime initialised\n" );
+    LOADER_LOG( "runtime initialised\n" );
 }
 
 s32 _start( void )
 {
-    printf( "modprx: initialising\n" );
+    LOADER_LOG( "initialising\n" );
     initRuntime();
 
     // load config
-    printf( "modprx: loading config\n" );
+    LOADER_LOG( "loading config\n" );
     configLoad( "/app_home/config.yml" );
 
-    printf( "modprx: initialising modules\n" );
+    LOADER_LOG( "initialising modules\n" );
     for ( u32 i = 0; i < moduleGetModuleCount(); ++i )
         moduleInitModule( moduleGetModuleByIndex( i ) );
     
@@ -53,12 +61,12 @@ s32 _start( void )
 
 s32 _stop( void )
 {
-    printf( "modprx: shutting down\n" );
+    LOADER_LOG( "shutting down\n" );
 
-    printf( "modprx: shutting down modules\n" );
+    LOADER_LOG( "shutting down modules\n" );
     for ( u32 i = 0; i < moduleGetModuleCount(); ++i )
         moduleShutdownModule( moduleGetModuleByIndex( i ) );
 
-    printf( "modprx: shutdown finished\n" );
+    LOADER_LOG( "shutdown finished\n" );
     return SYS_PRX_STOP_OK;
 }

@@ -11,19 +11,27 @@
 
 // This is how you export functions for other C files to use.
 // The PRX loader calls these functions for you.
+
+/**
+ * @brief Initializes the test module.
+ */
 void testModuleInit( void );
+
+/**
+ * @brief Shutdown the test module.
+ */
 void testModuleShutdown( void );
 
 // You define your structs, functions, and other declarations here.
 // Note: do not put any definitions here. Meaning, no code, no assigned variables, only declarations.
 
 // This is how you define structures.
-typedef struct
+typedef struct exStruct2
 {
     char* stringValue; // C doesn't have strings, instead you use char*
 } exStruct2;
 
-typedef struct
+typedef struct exStruct
 {
     u32 intValue;   // this is how you define integer (4 byte) fields
     f32 floatValue; // this is how you define float fields

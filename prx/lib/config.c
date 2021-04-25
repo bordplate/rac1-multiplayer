@@ -15,13 +15,13 @@ const char* ConfigValueTypeNames[] =
 #undef CONFIG_END
 
 #define CONFIG_START() \
-    Config config = {
+    static Config sConfig = {
 
 #define CONFIG_END() \
     };
 
 #define CONFIG_SETTING( type, shortName, longName, defaultValue ) \
-    { #shortName, longName, CONFIG_VALUE_TYPE_##type, CONFIG_VALUE_CLASS_SINGLE, 1, { .type##_value = defaultValue } },
+    { #shortName, longName, CONFIG_VALUE_TYPE_##type, CONFIG_VALUE_CLASS_ATOMIC, 1, { .type##_value = defaultValue } },
 
 #define CONFIG_SETTING_ARRAY( type, shortName, longName, defaultValueCount, ... ) \
      { #shortName, longName, CONFIG_VALUE_TYPE_##type, CONFIG_VALUE_CLASS_ARRAY, defaultValueCount, { .type##_array = { __VA_ARGS__ } } },
@@ -53,7 +53,7 @@ u32 configGetSettingCount()
 ConfigSetting* configGetSettingByIndex( u32 index )
 {
     assert( index < configGetSettingCount() );
-    return ((ConfigSetting*)&config) + index;
+    return ((ConfigSetting*)&sConfig) + index;
 }
 
 ConfigSetting* configGetSettingByName( const char* name )
@@ -82,7 +82,7 @@ ConfigSetting* configGetSettingByLongName( const char* name )
 
 const Config* const configGet()
 {
-    return &config;
+    return &sConfig;
 }
 
 static u8 configStringBuffer[1024];
@@ -206,7 +206,7 @@ void configLoad( const char* path )
             continue;
         }
 
-        if ( setting->valueClass == CONFIG_VALUE_CLASS_SINGLE )
+        if ( setting->valueClass == CONFIG_VALUE_CLASS_ATOMIC )
         {
             if ( stringStartsWith( value, "[" ) && stringEndsWith( value, "]" ) )
             {

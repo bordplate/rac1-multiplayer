@@ -3,13 +3,48 @@
 
 #include "common.h"
 
-// MEMORY
+/**
+ * @brief Copies a range of memory from source to destination.
+ * 
+ * @param destination 
+ * @param destinationLength 
+ * @param source 
+ * @param count 
+ * @return void* 
+ */
 void* memoryCopy( void* destination, size_t destinationLength, const void* source, size_t count );
+
+/**
+ * @brief Clears a range of memory with 0 bytes.
+ * 
+ * @param destination 
+ * @param destinationLength 
+ * @return void* 
+ */
 void* memoryClear( void* destination, size_t destinationLength );
 
-// PARSE
+/**
+ * @brief Parses a signed decimal or hexadecimal integer value from the given string.
+ * 
+ * @param s The input string.
+ * @return s32 The parsed integer value.
+ */
 s32 intParse( const char* s );
+
+/**
+ * @brief Parses an unsigned decimal or hexadecimal integer value from the given string.
+ * 
+ * @param s The input string.
+ * @return s32 The parsed integer value.
+ */
 u32 uintParse( const char* s );
+
+/**
+ * @brief Parses a single-precision floating point value from the given string.
+ * 
+ * @param s The input string.
+ * @return s32 The parsed float value.
+ */
 f32 floatParse( const char* s );
 
 /**

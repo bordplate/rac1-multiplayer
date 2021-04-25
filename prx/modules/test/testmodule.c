@@ -18,6 +18,16 @@
 // See the header file for more information
 #include "testmodule.h"
 
+// Define logging functions for this module
+// Automatically add prefix to every logged messag 
+#define TEST_DEBUG_LOG 0
+#define TEST_LOG( msg, ... ) printf( "testmodule: " msg, ##__VA_ARGS__ )
+#if TEST_TRACE_LOG
+#define TEST_DEBUG( msg, ... ) printf( "testmodule: " msg, ##__VA_ARGS__ )
+#else
+#define TEST_DEBUG( msg, ... ) do {} while ( false )
+#endif
+
 //
 // Variable examples
 //
@@ -81,7 +91,7 @@ SHK_HOOK( void, setBgm, s32 id );
 static void setBgmHook( s32 id )
 {
     // prints current bgm id
-    printf( "set bgm: %d\n", id );
+    TEST_LOG( "set bgm: %d\n", id );
 
     // Copied & adapted from IDA decompiler output
     // Simple functions decompile pretty accurately
@@ -104,7 +114,7 @@ SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
 static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
 {
     // Prints the current sequence id
-    printf( "set seq: %d\n", seqId );
+    TEST_LOG( "set seq: %d\n", seqId );
 
     // Calling the original unhooked function is done like this.
     return SHK_CALL_HOOK( setSeq, seqId, params, paramsSize, r6 );
@@ -127,40 +137,40 @@ static long factorial( s32 n )
 void testModuleInit( void )
 {
     // These prints show up in the TTY log if everything is working as it should.
-    printf( "testmodule: hello world\n" );
+    TEST_LOG( "hello world\n" );
 
     if ( CONFIG_ENABLED( debug ) )
     {
         // Example 
-        printf( "testmodule: debug enabled via config\n" );
+        TEST_LOG( "debug enabled via config\n" );
     }
 
-    printf( "testmodule: Message of the day: %s\n", CONFIG_STRING( testMessage ) );
+    TEST_LOG( "Message of the day: %s\n", CONFIG_STRING( testMessage ) );
 
     u32 maxRandomMessageIndex = CONFIG_ARRAY_COUNT( testRmotd ) - 1;
     u32 randomMessageIndex = ( randomIntBetween(0, maxRandomMessageIndex) + 1 ) % maxRandomMessageIndex;
-    printf( "testmodule: Random message of the day: %s\n", CONFIG_STRING_ARRAY( testRmotd )[randomMessageIndex] );
+    TEST_LOG( "Random message of the day: %s\n", CONFIG_STRING_ARRAY( testRmotd )[randomMessageIndex] );
 
     // Example of printing values with printf.
     // See printf format reference on google for more info.
 
     // Print integer with %d
     s32 foo = 420;
-    printf( "foo = %d\n", foo );
+    TEST_LOG( "foo = %d\n", foo );
     
     // Print float with %f
     f32 bar = 69.0f;
-    printf( "bar = %f\n", bar );
+    TEST_LOG( "bar = %f\n", bar );
 
     // Print hex integer with 0x%08X
     s32 qux = 0xDEADBABE;
-    printf( "qux = 0x%08X\n", qux );
+    TEST_LOG( "qux = 0x%08X\n", qux );
 
     // Now all together
-    printf( "foo=%d bar=%f qux=0x%08X\n", foo, bar, qux );
+    TEST_LOG( "foo=%d bar=%f qux=0x%08X\n", foo, bar, qux );
 
     // Call your own functions
-    printf( "factorial of 5 is %d\n", factorial( 5 ) );
+    TEST_LOG( "factorial of 5 is %d\n", factorial( 5 ) );
 
     // Hooks must be 'bound' to a handler like this in the start function.
     // If you don't do this, the game will crash with a 0xDEADBABE access error
@@ -176,7 +186,7 @@ void testModuleInit( void )
     // TODO: create example thread
 
     // Our job is done. 
-    printf( "testmodule: goodbye world\n" );
+    TEST_LOG( "goodbye world\n" );
 }
 
 void testModuleShutdown( void )
