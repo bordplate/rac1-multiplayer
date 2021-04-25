@@ -1,0 +1,11 @@
+Debugging features: on
+
+# Test settings
+Test module: on # on/off, yes/no, and true/false can all be used for boolean values
+Test int: -42
+Test float: 42.69
+Test message: Hello World from YAML
+Test bool array: [true, false]
+Test int array: [-1, 2, 0xDEADBEEF]
+Test float array: [ 0.1, -13.52 ]
+Test random message of the day: [Hi from YAML, Hello from YAML, Quieres?]
