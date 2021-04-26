@@ -125,6 +125,7 @@ static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
     // Calling the original unhooked function is done like this.
     return SHK_CALL_HOOK( setSeq, seqId, params, paramsSize, r6 );
 }
+
 #endif
 
 // Calculates the factorial of N
@@ -223,6 +224,18 @@ TtyCmd ttyCommands[] =
     { NULL,     0,          NULL,           NULL } // terminator
 };
 
+#ifdef GAME_P5
+
+SHK_HOOK( u64, mainUpdate, f32 deltaTime );
+static u64 mainUpdateHook( f32 deltaTime )
+{
+    // Process TTY commands
+    ttyCmdProcess( ttyCommands );
+    return SHK_CALL_HOOK( mainUpdate, deltaTime );
+}
+
+#endif
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
@@ -277,7 +290,13 @@ void testModuleInit( void )
     // Here you could potentially start a thread that runs in the background, if you want to react to button inputs etc.
 
     // Start TTY command listener
+#ifdef GAME_P5
+    // Handle command handling in main update function
+    SHK_BIND_HOOK( mainUpdate, mainUpdateHook );
+#else
+    // Create new thread
     ttyCmdStartListenerThread( ttyCommands );
+#endif
 
     // Our job is done. 
     TEST_LOG( "goodbye world\n" );

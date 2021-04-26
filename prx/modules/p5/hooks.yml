@@ -4,6 +4,10 @@ _shk_prx_elf_substitute:
     addr: 0xA3BE6C
     emitTrampoline: no
 
+mainUpdate:
+    addr: 0x9209B0
+    replacedInstr: stdu r1, -0xD0(r1)
+
 setBgm:
     addr: 0x6CF04
     replacedInstr: stdu r1, -0x80(r1)
