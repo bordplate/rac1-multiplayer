@@ -48,6 +48,14 @@ u32 uintParse( const char* s );
 f32 floatParse( const char* s );
 
 /**
+ * @brief Parses a double-precision floating point value from the given string.
+ * 
+ * @param s The input string.
+ * @return s32 The parsed double value.
+ */
+f64 doubleParse( const char* s );
+
+/**
  * @brief Prints a hex dump of the specified memory range to the console.
  * 
  * @param description The description of the hex dump
@@ -55,5 +63,49 @@ f32 floatParse( const char* s );
  * @param length The length/size of the memory range, starting from the start address, to dump.
  */
 void hexDump( char *description, void *address, u32 length );
+
+/**
+ * @brief Reads a line of input from the TTY terminal.
+ * 
+ * @return const char* 
+ */
+const char* ttyReadLine();
+
+
+typedef void(*threadEntryFn)( u64 arg );
+
+/**
+ * @brief Creates a new thread with a specified entry (main) function, an argument, and a name, in suspended state.
+ * 
+ * @param entry The entrypoint function of the thread.
+ * @param arg The argument passed to the entrypoint function.
+ * @param name The name of the thread.
+ * @return u64 
+ */
+u64 threadCreate( threadEntryFn entry, u64 arg, const char* name );
+
+/**
+ * @brief Runs the specified thread.
+ * 
+ * @param threadId 
+ */
+void threadRun( u64 threadId );
+
+/**
+ * @brief Creates a new thread with a specified entry (main) function, an argument, and a name, an executes it.
+ * 
+ * @param entry 
+ * @param arg 
+ * @param name 
+ * @return u64 
+ */
+u64 threadCreateAndRun( threadEntryFn entry, u64 arg, const char* name );
+
+/**
+ * @brief Sleeps the current thread for a specified amount of milliseconds.
+ * 
+ * @param ms The number of milliseconds to sleep.
+ */
+void threadSleep( u64 ms );
 
 #endif

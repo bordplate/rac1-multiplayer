@@ -332,4 +332,19 @@ char* stringTrimLeft( char* destination, size_t destinationLength, const char* s
  */
 char* stringTrimRight( char* destination, size_t destinationLength, const char* source );
 
+/**
+ * @brief Splits a string using the given seperator.
+ * 
+ * @param outputBuffer The output buffer to which the split strings are written.
+ * @param outputBufferSize The size of the output buffer.
+ * @param splits The array of string pointers to where the start of each string.
+ * @param splitsBufferSize The size of the string pointer array.
+ * @param splitCount The number of total splits
+ * @param input The input string
+ * @param seperator The seperator string
+ */
+void stringSplit( char* outputBuffer, size_t outputBufferSize, 
+    char** splits, size_t splitsBufferSize, u32* splitCount,
+    const char* input, const char* seperator );
+
 #endif

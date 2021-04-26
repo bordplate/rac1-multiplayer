@@ -1,4 +1,8 @@
 #include "utils.h"
+#include <sys/tty.h>
+#include <sys/ppu_thread.h>
+#include <sys/time.h>
+#include <sys/timer.h>
 
 void* memoryCopy( void* destination, size_t destinationLength, const void* source, size_t count )
 {
@@ -201,14 +205,17 @@ done:
     return d;
 }
 
-f32 floatParse( const char* s )
+f64 doubleParse( const char* s )
 {
     char* end;
     f64 val = vim_strtod( s, &end );
-    return ( f32 )val;
+    return val;
 }
 
-
+f32 floatParse( const char* s )
+{
+    return ( f32 )doubleParse( s );
+}
 
 /*
 Copyright 2018 Dominik Liebler
@@ -269,4 +276,65 @@ void hexDump( char* desc, void* addr, u32 len )
 
     // And print the final ASCII bit.
     printf( "  %s\n", buff );
+}
+
+const char* ttyReadLine()
+{
+    static u8 buffer[1024];
+    static s32 bufferIndex = 0;
+
+    memoryClear( buffer, sizeof( buffer ) );
+    u32 bytesRead;
+    int err = sys_tty_read( SYS_TTYP_USER1, buffer, sizeof( buffer ), &bytesRead );
+    assert( err == CELL_OK );
+    //printf( "tty read:%d buffer:%s\n", bytesRead, buffer );
+
+    assert( bytesRead < sizeof( buffer ) );
+    return (const char*)buffer;
+}
+
+typedef struct 
+{
+	threadEntryFn entry;
+	void* tls;
+} ppu_thread_param_t;
+
+static int _sys_ppu_thread_create( u64* thread_id, ppu_thread_param_t* param, u64 arg, u64 unk, s32 prio, u32 _stacksz, u64 flags, const char* threadname )
+{
+    system_call_8( 52, (u64)(u32)thread_id, (u64)(u32)param, (u64)arg, (u64)unk, (u64)prio, (u64)_stacksz, (u64)flags, (u64)(u32)threadname );
+    return_to_user_prog( int );
+}
+
+static int _sys_ppu_thread_start(sys_ppu_thread_t thread_id)
+{
+    system_call_1( 53, thread_id );
+    return_to_user_prog( int );
+}
+
+u64 threadCreate( threadEntryFn entry, u64 arg, const char* name )
+{
+    sys_ppu_thread_t threadId;
+    ppu_thread_param_t param = { entry, NULL };
+    int err = _sys_ppu_thread_create( &threadId, &param, arg, 0, 0, 1024 * 1024, 0, name );
+    assert( err == CELL_OK );
+    return threadId;
+}
+
+void threadRun( u64 threadId )
+{
+    int err = _sys_ppu_thread_start( threadId );
+    assert( err == CELL_OK );
+}
+
+u64 threadCreateAndRun( threadEntryFn entry, u64 arg, const char* name )
+{
+    u64 threadId = threadCreate( entry, arg, name );
+    threadRun( threadId );
+    return threadId;
+}
+
+void threadSleep( u64 ms )
+{
+    // millisecond -> microsecond
+    sys_timer_usleep( ms * 1000 );
 }

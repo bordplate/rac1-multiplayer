@@ -81,7 +81,7 @@ static exStruct exampleStructArray[] =
 // R, meaning result, and 6, the number of parameters
 // A void function does not return anything, and requires you to use SHK_FUNCTION_V<N> instead.
 // If you use vscode youll get descriptive tooltips when you hover these macros.
-SHK_FUNCTION_R6( 0x10F0D4, s32, testPlaySfx, s32, a0, s32, a1, s32, a2, s32, a3, s32, a4, s32, a5 );
+SHK_FUNCTION_R6( 0x10F0D4, s32, playSfx, s32, a0, s32, a1, s32, a2, s32, a3, s32, a4, s32, a5 );
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( void, setBgm, s32 id );
@@ -99,7 +99,7 @@ static void setBgmHook( s32 id )
     s32 result; // r3
 
     v1 = id;
-    testPlaySfx( 0, 0, id, 0, -1, -1 );
+    playSfx( 0, 0, id, 0, -1, -1 );
 
     // This is how you write to memory addresses in C
     *(s32*)0xCFF4C0 = result;
@@ -110,11 +110,17 @@ static void setBgmHook( s32 id )
     // SHK_CALL_ORIGINAL( setBgm, id + 1 );
 }
 
+SHK_FUNCTION_R4( 0x10DB4, s32, setSeq, s32, seqId, void*, params, s32, paramsSize, s32, r6 );
+
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
 static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
 {
     // Prints the current sequence id
-    TEST_LOG( "set seq: %d\n", seqId );
+    TEST_LOG( "set seq: id=%d paramsSize=%d r6=%d\n", seqId, paramsSize, r6 );
+
+    // Use hex dump to dump the param data
+    if ( params != NULL && paramsSize > 0 )
+        hexDump( "seq params", params, paramsSize );
 
     // Calling the original unhooked function is done like this.
     return SHK_CALL_HOOK( setSeq, seqId, params, paramsSize, r6 );
@@ -130,6 +136,92 @@ static long factorial( s32 n )
     else
         return ( n * factorial( n - 1 )) ;
 }
+
+static TtyCmdStatus ttyAddCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+    f32 a = floatParse( args[0] );
+    f32 b = floatParse( args[1] );
+    printf( "%f\n", a + b );
+    return TTY_CMD_STATUS_OK;
+}
+
+static TtyCmdStatus ttyEchoCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+    for ( u32 i = 0; i < argc; ++i )
+    {
+        printf( "%s ", args[i] );
+    }
+
+    printf( "\n" );
+    return TTY_CMD_STATUS_OK;
+}
+
+static TtyCmdStatus ttySetBgmCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+    s32 id = intParse( args[0] );
+
+#if GAME_P5
+    playSfx( 0, 0, id, 0, -1, -1 );
+#endif
+
+    return TTY_CMD_STATUS_OK;
+}
+
+typedef struct
+{
+    s16 fieldMajorId;
+    s16 fieldMinorId;
+    s16 envMajorId;
+    s16 envMinorId;
+    s16 field08;
+    s16 field0a;
+    s16 field0c;
+    s16 field0e;
+    s16 field10;
+    s16 field12;
+    s16 field14;
+    s16 field16;
+    s16 field18;
+    s16 field1a;
+    s16 field1c;
+    s16 field1e;
+} seqFieldParams;
+
+static TtyCmdStatus ttySetSeqCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+    s32 id = intParse( args[0] );
+
+#if GAME_P5
+    if ( id == 3 )
+    {
+        seqFieldParams params = {};
+        params.fieldMajorId = intParse( args[1] );
+        params.fieldMinorId = intParse( args[2] );
+        params.envMajorId = params.fieldMajorId;
+        params.envMinorId = params.fieldMinorId;
+        params.field08 = 0xb;
+        params.field0c = -1;
+        setSeq( id, &params, sizeof(seqFieldParams), 0 );
+    }
+    else
+    {
+        setSeq( id, NULL, 0, 0 );
+    }
+#endif
+
+    return TTY_CMD_STATUS_OK;
+}
+
+// List of commands that can be handled by the command listener
+TtyCmd ttyCommands[] =
+{
+    // command  arg count   command func    userdata
+    { "add",    2,          ttyAddCmd,      NULL },
+    { "echo",   -1,         ttyEchoCmd,     NULL }, // expects any number of arguments
+    { "setbgm", 1,          ttySetBgmCmd,   NULL },
+    { "setseq", -1,         ttySetSeqCmd,   NULL },
+    { NULL,     0,          NULL,           NULL } // terminator
+};
 
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
@@ -183,7 +275,9 @@ void testModuleInit( void )
 #endif
 
     // Here you could potentially start a thread that runs in the background, if you want to react to button inputs etc.
-    // TODO: create example thread
+
+    // Start TTY command listener
+    ttyCmdStartListenerThread( ttyCommands );
 
     // Our job is done. 
     TEST_LOG( "goodbye world\n" );

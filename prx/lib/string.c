@@ -439,6 +439,70 @@ char* stringToUpper( char* destination, size_t destinationLength, const char* so
     return destination;
 }
 
+static void stringSplitRange( char* outputBuffer, size_t outputBufferSize, u32* outputBufferIndex, 
+    char** splits, size_t splitsBufferSize, u32* splitIndex,
+    u32 seperatorIndex, u32 seperatorLength, u32* splitStartIndex, const char* input )
+{
+    u32 splitLength = seperatorIndex - *splitStartIndex;
+    u32 splitLengthTerm = splitLength + 1;
+
+    assert( *outputBufferIndex + splitLengthTerm < outputBufferSize );
+    memcpy( outputBuffer + *outputBufferIndex, input + *splitStartIndex, splitLength );
+
+    // set split pointer to buffer
+    assert( *splitIndex < splitsBufferSize );
+    splits[ *splitIndex ] = &outputBuffer[ *outputBufferIndex ];
+    *splitIndex = *splitIndex + 1;
+
+    // write null terminator to buffer
+    *outputBufferIndex = *outputBufferIndex + splitLength;
+    outputBuffer[ *outputBufferIndex ] = 0;
+    *outputBufferIndex = *outputBufferIndex + 1;
+    
+    // next split begins right after seperator
+    *splitStartIndex = seperatorIndex + seperatorLength;
+}
+
+void stringSplit( char* outputBuffer, size_t outputBufferSize, 
+    char** splits, size_t splitsBufferSize, u32* splitCount,
+    const char* input, const char* seperator )
+{
+    u32 inputLength = stringGetLength( input );
+    u32 seperatorLength = stringGetLength( seperator );
+    
+    u32 inputSplitStartIndex = 0;
+    u32 splitIndex = 0;
+    u32 outputBufferIndex = 0;
+
+    for ( u32 i = 0; i < inputLength; ++i )
+    {
+        if ( i + seperatorLength > inputLength - 1 )
+            break;
+        
+        // find occurence of seperator in string
+        bool matches = true;
+        for ( u32 j = 0; j < seperatorLength; ++j )
+        {
+            matches = input[i + j] == seperator[ j ];
+            if ( !matches )
+                break;
+        }
+
+        if ( matches )
+        {
+            stringSplitRange( outputBuffer, outputBufferSize, &outputBufferIndex, 
+                splits, splitsBufferSize, &splitIndex,
+                i, seperatorLength, &inputSplitStartIndex, input );
+        }
+    }
+    
+    stringSplitRange( outputBuffer, outputBufferSize, &outputBufferIndex, 
+        splits, splitsBufferSize, &splitIndex,
+        inputLength, 0, &inputSplitStartIndex, input );
+    
+    *splitCount = splitIndex;
+}
+
 // int main()
 // {
 //     assert( stringGetLength("hello") == 5 );

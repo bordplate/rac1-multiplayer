@@ -25,4 +25,7 @@
 // SHK hooking functionality
 #include "shk.h"
 
+// TTY command functionality
+#include "ttycmd.h"
+
 #endif
