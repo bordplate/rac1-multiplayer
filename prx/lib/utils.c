@@ -1,5 +1,4 @@
 #include "utils.h"
-#include <sys/tty.h>
 #include <sys/ppu_thread.h>
 #include <sys/time.h>
 #include <sys/timer.h>
@@ -276,21 +275,6 @@ void hexDump( char* desc, void* addr, u32 len )
 
     // And print the final ASCII bit.
     printf( "  %s\n", buff );
-}
-
-const char* ttyReadLine()
-{
-    static u8 buffer[1024];
-    static s32 bufferIndex = 0;
-
-    memoryClear( buffer, sizeof( buffer ) );
-    u32 bytesRead;
-    int err = sys_tty_read( SYS_TTYP_USER1, buffer, sizeof( buffer ), &bytesRead );
-    assert( err == CELL_OK );
-    //printf( "tty read:%d buffer:%s\n", bytesRead, buffer );
-
-    assert( bytesRead < sizeof( buffer ) );
-    return (const char*)buffer;
 }
 
 typedef struct 
