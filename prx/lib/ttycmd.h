@@ -24,6 +24,12 @@ typedef enum TtyCmdStatus
      * 
      */
     TTY_CMD_STATUS_INVALID_ARGC,
+
+    /**
+     * @brief The TTY command was unable to execute successfully due to an error.
+     * 
+     */
+    TTY_CMD_STATUS_ERROR,
 } TtyCmdStatus;
 
 

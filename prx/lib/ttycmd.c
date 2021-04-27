@@ -73,6 +73,10 @@ void ttyCmdProcessLine( TtyCmd* cmds, const char* line )
                     TTY_LOG( "command %s expected %s, got %d\n", cmd->name, error, argc );
                     break;
 
+                case TTY_CMD_STATUS_ERROR:
+                    TTY_LOG( "command %s failed to execute due to an error: %s\n", cmd->name, error );
+                    break;
+
                 default:
                     TTY_LOG( "command %s returned unknown status code %d\n", cmd->name, status );
                     break;
