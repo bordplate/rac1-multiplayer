@@ -15,26 +15,13 @@ PRX_BUILD_TMP_DIR = $(PRX_BUILD_DIR)\tmp
 PRX_BUILD_OUT_DIR = $(PRX_BUILD_DIR)\bin
 BIN2RPCS3PATCH = $(TOOLS_DIR)\bin2rpcs3patch.py
 
-ifeq ($(GAME), P5)
-# NOTE: might be different between versions...?
-TOC									= 0xD01288
-LOADER_INJECT_ADDR 					= 0x10250
-LOADER_START_ADDR 					= 0xA3BE70 # .sub_A3BAD0 + 4
-LOADER_END_ADDR 					= 0xA3BEF0 # + 0x80s
-LOADER_SYS_PRX_MODULE_LOAD_ADDR 	= 0xB45E5C
-LOADER_SYS_PRX_MODULE_START_ADDR 	= 0XB45D3C
+# include game specific makefile settings
+include $(GAME).mk
 
-# 745 instructions, around ~200 hooks
-HOOK_SHARED_TEXT_BEGIN_ADDR = 0xA3BEF0 # LOADER_START_ADDR + 0x80
-HOOK_SHARED_TEXT_END_ADDR 	= 0xA3CA94 
-
-# 0xA8 / 4 = 42 words
-HOOK_SHARED_DATA_BEGIN_ADDR = 0xCE2CB8
-HOOK_SHARED_DATA_END_ADDR 	= 0xCE2D60
-endif
-
+# merge user specified hooks files with the game specific one
 HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)\modules\$(GAME)\hooks.yml
 
+# workaround for hooks argument not accepting an empty list
 ifneq ($(HOOKS),)
 HOOKSARG = --hooks $(HOOKS)
 endif

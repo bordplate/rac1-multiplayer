@@ -199,9 +199,9 @@ def fillTemplate( template, **kwargs ):
 def writeAsmInjectHookSharedData( f ):
     f.write( fillTemplate( ASM_INJECT_HOOK_PTR_TABLE_TEMPLATE ) + "\n" )
     
-def writeAsmPrxHookTrampoline( f, hook, tocAddr ):
+def writeAsmPrxHookTrampoline( f, hook ):
     if hook.emitTrampoline:   
-        t = fillTemplate( ASM_PRX_HOOK_TRAMPOLINE_TEMPLATE, HOOK=hook.name, TOC=hex( tocAddr ) )
+        t = fillTemplate( ASM_PRX_HOOK_TRAMPOLINE_TEMPLATE, HOOK=hook.name, TOC=hex( hook.toc ) )
         for i, instr in enumerate( hook.replacedInstr ):
             t = setTemplateVar( t, f"{{INSTR{i}}}", instr )
         f.write( t + "\n" )
@@ -234,11 +234,12 @@ class LinkerSectionInfo:
         self.name = name
     
 class HookInfo:
-    def __init__( self, name: str, addr: int, replacedInstr: list, emitTrampoline: bool ):
+    def __init__( self, name: str, addr: int, replacedInstr: list, emitTrampoline: bool, toc: int ):
         self.name = name
         self.addr = addr
         self.replacedInstr = replacedInstr
         self.emitTrampoline = emitTrampoline
+        self.toc = toc
         
         # procedural data
         self.index = None
@@ -246,6 +247,11 @@ class HookInfo:
         
 def hexInt( s ):
     return int( s, 0 )
+
+def isNoneOrEmptyStr( s ):
+    if s == None: return True
+    if isinstance( s, str ) and s == "": return True
+    return False
 
 def main():
     parser = argparse.ArgumentParser()
@@ -256,7 +262,7 @@ def main():
     parser.add_argument( '--loader_text_range', type=hexInt, required=True, nargs="+", help='address at which the loader code is placed')
     parser.add_argument( '--sys_prx_load_module_addr', type=hexInt, required=True, help='address of sys_prx_load_module')
     parser.add_argument( '--sys_prx_start_module_addr', type=hexInt, required=True, help='address of sys_prx_start_module')
-    parser.add_argument( '--toc', type=hexInt, required=True, help='TOC (r2) address of the functions to patch' )
+    parser.add_argument( '--toc', type=hexInt, required=True, help='default TOC (r2) address of the functions to patch' )
     parser.add_argument( '--hook_shared_text_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared code for hooking is stored when injected' )
     parser.add_argument( '--hook_shared_data_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared data for hooking is stored when injected' )
     parser.add_argument( '--hooks', type=str, nargs='+', required=False, help='space separated list of hooks in the format of HOOKNAME,0xADDRESS,REPLACED_INSTRUCTION' )
@@ -297,7 +303,7 @@ def main():
             if len( replacedInstr ) == 0 or replacedInstr[0] == "":
                 emitTrampoline = False            
             
-            hook = HookInfo( name, addr, replacedInstr, emitTrampoline ) 
+            hook = HookInfo( name, addr, replacedInstr, emitTrampoline, args.toc ) 
             hooks.append( hook )
             # we add a section for every hook patch
             sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
@@ -307,12 +313,12 @@ def main():
             with open( hooksFile ) as f:
                 yamlDict = yaml.load( f )
                 for key, value in yamlDict.items():
-                    if "addr" not in value:
+                    if "addr" not in value or isNoneOrEmptyStr( value["addr"] ):
                         raise Exception( f"Hook {key}: Missing address" )
                     
                     addr = value["addr"]
-                    replacedInstr = ""
-                    if "replacedInstr" in value:
+                    replacedInstr = None
+                    if "replacedInstr" in value and not isNoneOrEmptyStr( value["replacedInstr"] ):
                         replacedInstr = value["replacedInstr"]
                     
                     emitTrampoline = True
@@ -320,10 +326,14 @@ def main():
                         emitTrampoline = False
                     
                     # if no replaced instr, then emitTrampoline must be false
-                    if replacedInstr == "" and emitTrampoline:
+                    if replacedInstr == None and emitTrampoline:
                         raise Exception( f"Hook {key}: Replaced instruction must be specified when emitTrampoline: on" ) 
                     
-                    hook = HookInfo( key, addr, [replacedInstr], emitTrampoline )
+                    toc = args.toc
+                    if "toc" in value and not isNoneOrEmptyStr( value["toc"] ):
+                        toc = value["toc"]
+                    
+                    hook = HookInfo( key, addr, [replacedInstr], emitTrampoline, toc )
                     hooks.append( hook )
                     # we add a section for every hook patch
                     sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
@@ -403,7 +413,7 @@ def main():
         
         # write hook trampolines
         for hook in hooks:
-            writeAsmPrxHookTrampoline( f, hook, args.toc )
+            writeAsmPrxHookTrampoline( f, hook )
                 
     # define linker symbols to be included with the module
     with open( os.path.join( args.prx_out_dir, "shk_prx.gen.mk" ), "w" ) as f:
@@ -418,7 +428,7 @@ def main():
         # write symbol for eboot->prx pointer for hook handler function pointer table
         writeLdDefSym( f, f"_shk_elf_prx_ptr_table", hex( curDataAddr ) )
         
-        # write symbol for ELF TOC
+        # write symbol for main ELF TOC
         writeLdDefSym( f, f"_shk_elf_toc", hex( args.toc ) )
         
         for hook in hooks:
