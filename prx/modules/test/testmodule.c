@@ -217,16 +217,16 @@ static TtyCmdStatus ttySetSeqCmd( TtyCmd* cmd, const char** args, u32 argc, char
 TtyCmd ttyCommands[] =
 {
     TTY_CMD( ttyAddCmd, "add", "Adds 2 numbers and prints the result", TTY_CMD_FLAG_NONE,
-        TTY_CMD_PARAM( "a", "The first number to add", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_PTYPE_FLOAT ), 
-        TTY_CMD_PARAM( "b", "The second number to add", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_PTYPE_FLOAT )),
+        TTY_CMD_PARAM( "a", "The first number to add", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_FLOAT ), 
+        TTY_CMD_PARAM( "b", "The second number to add", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_FLOAT )),
 
     TTY_CMD( ttyEchoCmd, "echo", "Prints the given input back to you", TTY_CMD_FLAG_VARARGS ),
 
     TTY_CMD( ttySetBgmCmd, "setbgm", "Sets the current BGM using the Cue ID", TTY_CMD_FLAG_NONE,
-        TTY_CMD_PARAM( "cueId", "The Cue ID of the BGM to play", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_PTYPE_INT )),
+        TTY_CMD_PARAM( "cueId", "The Cue ID of the BGM to play", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
         
     TTY_CMD( ttySetSeqCmd, "setseq", "Sets the current sequence", TTY_CMD_FLAG_VARARGS,
-        TTY_CMD_PARAM( "seqId", "The sequence ID", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_PTYPE_INT ) ),
+        TTY_CMD_PARAM( "seqId", "The sequence ID", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT ) ),
 
     TTY_CMD_END(), 
 };

@@ -185,7 +185,7 @@ static TtyCmdStatus helpCmd( TtyCmd* cmd, const char** args, u32 argc, char** er
 
 #define HELP_CMD( name ) \
     TTY_CMD( helpCmd, name, "Displays the command help text", TTY_CMD_FLAG_NONE, \
-        TTY_CMD_PARAM( "command", "The command to display info over", TTY_CMD_PARAM_FLAG_OPTIONAL, TTY_PTYPE_STRING ) )
+        TTY_CMD_PARAM( "command", "The command to display info over", TTY_CMD_PARAM_FLAG_OPTIONAL, TTY_CMD_PARAM_TYPE_STRING ) )
 
 static TtyCmd sBuiltinCmds[] = 
 {

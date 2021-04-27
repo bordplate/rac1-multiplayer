@@ -69,17 +69,22 @@ typedef enum TtyCmdFlags
 /**
  * @brief TTY command string parameter type.
  */
-#define TTY_PTYPE_STRING   "string"
+#define TTY_CMD_PARAM_TYPE_STRING   "string"
 
 /**
  * @brief TTY command int parameter type.
  */
-#define TTY_PTYPE_INT      "int"
+#define TTY_CMD_PARAM_TYPE_INT      "int"
 
 /**
  * @brief TTY command float parameter type.
  */
-#define TTY_PTYPE_FLOAT    "float"
+#define TTY_CMD_PARAM_TYPE_FLOAT    "float"
+
+/**
+ * @brief TTY command float parameter type.
+ */
+#define TTY_CMD_PARAM_TYPE_BOOL     "bool"
 
 /**
  * @brief TTY command parameter flags.
