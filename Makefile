@@ -63,7 +63,8 @@ setup:
 #	endif
 
 # copy userconfig from template
-	-if not exist userconfig.mk copy userconfig_$(GAME).template.mk userconfig.mk
+	-copy userconfig.mk userconfig.mk.bak
+	-copy userconfig_$(GAME).template.mk userconfig.mk
 
 # create folders used during build
 	-mkdir "$(LOADER_BUILD_DIR)"
