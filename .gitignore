@@ -1,5 +1,5 @@
 *.7z
-userconfig.mk
+userconfig*
 .vscode/*
 loader/build/*
 prx/build/*

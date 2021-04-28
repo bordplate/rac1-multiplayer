@@ -16,7 +16,7 @@ PRX_BUILD_OUT_DIR = $(PRX_BUILD_DIR)\bin
 BIN2RPCS3PATCH = $(TOOLS_DIR)\bin2rpcs3patch.py
 
 # include game specific makefile settings
-include $(GAME).mk
+include config_$(GAME).mk
 
 # merge user specified hooks files with the game specific one
 HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)\modules\$(GAME)\hooks.yml
@@ -28,7 +28,7 @@ endif
 
 BIN2RPCS3PATCHARGS = \
 	--input "$(LOADER_BUILD_DIR)\loader.text.inject.bin" "$(LOADER_BUILD_DIR)\loader.text.bin" --address $(LOADER_INJECT_ADDR) $(LOADER_START_ADDR) \
-	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_elf_loader
+	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_elf_loader_$(GAME)
 
 SHKGENARGS = \
 	--tools_dir "$(TOOLS_DIR)" --elf_out_dir "$(LOADER_BUILD_DIR)" --prx_out_dir "$(PRX_OUT_DIR)" \
@@ -57,8 +57,13 @@ clean:
 	cd "$(PRX_DIR)" && "$(MAKE)" clean
 
 setup:
+# make sure GAME variable is set for initial setup
+#	ifeq ($(GAME),)
+#	$(error Need to specify GAME variable for initial setup)
+#	endif
+
 # copy userconfig from template
-	-if not exist userconfig.mk copy userconfig.template.mk userconfig.mk
+	-if not exist userconfig.mk copy userconfig_$(GAME).template.mk userconfig.mk
 
 # create folders used during build
 	-mkdir "$(LOADER_BUILD_DIR)"
