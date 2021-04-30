@@ -18,6 +18,15 @@ BIN2RPCS3PATCH = $(TOOLS_DIR)\bin2rpcs3patch.py
 # include game specific makefile settings
 include config_$(GAME).mk
 
+PATCH_FILE ?= $(RPCS3_DIR)\patches\patch.yml
+
+# handle GAME/DISC category
+ifeq ($(GAME_CAT), HDD)
+GAME_DIR ?= $(RPCS3_DIR)\dev_hdd0\game\$(GAME_ID)\USRDIR
+else
+GAME_DIR ?= $(RPCS3_DIR)\dev_hdd0\disc\$(GAME_ID)\PS3_GAME\USRDIR
+endif
+
 # merge user specified hooks files with the game specific one
 HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)\modules\$(GAME)\hooks.yml
 

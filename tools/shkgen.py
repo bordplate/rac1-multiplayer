@@ -314,7 +314,7 @@ def main():
     if args.hooks_file != None and len( args.hooks_file ) > 0:
         for hooksFile in args.hooks_file:
             with open( hooksFile ) as f:
-                yamlDict = yaml.load( f )
+                yamlDict = yaml.load( f, Loader=yaml.SafeLoader )
                 for key, value in yamlDict.items():
                     if "addr" not in value or isNoneOrEmptyStr( value["addr"] ):
                         raise Exception( f"Hook {key}: Missing address" )

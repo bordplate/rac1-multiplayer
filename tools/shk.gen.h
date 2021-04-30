@@ -2613,3 +2613,5 @@
  */
 #define SHK_FUNCTION_DEFINE_16( addr, ret, name, a1t, a1, a2t, a2, a3t, a3, a4t, a4, a5t, a5, a6t, a6, a7t, a7, a8t, a8, a9t, a9, a10t, a10, a11t, a11, a12t, a12, a13t, a13, a14t, a14, a15t, a15, a16t, a16 )\
     SHK_FUNCTION_DEFINE_TOC_16( SHK_ELF_TOC, addr, ret, name, a1t, a1, a2t, a2, a3t, a3, a4t, a4, a5t, a5, a6t, a6, a7t, a7, a8t, a8, a9t, a9, a10t, a10, a11t, a11, a12t, a12, a13t, a13, a14t, a14, a15t, a15, a16t, a16 )
+
+

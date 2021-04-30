@@ -18,6 +18,9 @@
 // See the header file for more information
 #include "testmodule.h"
 
+// Include our shared "game" header. 
+#include "test.h"
+
 // Define logging functions for this module
 // Automatically add prefix to every logged messag 
 #define TEST_DEBUG_LOG 0
@@ -28,32 +31,15 @@
 #define TEST_DEBUG( msg, ... ) do {} while ( false )
 #endif
 
+// IMPORTANT: declare anything you don't want publicly accessible as 'static'
+// Failure to do so will cause redefinition errors whenever you or someone else happens
+// to use the same name for a variable or function.
+
 //
 // Variable examples
 //
 // Example string
 static const char* helloWorld = "Hello World";
-
-// Example string array
-static const char* partyMemberNames[] =
-{
-    "None",
-    "Joker",
-    "Ryuji",
-    "Morgana",
-    "Ann",
-    "Yusuke",
-    "Makoto",
-    "Haru",
-    "Futaba",
-    "Akechi"
-};
-
-// You'd use it like so:
-static const char* getPartyMemberName( s32 id )
-{
-    return partyMemberNames[ id ];
-}
 
 // Example global variables
 // Note: to make these accessible in other C files, you'll have to add their 
@@ -77,11 +63,6 @@ static exStruct exampleStructArray[] =
 };
 
 #ifdef GAME_P5
-// Game functions are declared like this before you can use them
-// R, meaning result, and 6, the number of parameters
-// A void function does not return anything, and requires you to use SHK_FUNCTION_V<N> instead.
-// If you use vscode youll get descriptive tooltips when you hover these macros.
-SHK_FUNCTION_R6( 0x10F0D4, s32, playSfx, s32, a0, s32, a1, s32, a2, s32, a3, s32, a4, s32, a5 );
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( void, setBgm, s32 id );
@@ -99,7 +80,9 @@ static void setBgmHook( s32 id )
     s32 result; // r3
 
     v1 = id;
-    playSfx( 0, 0, id, 0, -1, -1 );
+
+    // Call our function from the shared game header
+    testPlaySfx( 0, 0, id, 0, -1, -1 );
 
     // This is how you write to memory addresses in C
     *(s32*)0xCFF4C0 = result;
@@ -109,8 +92,6 @@ static void setBgmHook( s32 id )
     // I adapted the pseudocode output of IDA to make changes
     // SHK_CALL_ORIGINAL( setBgm, id + 1 );
 }
-
-SHK_FUNCTION_R4( 0x10DB4, s32, setSeq, s32, seqId, void*, params, s32, paramsSize, s32, r6 );
 
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
 static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
@@ -161,8 +142,9 @@ static TtyCmdStatus ttySetBgmCmd( TtyCmd* cmd, const char** args, u32 argc, char
 {
     s32 id = intParse( args[0] );
 
-#if GAME_P5
-    playSfx( 0, 0, id, 0, -1, -1 );
+#ifdef GAME_P5
+    // only want to call this when compiling for p5
+    testPlaySfx( 0, 0, id, 0, -1, -1 );
 #endif
 
     return TTY_CMD_STATUS_OK;
@@ -188,11 +170,35 @@ typedef struct
     s16 field1e;
 } seqFieldParams;
 
+typedef struct
+{
+    s16 field00;        // 16
+    s16 field04;        // 0
+    s16 encounterId;    // 100
+    s16 fieldMajorId;   // 252
+    s16 fieldMinorId;   // 2
+    s16 envMajorId;     // 252
+    s16 envMinorId;     // 2
+    s16 field10;        // 0
+    s16 field12;        // 0
+    s16 field14;        // 0
+    s16 field16;        // 0
+    s16 field18;        // 0
+    s16 field1a;        // 0
+    s16 field1c;        // 0
+    s16 field1e;        // 0
+    s16 field20;        // -1
+    s16 field22;        // -1
+    s16 field24;        // -1
+    s16 field26;        // -1
+    s16 field28;        // -1
+} seqBtlParams;
+
 static TtyCmdStatus ttySetSeqCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
 {
     s32 id = intParse( args[0] );
 
-#if GAME_P5
+#ifdef GAME_P5
     if ( id == 3 )
     {
         seqFieldParams params = {};
@@ -202,11 +208,27 @@ static TtyCmdStatus ttySetSeqCmd( TtyCmd* cmd, const char** args, u32 argc, char
         params.envMinorId = params.fieldMinorId;
         params.field08 = 0xb;
         params.field0c = -1;
-        setSeq( id, &params, sizeof(seqFieldParams), 0 );
+        testSetSeq( id, &params, sizeof(seqFieldParams), 0 );
+    }
+    else if ( id == 4 )
+    {
+        seqBtlParams params = {};
+        params.field00 = 16;
+        params.encounterId = intParse( args[1] );
+        params.fieldMajorId = 252;
+        params.fieldMinorId = 2;
+        params.envMajorId = 252;
+        params.envMinorId = 2;
+        params.field20 = -1;
+        params.field22 = -1;
+        params.field24 = -1;
+        params.field26 = -1;
+        params.field28 = -1;
+        testSetSeq( id, &params, sizeof(seqBtlParams), 4 );
     }
     else
     {
-        setSeq( id, NULL, 0, 0 );
+        testSetSeq( id, NULL, 0, 0 );
     }
 #endif
 
@@ -292,16 +314,16 @@ void testModuleInit( void )
     // as to not crash.
     SHK_BIND_HOOK( setBgm, setBgmHook );
     SHK_BIND_HOOK( setSeq, setSeqHook );
+
+    // Handle command handling in main update function
+    // to prevent crashes
+    SHK_BIND_HOOK( mainUpdate, mainUpdateHook );
 #endif
 
     // Here you could potentially start a thread that runs in the background, if you want to react to button inputs etc.
 
     // Start TTY command listener
-#ifdef GAME_P5
-    // Handle command handling in main update function
-    SHK_BIND_HOOK( mainUpdate, mainUpdateHook );
-#else
-    // Create new thread
+#ifndef GAME_P5
     ttyCmdStartListenerThread( ttyCommands );
 #endif
 

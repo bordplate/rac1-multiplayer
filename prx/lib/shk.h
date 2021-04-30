@@ -49,8 +49,8 @@ typedef struct
 #define SHK_HOOK( ret, name, ... ) \
     extern ret _shk_prx_trampoline_##name( __VA_ARGS__ ); \
     extern volatile void* _shk_prx_ptr_##name; \
-    typedef ret(*_shk_##name##_t)( __VA_ARGS__ ); \
-    static volatile _shk_##name##_t _shk_prx_trampoline_##name##_ptr = _shk_prx_trampoline_##name 
+    typedef ret(*_shk_prx_hook_##name##_t)( __VA_ARGS__ ); \
+    static volatile _shk_prx_hook_##name##_t _shk_prx_trampoline_##name##_ptr = _shk_prx_trampoline_##name 
 
 /**
  * @brief Binds an SHK hook to the specified handler.

@@ -1,0 +1,16 @@
+  Mod SPRX:
+    Games:
+      "Sonic Unleashed (Sonic World Adventure)":
+        BLUS30244: [ All ] # hack, only works with 01.02
+    Author: TGE
+    Notes: 
+    Patch Version: 1.0
+    Patch:
+      - [ be32, 0x22BD228, 0x26090058 ] # replace _sys_spu_printf_finalize with sys_prx_load_module
+      - [ be32, 0x22BD1E8, 0x9f18429d ] # replace sys_game_process_exitspawn2 with sys_prx_start_module
+
+      # bin2rpcs3patch begin shk_elf_loader_SU
+      # bin2rpcs3patch end
+
+      # bin2rpcs3patch begin shk_elf_inject_SU
+      # bin2rpcs3patch end
