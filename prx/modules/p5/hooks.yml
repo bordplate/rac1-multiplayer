@@ -15,3 +15,119 @@ setBgm:
 setSeq:
     addr: 0x10DB4
     replacedInstr: stdu r1, -0xB0(r1)
+
+PUT_Function:
+    addr: 0x1e9cfc
+    emitTrampoline: no
+
+PUTS_Function:
+    addr: 0x1e9d28
+    emitTrampoline: no
+
+PUTF_Function:
+    addr: 0x1e9d54
+    emitTrampoline: no
+
+EX_FLW_setHumanLv:
+    addr: 0x1edff8
+    emitTrampoline: no
+
+EX_FLW_GetEquippedPersona:
+    addr: 0x1eeda0
+    emitTrampoline: no
+
+EX_FLW_PersonaEvolution:
+    addr: 0x1ee1bc
+    emitTrampoline: no
+
+EX_FLW_ReturnEncounterID:
+    addr: 0x143da0
+    emitTrampoline: no
+
+SetCountFunction:
+    addr: 0x24ba4c
+    replacedInstr: lis  r5, 0x10b
+
+GetCountFunction:
+    addr: 0x24bf5c
+    replacedInstr: lis  r4, 0x10b
+
+EX_FLW_AI_ACT_PERSONA_SKILL:
+    addr: 0x7c60e8
+    emitTrampoline: no
+
+FLW_AI_ACT_ATTACK:
+    addr: 0x7ba410
+    replacedInstr: stdu  r1, -0x70(r1)
+
+FLW_AI_ACT_SKILL:
+    addr: 0x7ba448
+    replacedInstr: stdu  r1, -0x80(r1)
+
+BIT_CHK_FUNC:
+    addr: 0x24beac
+    replacedInstr: srawi  r4, r3, 0x5
+
+BIT_SET_FUNC:
+    addr: 0x24bef8
+    replacedInstr: srawi  r7, r3, 0x5
+
+BIT_CHK_FUNC_ALT:
+    addr: 0x116a94
+    replacedInstr: lis  r4, 0x107
+
+BlackMaskBossVoice:
+    addr: 0x74c12c
+    replacedInstr: stdu  r1, -0x890(r1)
+
+LoadPlayerCombatVoicePack:
+    addr: 0x74b124
+    emitTrampoline: no
+
+LoadPartyPanelSPD:
+    addr: 0x1c2c74
+    replacedInstr: stdu  r1, -0x80(r1)
+
+LoadPartyPanelPLG:
+    addr: 0x118280
+    replacedInstr: stdu  r1, -0xA0(r1)
+
+Load2DUIDDS:
+    addr: 0x426ab8
+    replacedInstr: stdu  r1, -0x90(r1)
+
+LoadBEDFile:
+    addr: 0x735164
+    replacedInstr: stdu  r1, -0xC0(r1)
+
+LoadCombatCutin:
+    addr: 0x967abc
+    replacedInstr: stdu  r1, -0xB0(r1)
+
+LoadAnimationPack:
+    addr: 0x190ac
+    replacedInstr: stdu  r1, -0x70(r1)
+
+LoadBCDFunction:
+    addr: 0x877b68
+    replacedInstr: stdu  r1, -0xA0(r1)
+
+CombatPersonaCueID:
+    addr: 0xb25390
+    emitTrampoline: no
+
+setBlackMaskCueID:
+    addr: 0xb2d664
+    emitTrampoline: no
+
+GenericCharacterModelLoader:
+    addr: 0x39b74
+    replacedInstr: stdu  r1, -0xB0(r1)
+
+LoadEPL:
+    addr: 0x62dfdc
+    replacedInstr: stdu  r1, -0xA0(r1)
+
+SetPlayerUnitEquipment:
+    addr: 0x25adb4
+    replacedInstr: rlwinm  r4, r4, 0x1, 0xf, 0x1e
