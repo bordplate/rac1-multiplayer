@@ -3,6 +3,7 @@
 #include <sys/prx.h>
 #include <sys/tty.h>
 #include <sys/syscall.h>
+#include "lib/file.h"
 // Pre-prepared libraries exist in lib
 // Common includes things like printf for printing, strlen, etc.
 // PRX dont have access to the usual C libraries, so any functionality that you need from it
@@ -39,6 +40,10 @@ SHK_HOOK( int, GetCountFunction, u32 a1 );
 SHK_HOOK( bool, BIT_CHK_FUNC, u64 a1 );
 SHK_HOOK( int, BIT_SET_FUNC, u64 flag, u8 targetState );
 SHK_HOOK( bool, BIT_CHK_FUNC_ALT, u64 a1 );
+SHK_HOOK( undefined4*, LoadFutabaNaviBMD, void );
+SHK_HOOK( undefined4*, LoadMonaNaviBMD, void );
+SHK_HOOK( u64, LoadNaviSoundFile, u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 );
+SHK_HOOK( u64, FUN_00748d78, u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9);
 
 static bool BIT_CHK_FUNCHook( u64 a1 )
 {
@@ -279,10 +284,13 @@ static u32 GetCountFunctionHook( u32 COUNT )
 
 static int EX_FLW_AI_ACT_PERSONA_SKILLHook( void )
 {
-  btlUnit_Unit* EnemyUnit = FLW_GetBattleUnitStruct();
-  SetCountFunctionHook( 300, FLW_GetIntArg(0) );
+  btlUnit_Unit* EnemyUnit = FLW_GetBattleUnitStructFromContext();
+  if ( CONFIG_ENABLED( enablePersonaEnemies ) )
+  {
+    SetCountFunctionHook( 300, FLW_GetIntArg(0) );
+    DEBUG_LOG(" Enemy Persona set to %03d with skillID %03d\n", EnemyPersona, EnemyUnit->context.enemy.ActSkillID);
+  }
   EnemyUnit->context.enemy.ActSkillID = FLW_GetIntArg(1);
-  DEBUG_LOG(" Enemy Persona set to %03d with skillID %03d\n", EnemyPersona, EnemyUnit->context.enemy.ActSkillID);
   EnemyUnit->context.enemy.Act_Type = 1;
   return 1;
 }
@@ -541,6 +549,135 @@ static TtyCmdStatus ttyPartyOutCmd( TtyCmd* cmd, const char** args, u32 argc, ch
   return TTY_CMD_STATUS_OK;
 }
 
+static TtyCmdStatus ttyGetEnemyBtlUnitCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+  printf( "Enemy unit struct address 0x%08x\n", &enemyBtlUnit );
+  hexDump( "Enemy unit struct", enemyBtlUnit, sizeof(btlUnit_Unit) );
+  return TTY_CMD_STATUS_OK;
+}
+
+#define EnemyAffinityTBL (*((EnemyAffinityTBL**)0xD79FA8))
+
+static TtyCmdStatus ttyGetAffinityCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+  u32 enemyID = intParse( args[0] );
+  if ( enemyID > 350 )
+  {
+    *error = "Enemy ID should not exceed 350";
+    return TTY_CMD_STATUS_INVALID_ARG;
+  }
+  return TTY_CMD_STATUS_OK;
+}
+
+static u8 NaviBmdBuffer[1024*128];
+static u8 MonaBmdBuffer[1024*128];
+static u64 readBytes;
+
+void loadFileIntoBuffer( u8* buffer, u64 bufferSize, const char* path )
+{
+  FileHandle handle;
+  FileStatus status = fileOpen( &handle, path, FILE_MODE_READ );
+  assert( status == FILE_STATUS_OK && "Failed to open file" );
+
+  u64 fsize;
+  status = fileSize( handle, &fsize );
+  assert( status == FILE_STATUS_OK && "Failed to get file size" );
+  assert( fsize >= sizeof( buffer ) && "File buffer too small" );
+
+  status = fileRead( handle, buffer, fsize, &readBytes );
+  assert( status == FILE_STATUS_OK && "Failed to read file" );
+  assert( readBytes == fsize && "Failed to read file" );
+}
+
+naviID = 8;
+undefined4* LoadFutabaNaviBMDHook(void)
+{
+  DEBUG_LOG("LoadFutabaNaviBMDHook called\n");
+  idkman* pmVar1;
+  int *pmVar2;
+  
+  pmVar1 = MallocAndReturn(0x34);
+  pmVar2 = (int *)0x0;
+  DEBUG_LOG("Checking if Navi File is loaded\n");
+  if (pmVar1 != (idkman*)0x0) {
+    printf("/USRDIR/navi_%02d.bmd\n", naviID);
+    FUN_00747f48((undefined4 *)pmVar1, &NaviBmdBuffer, naviID);
+    DEBUG_LOG("Navi file successfully loaded\n");
+    pmVar1->ptr1 = 0x00ba76c0;
+    pmVar2 = (int *)pmVar1;
+  }
+  return (undefined4 *)pmVar2;
+}
+
+undefined4* LoadMonaNaviBMDHook(void)
+{
+  DEBUG_LOG("LoadMonaNaviBMDHook called\n");
+  idkman* pmVar1;
+  int *pmVar2;
+  
+  pmVar1 = MallocAndReturn(0x34);
+  pmVar2 = (int *)0x0;
+  DEBUG_LOG("Checking if Navi File is loaded\n");
+  if (pmVar1 != (idkman*)0x0) {
+    printf("/USRDIR/navi_03.bmd\n");
+    FUN_00747f48((undefined4 *)pmVar1, &MonaBmdBuffer, 3);
+    DEBUG_LOG("Navi file successfully loaded\n");
+    pmVar1->ptr1 = 0x00ba7568;
+    pmVar2 = (int *)pmVar1;
+  }
+  return (undefined4 *)pmVar2;
+}
+
+static TtyCmdStatus ttyLoadBMDCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+  naviID = intParse( args[0] );
+  if ( naviID <= 1 || naviID == 3 )
+  {
+    naviID = 8;
+  }
+  char naviPath[128];
+  sprintf(naviPath, "/app_home/navi_%02d.bmd", naviID);
+  printf("Navi ID set to %02d\n", naviID);
+  printf("%s\n", naviPath);
+  loadFileIntoBuffer( NaviBmdBuffer, sizeof( NaviBmdBuffer ), naviPath );
+  return TTY_CMD_STATUS_OK;
+}
+
+u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 )
+{
+  printf("LoadNaviSoundFile called\n");
+
+  char new_acb_path[128];
+  char new_awb_path[128];
+
+  if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 )
+  {
+    sprintf( new_acb_path, "sound/battle/spt%02d.acb", naviID );
+    printf( "acp_path %s\n", new_acb_path );
+    sprintf( new_awb_path, "sound/battle/spt%02d.awb", naviID );
+    printf( "awb_path %s\n", new_awb_path );
+    return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, new_acb_path, new_awb_path, a5);
+  }
+  else if ( strcmp( acb_path, "sound_JP/battle/spt02.acb" ) == 0 )
+  {
+    sprintf( new_acb_path, "sound_JP/battle/spt%02d.acb", naviID );
+    printf( "acp_path %s\n", new_acb_path );
+    sprintf( new_awb_path, "sound_JP/battle/spt%02d.awb", naviID );
+    printf( "awb_path %s\n", new_awb_path );
+    return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, new_acb_path, new_awb_path, a5);
+  }
+  return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, acb_path, awb_path, a5);
+}
+
+u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9)
+{
+  printf("FUN_00748d78Hook called\na1 -> %d\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> %d\na7 -> %d\na8 -> %d\na9 -> %d\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
+  if ( naviID == 9 )
+  {
+    param_3 += 100;
+  }
+  return SHK_CALL_HOOK(FUN_00748d78, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
+}
 // List of commands that can be handled by the command listener
 static TtyCmd ttyCommands[] =
 {
@@ -574,6 +711,15 @@ static TtyCmd ttyCommands[] =
 
   TTY_CMD( ttyPartyOutCmd, "partyout", "Removes a party member from current active party", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "playerID", "ID of party member to remove", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
+
+  TTY_CMD( ttyGetAffinityCmd, "getaffinity", "Prints affinity of input enemy", TTY_CMD_FLAG_NONE,
+    TTY_CMD_PARAM( "int", "enemy id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
+
+    TTY_CMD( ttyLoadBMDCmd, "setnavi", "Custom Navi test", TTY_CMD_FLAG_NONE,
+    TTY_CMD_PARAM( "int", "navi id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
+
+  TTY_CMD( ttyGetEnemyBtlUnitCmd, "getenemy", "Prints address and contents of currently saved enemy battle struct", TTY_CMD_FLAG_NONE ),
+
   TTY_CMD_END(), 
 };
 
@@ -615,6 +761,13 @@ void EXFLWInit( void )
   SHK_BIND_HOOK( BIT_CHK_FUNC_ALT, BIT_CHK_FUNC_ALTHook );
   // Handle command handling in main update function
   SHK_BIND_HOOK( mainUpdate, mainUpdateHook );
+  // Load Custom Navigator file
+  SHK_BIND_HOOK( LoadFutabaNaviBMD, LoadFutabaNaviBMDHook );
+  SHK_BIND_HOOK( LoadMonaNaviBMD, LoadMonaNaviBMDHook );
+  SHK_BIND_HOOK( LoadNaviSoundFile, LoadNaviSoundFileHook );
+  SHK_BIND_HOOK( FUN_00748d78, FUN_00748d78Hook );
+  loadFileIntoBuffer( NaviBmdBuffer, sizeof( NaviBmdBuffer ), "/app_home/navi_08.bmd" );
+  loadFileIntoBuffer( MonaBmdBuffer, sizeof( MonaBmdBuffer ), "/app_home/navi_03.bmd" );
 }
 
 void EXFLWShutdown( void )

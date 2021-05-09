@@ -1,14 +1,19 @@
 #ifdef GAME_P5
 #ifndef P5_H
 #define P5_H
+#pragma pack(1)
 
 // PS3 system includes
 #include "lib/common.h"
 #include "lib/shk.h"
 
+// Globals
 u16 EncounterIDGlobal;
 u32 EnemyPersona;
+u32 GlobalEnemyID;
 u32 GlobalCounts[256];
+void* GlobalBtlUnitEnemyAddress;
+int naviID;
 
 typedef struct
 {
@@ -485,6 +490,15 @@ typedef enum {
     Persona_RESERVE89,
 } PersonaNames;
 
+typedef enum
+{
+  MeleeWeapon,
+  Armor,
+  Accessory,
+  Outfit,
+  Gun
+} EquipSlot;
+
 typedef struct
 {
   u8 Flags; // 0
@@ -543,7 +557,7 @@ typedef struct
   u32 Field3C;
   u16 EquippedPersonaIndex; // 40
   u16 Field42;
-  btlUnit_Persona* Persona[12];
+  btlUnit_Persona Persona[12];
   u16 meleeID; // 284
   u16 protectorID; // 286
   u16 accessoryID; // 288
@@ -623,53 +637,301 @@ typedef struct
   u32 Field_0C;
 } sample_int_struct;
 
+typedef struct
+{
+  u8 stats[68];
+} unitStats;
+
+typedef struct
+{
+  u16 Physical;
+  u16 Gun;
+  u16 Fire;
+  u16 Ice;
+  u16 Electric;
+  u16 Wind;
+  u16 Psy;
+  u16 Nuke;
+  u16 Bless;
+  u16 Curse;
+  u16 Almighty;
+  u16 Dizzy;
+  u16 Confuse;
+  u16 Fear;
+  u16 Forget;
+  u16 Hunger;
+  u16 Sleep;
+  u16 Rage;
+  u16 Despair;
+  u16 Brainwash;
+} unitAffinity;
+
+typedef struct
+{
+  u16 affinity[20];
+}unitAffinityArray;
+
+
+typedef struct
+{
+  u8 unk[24];
+}Segment3;
+
+typedef struct
+{
+  u16 personaID;
+  u16 modelID;
+}VisualIndex;
+
+typedef struct
+{
+  unitStats EnemyStats[999];
+}EnemyUnitStatsTBL;
+
+typedef struct
+{
+  unitAffinityArray EnemyAffinities[999];
+} EnemyAffinityTBL;
+
+typedef struct
+{
+  unitAffinityArray PersonaAffinities[999];
+} PersonaAffinityTBL;
+
+typedef struct
+{
+  Segment3 unit[999];
+}unitTBLSegment3;
+
+typedef struct
+{
+  VisualIndex unitVisualIndex[999];
+}unitTBLVisualIndex;
+
+typedef struct
+{
+  u32 ScriptID;
+  u8 stuff[0x28];
+}ELSAI_Segment2;
+
+typedef struct
+{
+  ELSAI_Segment2 entry[649];
+}ELSAI_Segment2TBL;
+
+typedef struct
+{
+  u32 thingy[270];
+}shdHelper;
+
+typedef struct
+{
+  u64 stringSize;
+  char* filename[128];
+  u32 unk1;
+  u32 unk2;
+  u32 unk3;
+  u32 pointerToFile;
+}fileHandleStruct;
+
+EnemyUnitStatsTBL NewEnemyStatsTBL;
+EnemyAffinityTBL NewEnemyAffinityTBL;
+PersonaAffinityTBL NewPersonaAffinityTBL;
+unitTBLSegment3 NewSegment3TBL;
+unitTBLVisualIndex NewVisualIndexTBL;
+ELSAI_Segment2TBL NewSegment2TBL;
+
+btlUnit_Unit* enemyBtlUnit;
+
+
 // Game functions are declared like this
 // R, meaning result, and 6, the number of parameters
 // A void function does not return anything, and requires you to use SHK_FUNCTION_V<N> instead.
 // If you use vscode youll get descriptive tooltips when you hover these macros.
-SHK_FUNCTION_R6( 0x10F0D4, int, sndManPlaySfx, int, a0, int, a1, int, a2, int, a3, int, a4, int, a5 );
-SHK_FUNCTION_R0( 0x1edf9c, int, RECOVERY_ALL);
-SHK_FUNCTION_R0( 0x1f113c, int, BULLET_RECOVERY);
-SHK_FUNCTION_R0( 0x2e8c48, int, FLD_ALLY_WEAPON_SETUP);
-SHK_FUNCTION_R0( 0x874698, int, PREPARE_FIELDBATTLE);
-SHK_FUNCTION_R0( 0x874cc8, int, CALL_FIELDBATTLE);
-SHK_FUNCTION_R0( 0x2e1694, int, CALL_FIELD);
-SHK_FUNCTION_R0( 0x1e9d80, int, FADEIN);
-SHK_FUNCTION_R0( 0x1e9e68, int, FADE_SYNC);
-SHK_FUNCTION_R0( 0x875598, int, CALL_BATTLE);
-SHK_FUNCTION_R0( 0x8756ac, int, WAIT_BATTLE);
-SHK_FUNCTION_R0( 0x1edde8, int, PARTY_IN);
-SHK_FUNCTION_R0( 0x3030ac, int, FLD_PARTY_IN);
-SHK_FUNCTION_R0( 0x1f2974, btlUnit_Unit*, FLW_GetBattleUnitStruct);
-SHK_FUNCTION_R1( 0x24B200, btlUnit_Unit*, GetBtlUnitFromID, u32, id);
-SHK_FUNCTION_R1( 0x24B21C, int, GetUnitIDFromPartySlot, int, unitId);
-SHK_FUNCTION_R1( 0x25b888, int, SetPlayerBulletsToMax, btlUnit_Unit*, id);
-SHK_FUNCTION_R1( 0x25e564, u32, CheckPersonaIsPrologueArsene, u16, personaID);
-SHK_FUNCTION_R1( 0x25867c, u32, FUN_0025867c, u16, personaID);
-SHK_FUNCTION_R1( 0x1f266c, u32, FLW_GetIntArg, u32, arg);
-SHK_FUNCTION_R1( 0x25bdf8, u64, GetBtlUnitPersona, u32, arg);
-SHK_FUNCTION_R1( 0x1f2768, f64, FLW_GetFloatArg, u32, arg);
-SHK_FUNCTION_R1( 0x1f2868, char*, FLW_GetStringArg, u32, arg);
-SHK_FUNCTION_R1( 0x1f28d8, u32, FLW_SetIntReturn, u32, arg);
-SHK_FUNCTION_R1( 0x2634cc, u32, GetJokerTargetLvExp, u32, arg);
-SHK_FUNCTION_R1( 0x25be3c, u32, GetEquippedPersonaFunction, u32, arg);
-SHK_FUNCTION_R1( 0x24bf5c, u32, ActualGetCount, u32, arg);
-SHK_FUNCTION_R1( 0x25bdf8, u32, FUN_0025bdf8, u16, unitID);
-SHK_FUNCTION_R1( 0x625570, void*, MallocAndReturn, u32, size);
-SHK_FUNCTION_R1( 0x116a94, u64, GetSavedataBitflagAlt, u64, flag);
-SHK_FUNCTION_R1( 0x258948, u32, GetBtlUnitID, btlUnit_Unit*, unitID);
-SHK_FUNCTION_R1( 0x74a9d0, void*, SomethingAboutLoadingVoices, void*, someAddressPointer);
-SHK_FUNCTION_R2( 0x26a678, void, SetUnitLv, u32, unitID, u32, targetLv);
-SHK_FUNCTION_R2( 0x2584cc, int,  FUN_002584cc, u32, a1, u32, a2);
-SHK_FUNCTION_R2( 0x24B274, int,  sub_24B274, u32, a1, u16, a2);
-SHK_FUNCTION_R2( 0x25cb8c, void, FUN_0025cb8c, u32, unitID, u16, personaID);
-SHK_FUNCTION_R2( 0x26a6f4, void, SetUnitEXP, u32, ID, u32, Lv);
-SHK_FUNCTION_R2( 0x258bbc, u32, unitGetEquipment, btlUnit_Unit*, unit, u32, equipSlot);
-SHK_FUNCTION_R2( 0xb10eb8, u32, CalculateAddressWithPointer, void*, address, structA*, unk);
-SHK_FUNCTION_R3( 0x45d24, u32, PlayerUnitGetModelMinorID, u32, playerID, u8, a2, u8, a3); // a2 always 0x32, a3 always 0
-SHK_FUNCTION_R4( 0x74aac0, void, LoadSoundByCueIDCombatVoice, CueIDThingy*, a1, u32, a2, u32, cueID, char*, idk);
-SHK_FUNCTION_R4( 0x10DB4, s32, setSeq, s32, seqId, void*, params, s32, paramsSize, s32, r6 );
-SHK_FUNCTION_R6( 0x74ae50, void, FUN_0074ae50, void*, a1, char*, acb_string, char*, awb_string, u32, idk, undefined8, idk1, undefined8, idk2);
+/**
+ * @brief Flowscript Function that restores all player character's hp/sp
+ * 
+ * @return int 
+ */
+int RECOVERY_ALL( void );
 
+/**
+ * @brief Flowscript Function that restores all player character's bullets
+ * 
+ * @return int 
+ */
+int BULLET_RECOVERY( void );
+
+/**
+ * @brief Context based function, in AI functions returns the bltUnit struct of the unit running it
+ * 
+ * @return btlUnit struct 
+ */
+btlUnit_Unit* FLW_GetBattleUnitStructFromContext( void );
+
+/**
+ * @brief Returns btlUnit struct from a given player ID
+ * 
+ * @param u32 player ID whose struct to return
+ * @return btlUnit struct
+ */
+btlUnit_Unit* GetBtlPlayerUnitFromID( u32 id );
+
+/**
+ * @brief Get the Unit ID from target party slot
+ * 
+ * @param u32 party slot to get unit from 
+ * @return unit id 
+ */
+int GetUnitIDFromPartySlot( u32 slotID );
+
+/**
+ * @brief Set bullets to max for target player character
+ * 
+ * @param btlUnit_Unit btlUnit struct of player character 
+ */
+void SetPlayerBulletsToMax( btlUnit_Unit* player );
+
+
+u32 FUN_0025867c( u16 personaID );
+
+/**
+ * @brief Get int argument from FlowScript Interpreter Stack
+ * 
+ * @param u32 argument number 
+ * @return value stored in target stack 
+ */
+int FLW_GetIntArg( u32 arg );
+
+
+u64 GetBtlUnitPersona( u32 arg );
+
+/**
+ * @brief Get float argument from FlowScript Interpreter Stack
+ * 
+ * @param u32 argument number 
+ * @return value stored in target stack 
+ */
+f64 FLW_GetFloatArg( u32 arg );
+
+/**
+ * @brief Get string argument from FlowScript Interpreter Stack
+ * 
+ * @param u32 argument number 
+ * @return value stored in target stack 
+ */
+char* FLW_GetStringArg( u32 arg );
+
+/**
+ * @brief Sets an int return value to the current flowscript command
+ * 
+ * @param u32 value to return 
+ * @return int 
+ */
+int FLW_SetIntReturn( u32 arg );
+
+
+u32 GetJokerTargetLvExp( u32 arg );
+
+/**
+ * @brief Returns the currently equipped Persona of the given player ID
+ * 
+ * @param u32 character ID 
+ * @return Persona ID 
+ */
+u32 GetEquippedPersonaFunction( PersonaNames personaID );
+
+/**
+ * @brief Returns the value stored in target COUNT
+ * 
+ * @param u32 COUNT number to get value from 
+ * @return value stored in COUNT 
+ */
+u32 ActualGetCount( u32 arg );
+
+
+u32 FUN_0025bdf8( u16 unitID );
+
+
+void* MallocAndReturn( u32 size );
+
+void* malloc( u32 size );
+
+
+u64 GetSavedataBitflagAlt( u64 flag );
+
+
+void* SomethingAboutLoadingVoices( void* someAddressPointer );
+
+/**
+ * @brief Sets Joker's level
+ * 
+ * @param int Unit ID (THIS FUNCTION ONLY WORKS ON JOKER) 
+ * @param int Level to set Joker to 
+ */
+void SetUnitLv( u32 unitID, u32 targetLv );
+
+
+int FUN_002584cc( u32 a1, u32 a2 );
+
+
+int sub_24B274( u32 a1, u16 a2 );
+
+
+void FUN_0025cb8c( u32 unitID, u16 personaID );
+
+u64 FUN_00263714( u32 a1 );
+
+/**
+ * @brief Sets Joker's EXP based on level
+ * 
+ * @param int Unit ID (THIS FUNCTION ONLY WORKS ON JOKER) 
+ * @param int target level to set EXP for
+ */
+void SetUnitEXP( u32 ID, u16 Lv );
+
+/**
+ * @brief Returns item ID of specified equip slot from a Player Unit
+ * 
+ * @param btlUnit_Unit btlunit Struct of player character to get item ID from 
+ * @param EquipSlot Equipment Slot to get Item ID from
+ * @return item ID 
+ */
+u32 unitGetEquipment( btlUnit_Unit* unit, EquipSlot equipSlotID );
+
+
+u32 CalculateAddressWithPointer( void* address, structA* unk );
+
+/**
+ * @brief returns the given player character's model minor ID based on currently equipped outfit
+ * 
+ * @param u32 character ID to get model minor ID from 
+ * @param u8 always 50 
+ * @param u8 always 0 
+ * @return model minor ID 
+ */
+u32 PlayerUnitGetModelMinorID( u32 playerID, u8 a2, u8 a3 );
+
+/**
+ * @brief Plays target cue ID
+ * 
+ * @param unknown_struct
+ * @param u32 unknown 
+ * @param u32 target Cue ID 
+ * @param u8 assumed pre-delay 
+ */
+void LoadSoundByCueIDCombatVoice( CueIDThingy* a1, u32 a2, u32 cueID, u8 idk );
+
+fileHandleStruct* open_file( char* file_path, u32 a2 );
+u64 FUN_00118280( char *param_1, char *param_2, char *param_3, u8 param_4 );
+undefined8 FUN_001146d0( int a1 );
+
+s32 setSeq( s32 seqId, void* params, s32 paramsSize, s32 r6 );
+void FUN_0074ae50( void* a1, char* acb_string, char* awb_string, u32 idk );
+int sndManPlaySfx( int a0, int a1, int a2, int a3, int a4, int a5 );
+int FUN_0090053c( u32 a1, u64 a2, u64 a3 );
+void FUN_00747f48( int* a1, int a2, int a3 );
+
+#pragma pop
 #endif
 #endif

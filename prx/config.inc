@@ -2,9 +2,12 @@ CONFIG_START()
     CONFIG_SETTING( BOOL, debug, "Debugging features", true )
 
 #ifdef GAME_P5
-    CONFIG_SETTING( BOOL, enableEXFLWModule, "Enables the expanded Flowscripts module", true )
-    CONFIG_SETTING( BOOL, enableDCModule, "Enables the dc module", true )
-    CONFIG_SETTING( BOOL, enableP5EModule, "Enables the P5 Enhanced module", true )
+    CONFIG_SETTING( BOOL, enableEXFLWModule, "Enable Flowscripts module", true )
+    CONFIG_SETTING( BOOL, enableDCModule, "Enable dc module", true )
+    CONFIG_SETTING( BOOL, enableP5EModule, "Enable P5 Enhanced module", true )
+    CONFIG_SETTING( BOOL, enableSumire, "Enable Sumire models", true )
+    CONFIG_SETTING( BOOL, enableAkechiMod, "Enable Royal Akechi patches", true )
+    CONFIG_SETTING( BOOL, enablePersonaEnemies, "Enable Persona Using Enemies", true )
     CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore, "BIT_CHK flags to ignore when logging", 100, 
     0x2101, 0x22ff, 0x2216, 0x2110, 0x2111, 
     0x2112, 0x2113, 0x106e, 0x106f, 0x1070, 

@@ -20,7 +20,6 @@
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( void, setBgm, int id );
-SHK_HOOK( void, SetPlayerUnitEquipment, btlUnit_Unit* player, u32 equipType, u16 itemID );
 SHK_HOOK( void*, LoadEPL, char* EPL, u8 a2 );
 SHK_HOOK( int, GenericCharacterModelLoader, char* result, u64 modelType, u64 characterID, u64 modelID, u64 modelSubID );
 
@@ -109,37 +108,25 @@ int GenericCharacterModelLoaderHook( char* result, u64 modelType, u64 characterI
     {
       modelID = 52;
     }
-    for ( int i = 1; i <= 9; i++ )
+    CharModelReplacementTable* pEntry = &charModelReplacementTableEntry[characterID];
+    for ( int j = 0; j <= 4; j++ )
     {
-      if ( i == characterID )
+      u32 playerOutfitModel = PlayerUnitGetModelMinorID( characterID, 50, 0 );
+      if ( modelID == pEntry->modelId[j] && playerOutfitModel != 51 )
       {
-        CharModelReplacementTable* pEntry = &charModelReplacementTableEntry[i];
-        for ( int j = 0; j <= 4; j++ )
-        {
-          u32 playerOutfitModel = PlayerUnitGetModelMinorID( characterID, 50, 0 );
-          if ( modelID == pEntry->modelId[j] && playerOutfitModel != 51 )
-          {
-            modelID = playerOutfitModel;
-          }
-        }
+        modelID = playerOutfitModel;
       }
     }
     if ( characterID == 10 && modelID == 50 ) //for now copy Joker outfit to Kasumi
     {
       modelID = PlayerUnitGetModelMinorID( 1, 50, 0 );
+      if ( CONFIG_ENABLED( enableSumire ) )
+      {
+        modelSubID = 1;
+      }
     }
   }
   return SHK_CALL_HOOK( GenericCharacterModelLoader, result, modelType, characterID, modelID, modelSubID );
-}
-
-void SetPlayerUnitEquipmentHook( btlUnit_Unit* player, u32 equipType, u16 itemID )
-{
-  if ( player->unitID == 1 && equipType == 3 )
-  {
-    printf("Setting Kasumi outfit from Joker to %d\n", itemID );
-    SHK_CALL_HOOK( SetPlayerUnitEquipment, GetBtlUnitFromID(10), equipType, itemID );
-  }
-  return SHK_CALL_HOOK( SetPlayerUnitEquipment, player, equipType, itemID );
 }
 
 void* LoadEPLHook( char* EPL, u8 a2 )
@@ -160,7 +147,6 @@ void p5eInit( void )
   // If you don't do this, the game will crash.
   SHK_BIND_HOOK( setBgm, setBgmHook );
   SHK_BIND_HOOK( LoadEPL, LoadEPLHook );
-  SHK_BIND_HOOK( SetPlayerUnitEquipment, SetPlayerUnitEquipmentHook );
   SHK_BIND_HOOK( GenericCharacterModelLoader, GenericCharacterModelLoaderHook );
 }
 
