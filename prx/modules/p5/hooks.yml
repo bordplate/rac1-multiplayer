@@ -20,28 +20,16 @@ PUT_Function:
     addr: 0x1e9cfc
     emitTrampoline: no
 
-PUTS_Function:
-    addr: 0x1e9d28
-    emitTrampoline: no
-
 PUTF_Function:
     addr: 0x1e9d54
     emitTrampoline: no
 
+PUTS_Function:
+    addr: 0x1e9d28
+    emitTrampoline: no
+
 EX_FLW_setHumanLv:
     addr: 0x1edff8
-    emitTrampoline: no
-
-EX_FLW_GetEquippedPersona:
-    addr: 0x1eeda0
-    emitTrampoline: no
-
-EX_FLW_PersonaEvolution:
-    addr: 0x1ee1bc
-    emitTrampoline: no
-
-EX_FLW_ReturnEncounterID:
-    addr: 0x143da0
     emitTrampoline: no
 
 SetCountFunction:
@@ -51,10 +39,6 @@ SetCountFunction:
 GetCountFunction:
     addr: 0x24bf5c
     replacedInstr: lis  r4, 0x10b
-
-EX_FLW_AI_ACT_PERSONA_SKILL:
-    addr: 0x7c60e8
-    emitTrampoline: no
 
 FLW_AI_ACT_ATTACK:
     addr: 0x7ba410
@@ -179,3 +163,19 @@ LoadNaviSoundFile:
 FUN_00748d78:
     addr: 0x748d78
     replacedInstr: stdu  r1, -0xB0(r1)
+
+scrGetCommandExist:
+    addr: 0x1e9ac0
+    replacedInstr: rlwinm  r4, r3, 0x14, 0x1c, 0x1f
+
+scrGetCommandFunc:
+    addr: 0x1e9b1c
+    replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f
+
+scrGetCommandName:
+    addr: 0x1e9be0
+    replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f
+
+scrGetCommandArgCount:
+    addr: 0x1e9b7c
+    replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f

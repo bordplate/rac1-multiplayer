@@ -25,13 +25,9 @@
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( int, EX_FLW_setHumanLv );
-SHK_HOOK( int, EX_FLW_GetEquippedPersona );
 SHK_HOOK( int, PUT_Function );
-SHK_HOOK( int, PUTS_Function );
 SHK_HOOK( int, PUTF_Function );
-SHK_HOOK( int, EX_FLW_ReturnEncounterID );
-SHK_HOOK( int, EX_FLW_PersonaEvolution );
-SHK_HOOK( int, EX_FLW_AI_ACT_PERSONA_SKILL );
+SHK_HOOK( int, PUTS_Function );
 SHK_HOOK( int, FLW_AI_ACT_ATTACK );
 SHK_HOOK( int, FLW_AI_ACT_SKILL );
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
@@ -40,6 +36,10 @@ SHK_HOOK( int, GetCountFunction, u32 a1 );
 SHK_HOOK( bool, BIT_CHK_FUNC, u64 a1 );
 SHK_HOOK( int, BIT_SET_FUNC, u64 flag, u8 targetState );
 SHK_HOOK( bool, BIT_CHK_FUNC_ALT, u64 a1 );
+SHK_HOOK( bool, scrGetCommandExist, u32 a1 );
+SHK_HOOK( u32, scrGetCommandArgCount, u32 a1 );
+SHK_HOOK( char*, scrGetCommandName, u32 a1 );
+SHK_HOOK( scrCommandTableEntry*, scrGetCommandFunc, u32 id );
 SHK_HOOK( undefined4*, LoadFutabaNaviBMD, void );
 SHK_HOOK( undefined4*, LoadMonaNaviBMD, void );
 SHK_HOOK( u64, LoadNaviSoundFile, u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 );
@@ -95,6 +95,7 @@ static bool BIT_CHK_FUNC_ALTHook( u64 a1 )
 
 static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
 {
+  sequenceIDGlobal = seqId;
   if ( seqId == 4 )
   {
     if ( paramsSize == 40 )
@@ -123,7 +124,7 @@ static int EX_FLW_setHumanLvHook( void )
   return 1;
 }
 
-static int EX_FLW_GetEquippedPersonaHook( void )
+static int EX_FLW_GetEquippedPersona( void )
 {
   u32 unitID = FLW_GetIntArg(0);
   if (unitID <= 10) // up to Kasumi
@@ -134,9 +135,15 @@ static int EX_FLW_GetEquippedPersonaHook( void )
   return 1;
 }
 
-static int EX_FLW_ReturnEncounterIDHook ( void )
+static int EX_FLW_ReturnEncounterID ( void )
 { 
   FLW_SetIntReturn(EncounterIDGlobal);
+  return 1;
+}
+
+static int EX_FLW_GET_SEQ_ID ( void )
+{ 
+  FLW_SetIntReturn(sequenceIDGlobal);
   return 1;
 }
 
@@ -152,7 +159,13 @@ static int PUTF_FunctionHook( void )
   return 1;
 }
 
-static int EX_FLW_PersonaEvolutionHook( void )
+static int PUTS_FunctionHook( void )
+{
+  printf ("%s\n", FLW_GetStringArg(0));
+  return 1;
+}
+
+static int EX_FLW_PersonaEvolution( void )
 {
   u32 unitID;
   u32 uVar1;
@@ -166,7 +179,7 @@ static int EX_FLW_PersonaEvolutionHook( void )
 }
 
 #define ScriptInterpreter (*((ScriptInterpreter**)0xD59BFC))
-static int PUTS_FunctionHook( void ) //TGE made this into printf lol
+static int EX_FLW_PRINTF( void ) //TGE made this into printf lol
 {
   char* format = FLW_GetStringArg( 0 );
   u32 scriptArgIndex = 1;
@@ -282,7 +295,7 @@ static u32 GetCountFunctionHook( u32 COUNT )
   }
 }
 
-static int EX_FLW_AI_ACT_PERSONA_SKILLHook( void )
+static int EX_FLW_AI_ACT_PERSONA_SKILL( void )
 {
   btlUnit_Unit* EnemyUnit = FLW_GetBattleUnitStructFromContext();
   if ( CONFIG_ENABLED( enablePersonaEnemies ) )
@@ -569,27 +582,7 @@ static TtyCmdStatus ttyGetAffinityCmd( TtyCmd* cmd, const char** args, u32 argc,
   return TTY_CMD_STATUS_OK;
 }
 
-static u8 NaviBmdBuffer[1024*128];
-static u8 MonaBmdBuffer[1024*128];
-static u64 readBytes;
-
-void loadFileIntoBuffer( u8* buffer, u64 bufferSize, const char* path )
-{
-  FileHandle handle;
-  FileStatus status = fileOpen( &handle, path, FILE_MODE_READ );
-  assert( status == FILE_STATUS_OK && "Failed to open file" );
-
-  u64 fsize;
-  status = fileSize( handle, &fsize );
-  assert( status == FILE_STATUS_OK && "Failed to get file size" );
-  assert( fsize >= sizeof( buffer ) && "File buffer too small" );
-
-  status = fileRead( handle, buffer, fsize, &readBytes );
-  assert( status == FILE_STATUS_OK && "Failed to read file" );
-  assert( readBytes == fsize && "Failed to read file" );
-}
-
-naviID = 8;
+fileHandleStruct* FutabaNavi = 0;
 undefined4* LoadFutabaNaviBMDHook(void)
 {
   DEBUG_LOG("LoadFutabaNaviBMDHook called\n");
@@ -599,9 +592,29 @@ undefined4* LoadFutabaNaviBMDHook(void)
   pmVar1 = MallocAndReturn(0x34);
   pmVar2 = (int *)0x0;
   DEBUG_LOG("Checking if Navi File is loaded\n");
+  
+  int customNaviID = GetCountFunctionHook( 9 );
+  if ( customNaviID <= 1 || customNaviID == 3 || customNaviID > 10 )
+  {
+    customNaviID = 8;
+    SetCountFunctionHook( 9, customNaviID );
+  }
+  char naviPath[128];
+
+  if ( FutabaNavi != (void*)0x0  )
+  {
+    semaphore_WaitPost((int)FutabaNavi);
+    FutabaNavi = (void*)0x0;
+  }
+
+  sprintf(naviPath, "battle/message/navi_%02d.bmd", customNaviID);
   if (pmVar1 != (idkman*)0x0) {
-    printf("/USRDIR/navi_%02d.bmd\n", naviID);
-    FUN_00747f48((undefined4 *)pmVar1, &NaviBmdBuffer, naviID);
+    FutabaNavi = open_file( naviPath, 0 );
+    u64 fsResult = fsSync((int)FutabaNavi);
+    if ( fsResult == 1 )
+    {
+      FUN_00747f48((undefined4 *)pmVar1, FutabaNavi->pointerToFile, customNaviID);
+    }
     DEBUG_LOG("Navi file successfully loaded\n");
     pmVar1->ptr1 = 0x00ba76c0;
     pmVar2 = (int *)pmVar1;
@@ -619,8 +632,12 @@ undefined4* LoadMonaNaviBMDHook(void)
   pmVar2 = (int *)0x0;
   DEBUG_LOG("Checking if Navi File is loaded\n");
   if (pmVar1 != (idkman*)0x0) {
-    printf("/USRDIR/navi_03.bmd\n");
-    FUN_00747f48((undefined4 *)pmVar1, &MonaBmdBuffer, 3);
+    NaviTestFile = open_file( "battle/message/navi_03.bmd", 0 );
+    u64 fsResult = fsSync((int)NaviTestFile);
+    if ( fsResult == 1 )
+    {
+      FUN_00747f48((undefined4 *)pmVar1, NaviTestFile->pointerToFile, 3);
+    }
     DEBUG_LOG("Navi file successfully loaded\n");
     pmVar1->ptr1 = 0x00ba7568;
     pmVar2 = (int *)pmVar1;
@@ -628,18 +645,22 @@ undefined4* LoadMonaNaviBMDHook(void)
   return (undefined4 *)pmVar2;
 }
 
-static TtyCmdStatus ttyLoadBMDCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+static TtyCmdStatus ttyTestFileOpenCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
 {
-  naviID = intParse( args[0] );
-  if ( naviID <= 1 || naviID == 3 )
+  NaviTestFile = open_file( "battle/message/navi_08.bmd", 0 );
+  u64 fsResult = fsSync((int)NaviTestFile);
+  printf("fsSync() result %d\n", fsResult);
+  if ( fsResult == 1 )
   {
-    naviID = 8;
+    printf("Attempting to open Navi BMD file at 0x%08x\nfileStatus %d\nfileName %s\nunk1 0x%08x\nunk2 0x%08x\nunk3 0x%08x\npointerToFile 0x%08x\n", 
+    NaviTestFile, 
+    NaviTestFile->fileStatus,
+    NaviTestFile->filename,
+    NaviTestFile->unk1,
+    NaviTestFile->unk2,
+    NaviTestFile->unk3,
+    NaviTestFile->pointerToFile);
   }
-  char naviPath[128];
-  sprintf(naviPath, "/app_home/navi_%02d.bmd", naviID);
-  printf("Navi ID set to %02d\n", naviID);
-  printf("%s\n", naviPath);
-  loadFileIntoBuffer( NaviBmdBuffer, sizeof( NaviBmdBuffer ), naviPath );
   return TTY_CMD_STATUS_OK;
 }
 
@@ -649,6 +670,8 @@ u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a
 
   char new_acb_path[128];
   char new_awb_path[128];
+
+  int naviID = GetCountFunctionHook(9);
 
   if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 )
   {
@@ -672,7 +695,7 @@ u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a
 u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9)
 {
   printf("FUN_00748d78Hook called\na1 -> %d\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> %d\na7 -> %d\na8 -> %d\na9 -> %d\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
-  if ( naviID == 9 )
+  if ( GetCountFunctionHook(9) == 9 )
   {
     param_3 += 100;
   }
@@ -715,8 +738,7 @@ static TtyCmd ttyCommands[] =
   TTY_CMD( ttyGetAffinityCmd, "getaffinity", "Prints affinity of input enemy", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "int", "enemy id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
 
-    TTY_CMD( ttyLoadBMDCmd, "setnavi", "Custom Navi test", TTY_CMD_FLAG_NONE,
-    TTY_CMD_PARAM( "int", "navi id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
+  TTY_CMD( ttyTestFileOpenCmd, "navi", "Prints the given input back to you", TTY_CMD_FLAG_VARARGS ),
 
   TTY_CMD( ttyGetEnemyBtlUnitCmd, "getenemy", "Prints address and contents of currently saved enemy battle struct", TTY_CMD_FLAG_NONE ),
 
@@ -726,14 +748,88 @@ static TtyCmd ttyCommands[] =
 #ifdef GAME_P5
 
 SHK_HOOK( u64, mainUpdate, f32 deltaTime );
+fileHandleStruct* testBF = 0;
 static u64 mainUpdateHook( f32 deltaTime )
 {
   // Process TTY commands
   ttyCmdProcess( ttyCommands );
+
+  if (testBF == (void*)0x0)
+  {
+    testBF = open_file( "script/test.bf", 0 );
+    u64 fsSyncResult = fsSync((int)testBF);
+  }
+  scrRunScript(0, testBF->pointerToFile, testBF->unk1, 0);
+
   return SHK_CALL_HOOK( mainUpdate, deltaTime );
 }
 
 #endif
+
+scrCommandTableEntry exCommandTable[] =
+{
+  { EX_FLW_PRINTF, 1, "EX_PRINTF" },
+  { EX_FLW_AI_ACT_PERSONA_SKILL, 2, "AI_ACT_PERSONA_SKILL" },
+  { EX_FLW_ReturnEncounterID, 0, "GET_ENCOUNTER_ID" },
+  { EX_FLW_GetEquippedPersona, 1, "GET_EQUIPPED_PERSONA" },
+  { EX_FLW_PersonaEvolution, 2, "PERSONA_EVOLUTION2" },
+  { EX_FLW_GET_SEQ_ID, 0, "GET_SEQ_ID" },
+};
+
+static scrCommandTableEntry* scrGetCommandFuncHook( u32 id )
+{
+  DEBUG_LOG("scrGetCommandFunc called on function ID 0x%04x\n", id);
+  if ( id >= 0x6000 )
+  {
+    DEBUG_LOG("function ID 0x%x called\nName %s\nnumOfArgs %02d\n",
+     id, exCommandTable[id - 0x6000].name, 
+     exCommandTable[id - 0x6000].argCount);
+    return exCommandTable[id & 0x0FFF].function;
+  }
+  else
+  {
+    return SHK_CALL_HOOK(scrGetCommandFunc, id);
+  }
+}
+
+static bool scrGetCommandExistHook( u32 functionID )
+{
+  DEBUG_LOG("scrGetCommandExist called on function ID 0x%04x\n", functionID);
+  if ( functionID >= 0x6000 )
+  {
+    return true;
+  }
+  else
+  {
+    return SHK_CALL_HOOK(scrGetCommandExist, functionID);
+  }
+}
+
+static char* scrGetCommandNameHook( u32 functionID )
+{
+  DEBUG_LOG("scrGetCommandName called on function ID 0x%04x\n", functionID);
+  if ( functionID >= 0x6000 )
+  {
+    return exCommandTable[functionID & 0x0FFF].name;
+  }
+  else
+  {
+    return SHK_CALL_HOOK(scrGetCommandName, functionID);
+  }
+}
+
+static u32 scrGetCommandArgCountHook( u32 functionID )
+{
+  DEBUG_LOG("scrGetCommandArgCount called on function ID 0x%04x\n", functionID);
+  if ( functionID >= 0x6000 )
+  {
+    return exCommandTable[functionID & 0x0FFF].argCount;
+  }
+  else
+  {
+    return SHK_CALL_HOOK(scrGetCommandArgCount, functionID);
+  }
+}
 
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
@@ -744,21 +840,21 @@ void EXFLWInit( void )
   // Hooks must be 'bound' to a handler like this in the start function.
   // If you don't do this, the game will crash.
   SHK_BIND_HOOK( EX_FLW_setHumanLv, EX_FLW_setHumanLvHook );
-  SHK_BIND_HOOK( EX_FLW_GetEquippedPersona, EX_FLW_GetEquippedPersonaHook );
   SHK_BIND_HOOK( PUT_Function, PUT_FunctionHook );
-  SHK_BIND_HOOK( PUTS_Function, PUTS_FunctionHook );
   SHK_BIND_HOOK( PUTF_Function, PUTF_FunctionHook );
-  SHK_BIND_HOOK( EX_FLW_PersonaEvolution, EX_FLW_PersonaEvolutionHook );
-  SHK_BIND_HOOK( EX_FLW_ReturnEncounterID, EX_FLW_ReturnEncounterIDHook );
+  SHK_BIND_HOOK( PUTS_Function, PUTS_FunctionHook );
   SHK_BIND_HOOK( setSeq, setSeqHook );
   SHK_BIND_HOOK( SetCountFunction, SetCountFunctionHook );
   SHK_BIND_HOOK( GetCountFunction, GetCountFunctionHook );
-  SHK_BIND_HOOK( EX_FLW_AI_ACT_PERSONA_SKILL, EX_FLW_AI_ACT_PERSONA_SKILLHook );
   SHK_BIND_HOOK( FLW_AI_ACT_SKILL, FLW_AI_ACT_SKILLHook );
   SHK_BIND_HOOK( FLW_AI_ACT_ATTACK, FLW_AI_ACT_ATTACKHook );
   SHK_BIND_HOOK( BIT_SET_FUNC, BIT_SET_FUNCHook );
   SHK_BIND_HOOK( BIT_CHK_FUNC, BIT_CHK_FUNCHook );
   SHK_BIND_HOOK( BIT_CHK_FUNC_ALT, BIT_CHK_FUNC_ALTHook );
+  SHK_BIND_HOOK( scrGetCommandFunc, scrGetCommandFuncHook );
+  SHK_BIND_HOOK( scrGetCommandExist, scrGetCommandExistHook );
+  SHK_BIND_HOOK( scrGetCommandName, scrGetCommandNameHook );
+  SHK_BIND_HOOK( scrGetCommandArgCount, scrGetCommandArgCountHook );
   // Handle command handling in main update function
   SHK_BIND_HOOK( mainUpdate, mainUpdateHook );
   // Load Custom Navigator file
@@ -766,8 +862,6 @@ void EXFLWInit( void )
   SHK_BIND_HOOK( LoadMonaNaviBMD, LoadMonaNaviBMDHook );
   SHK_BIND_HOOK( LoadNaviSoundFile, LoadNaviSoundFileHook );
   SHK_BIND_HOOK( FUN_00748d78, FUN_00748d78Hook );
-  loadFileIntoBuffer( NaviBmdBuffer, sizeof( NaviBmdBuffer ), "/app_home/navi_08.bmd" );
-  loadFileIntoBuffer( MonaBmdBuffer, sizeof( MonaBmdBuffer ), "/app_home/navi_03.bmd" );
 }
 
 void EXFLWShutdown( void )

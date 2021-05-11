@@ -9,11 +9,11 @@
 
 // Globals
 u16 EncounterIDGlobal;
+u16 sequenceIDGlobal;
 u32 EnemyPersona;
 u32 GlobalEnemyID;
 u32 GlobalCounts[256];
 void* GlobalBtlUnitEnemyAddress;
-int naviID;
 
 typedef struct
 {
@@ -726,13 +726,15 @@ typedef struct
 
 typedef struct
 {
-  u64 stringSize;
-  char* filename[128];
+  u64 fileStatus;
+  char filename[128];
   u32 unk1;
   u32 unk2;
   u32 unk3;
   u32 pointerToFile;
 }fileHandleStruct;
+
+fileHandleStruct* NaviTestFile;
 
 EnemyUnitStatsTBL NewEnemyStatsTBL;
 EnemyAffinityTBL NewEnemyAffinityTBL;
@@ -931,6 +933,9 @@ void FUN_0074ae50( void* a1, char* acb_string, char* awb_string, u32 idk );
 int sndManPlaySfx( int a0, int a1, int a2, int a3, int a4, int a5 );
 int FUN_0090053c( u32 a1, u64 a2, u64 a3 );
 void FUN_00747f48( int* a1, int a2, int a3 );
+u64 fsSync(int a1);
+u64 scrRunScript( u32 a1, u32 a2, u32 a3, u32 a4 );
+int semaphore_WaitPost( int a1 );
 
 #pragma pop
 #endif

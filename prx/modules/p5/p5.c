@@ -190,4 +190,19 @@ void FUN_00747f48( int* a1, int a2, int a3 )
     SHK_FUNCTION_CALL_3( 0x747f48, void, int*, a1, int, a2, int, a3 );
 }
 
+u64 fsSync( int a1 )
+{
+    SHK_FUNCTION_CALL_1(0x114720, u64, int, a1);
+}
+
+u64 scrRunScript( u32 a1, u32 a2, u32 a3, u32 a4 )
+{
+    SHK_FUNCTION_CALL_4( 0x1f1e2c, u64, u32, a1, u32, a2, u32, a3, u32, a4 );
+}
+
+int semaphore_WaitPost( int a1 )
+{
+    SHK_FUNCTION_CALL_1( 0x1141fc, int, int, a1 );
+}
+
 #endif
