@@ -8,7 +8,8 @@ CONFIG_START()
     CONFIG_SETTING( BOOL, enableSumire, "Enable Sumire models", true )
     CONFIG_SETTING( BOOL, enableAkechiMod, "Enable Royal Akechi patches", true )
     CONFIG_SETTING( BOOL, enablePersonaEnemies, "Enable Persona Using Enemies", true )
-    CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore, "BIT_CHK flags to ignore when logging", 100, 
+    CONFIG_SETTING( BOOL, enableExternalNavi, "Enable external navigator text file", true )
+    CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore, "BIT_CHK flags to ignore when logging (1)", 100, 
     0x2101, 0x22ff, 0x2216, 0x2110, 0x2111, 
     0x2112, 0x2113, 0x106e, 0x106f, 0x1070, 
     0x2216, 0x2140, 0x2141, 0x2142, 0x2180, 
@@ -29,7 +30,7 @@ CONFIG_START()
     0x107d, 0x10ce, 0x125b, 0x1268, 0x13ee,
     0x157c, 0x1578, 0x1708, 0x18ef, 0x0057,
     0x1268, 0x13ec, 0x13ed, 0x159d, 0x16d5 )
-    CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore2, "BIT_CHK flags to ignore when logging", 80, 
+    CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore2, "BIT_CHK flags to ignore when logging (2)", 80, 
     0x2101, 0x22ff, 0x2216, 0x2110, 0x2111,
     0x18cb, 0x1a14, 0x1a15, 0x1bd9, 0x1bda,
     0x1bdb, 0x1bdc, 0x1bdd, 0x1bde, 0x1bdf,

@@ -184,11 +184,11 @@ static int EX_FLW_PRINTF( void ) //TGE made this into printf lol
   char* format = FLW_GetStringArg( 0 );
   u32 scriptArgIndex = 1;
 
-  void* args[10];
+  u64 args[10];
   double arg = 0.0;
-  bool argIsFloat[10] = {};
   int argCount = 0;
   bool putNewLine = true;
+  bool printAsFloat = false;
 
   if ( *format == '\\' )
   {
@@ -208,11 +208,19 @@ static int EX_FLW_PRINTF( void ) //TGE made this into printf lol
           if ( next == 0 )
               break;
 
+          // skip number of digits speifier
+          while ( charIsDigit( next ) )
+          {
+              char next = *( ++curFormat );
+              if ( next == 0 )
+                  goto endloop;
+          }
+
           switch ( next )
           {
           case 'c':
           case 's':
-              args[ argCount++ ] = (void*)( FLW_GetStringArg( scriptArgIndex++ ) );
+              args[ argCount++ ] = (u64)( FLW_GetStringArg( scriptArgIndex++ ) );
               break;
 
           case 'd':
@@ -221,7 +229,7 @@ static int EX_FLW_PRINTF( void ) //TGE made this into printf lol
           case 'x':
           case 'X':
           case 'u':
-              args[ argCount++ ] = (void*)( FLW_GetIntArg( scriptArgIndex++ ) );
+              args[ argCount++ ] = (u64)( FLW_GetIntArg( scriptArgIndex++ ) );
               break;
 
           case 'f':
@@ -232,9 +240,9 @@ static int EX_FLW_PRINTF( void ) //TGE made this into printf lol
           case 'A':
           case 'g':
           case 'G':
+              printAsFloat = true;
               arg = (double)( FLW_GetFloatArg( scriptArgIndex++ ) );
-              args[ argCount ] = (void*)( &arg );
-              argIsFloat[ argCount ] = true;
+              args[ argCount ] = *(u64*)( &arg );
               ++scriptArgIndex;
               ++argCount;
               break;
@@ -242,19 +250,44 @@ static int EX_FLW_PRINTF( void ) //TGE made this into printf lol
       }
   }
 
-  switch ( argCount )
+  endloop:
+
+  // Hack in some float prints for now
+  if ( printAsFloat )
   {
-  case 0: printf( format ); break;
-  case 1: printf( format, args[0]); break;
-  case 2: printf( format, args[0], args[1]); break;
-  case 3: printf( format, args[0], args[1], args[2]); break;
-  case 4: printf( format, args[0], args[1], args[2], args[3]); break;
-  case 5: printf( format, args[0], args[1], args[2], args[3], args[4]); break;
-  case 6: printf( format, args[0], args[1], args[2], args[3], args[4], args[5]); break;
-  case 7: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6]); break;
-  case 8: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]); break;
-  case 9: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]); break;
-  case 10: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]); break;
+    // Print everything as floats
+    switch ( argCount )
+    {
+    case 0: printf( format ); break;
+    case 1: printf( format, *(f64*)args[0]); break;
+    case 2: printf( format, *(f64*)args[0], *(f64*)args[1]); break;
+    case 3: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2]); break;
+    case 4: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2], *(f64*)args[3]); break;
+    case 5: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2], *(f64*)args[3], *(f64*)args[4]); break;
+    case 6: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2], *(f64*)args[3], *(f64*)args[4], *(f64*)args[5]); break;
+    case 7: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2], *(f64*)args[3], *(f64*)args[4], *(f64*)args[5], *(f64*)args[6]); break;
+    case 8: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2], *(f64*)args[3], *(f64*)args[4], *(f64*)args[5], *(f64*)args[6], *(f64*)args[7]); break;
+    case 9: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2], *(f64*)args[3], *(f64*)args[4], *(f64*)args[5], *(f64*)args[6], *(f64*)args[7], *(f64*)args[8]); break;
+    case 10: printf( format, *(f64*)args[0], *(f64*)args[1], *(f64*)args[2], *(f64*)args[3], *(f64*)args[4], *(f64*)args[5], *(f64*)args[6], *(f64*)args[7], *(f64*)args[8], *(f64*)args[9]); break;
+    }
+  }
+  else
+  {
+    // Print everything as ints
+    switch ( argCount )
+    {
+    case 0: printf( format ); break;
+    case 1: printf( format, args[0]); break;
+    case 2: printf( format, args[0], args[1]); break;
+    case 3: printf( format, args[0], args[1], args[2]); break;
+    case 4: printf( format, args[0], args[1], args[2], args[3]); break;
+    case 5: printf( format, args[0], args[1], args[2], args[3], args[4]); break;
+    case 6: printf( format, args[0], args[1], args[2], args[3], args[4], args[5]); break;
+    case 7: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6]); break;
+    case 8: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]); break;
+    case 9: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]); break;
+    case 10: printf( format, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]); break;
+    }
   }
 
   if ( putNewLine )
@@ -611,10 +644,11 @@ undefined4* LoadFutabaNaviBMDHook(void)
   if (pmVar1 != (idkman*)0x0) {
     FutabaNavi = open_file( naviPath, 0 );
     u64 fsResult = fsSync((int)FutabaNavi);
-    if ( fsResult == 1 )
+    if ( fsResult == 1 && CONFIG_ENABLED( enableExternalNavi ) )
     {
       FUN_00747f48((undefined4 *)pmVar1, FutabaNavi->pointerToFile, customNaviID);
     }
+    else FUN_00747f48((undefined4 *)pmVar1, 0x00df7fd4, 8); //original functionality
     DEBUG_LOG("Navi file successfully loaded\n");
     pmVar1->ptr1 = 0x00ba76c0;
     pmVar2 = (int *)pmVar1;
@@ -634,10 +668,11 @@ undefined4* LoadMonaNaviBMDHook(void)
   if (pmVar1 != (idkman*)0x0) {
     NaviTestFile = open_file( "battle/message/navi_03.bmd", 0 );
     u64 fsResult = fsSync((int)NaviTestFile);
-    if ( fsResult == 1 )
+    if ( fsResult == 1 && CONFIG_ENABLED( enableExternalNavi ) )
     {
       FUN_00747f48((undefined4 *)pmVar1, NaviTestFile->pointerToFile, 3);
     }
+    else FUN_00747f48((undefined4 *)pmVar1, 0x00ba7568, 3); //original functionality
     DEBUG_LOG("Navi file successfully loaded\n");
     pmVar1->ptr1 = 0x00ba7568;
     pmVar2 = (int *)pmVar1;
@@ -652,11 +687,11 @@ static TtyCmdStatus ttyTestFileOpenCmd( TtyCmd* cmd, const char** args, u32 argc
   printf("fsSync() result %d\n", fsResult);
   if ( fsResult == 1 )
   {
-    printf("Attempting to open Navi BMD file at 0x%08x\nfileStatus %d\nfileName %s\nunk1 0x%08x\nunk2 0x%08x\nunk3 0x%08x\npointerToFile 0x%08x\n", 
+    printf("Attempting to open Navi BMD file at 0x%08x\nfileStatus %d\nfileName %s\nbuffer/file size 0x%08x\nunk2 0x%08x\nunk3 0x%08x\npointerToFile 0x%08x\n", 
     NaviTestFile, 
     NaviTestFile->fileStatus,
     NaviTestFile->filename,
-    NaviTestFile->unk1,
+    NaviTestFile->bufferSize,
     NaviTestFile->unk2,
     NaviTestFile->unk3,
     NaviTestFile->pointerToFile);
@@ -759,7 +794,7 @@ static u64 mainUpdateHook( f32 deltaTime )
     testBF = open_file( "script/test.bf", 0 );
     u64 fsSyncResult = fsSync((int)testBF);
   }
-  scrRunScript(0, testBF->pointerToFile, testBF->unk1, 0);
+  scrRunScript(0, testBF->pointerToFile, testBF->bufferSize, 0);
 
   return SHK_CALL_HOOK( mainUpdate, deltaTime );
 }

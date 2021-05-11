@@ -728,7 +728,7 @@ typedef struct
 {
   u64 fileStatus;
   char filename[128];
-  u32 unk1;
+  u32 bufferSize;
   u32 unk2;
   u32 unk3;
   u32 pointerToFile;
