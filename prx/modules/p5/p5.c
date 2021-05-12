@@ -205,4 +205,14 @@ int semaphore_WaitPost( int a1 )
     SHK_FUNCTION_CALL_1( 0x1141fc, int, int, a1 );
 }
 
+FieldGetIDStruct* FUN_00352f40( void )
+{
+    SHK_FUNCTION_CALL_0( 0x00352f40, FieldGetIDStruct* );
+}
+
+ResourceHandleStruct* FUN_00015c34( int a1 )
+{
+    SHK_FUNCTION_CALL_1( 0x15c34, ResourceHandleStruct*, int, a1 );
+}
+
 #endif

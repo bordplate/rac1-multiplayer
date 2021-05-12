@@ -680,22 +680,20 @@ undefined4* LoadMonaNaviBMDHook(void)
   return (undefined4 *)pmVar2;
 }
 
+fieldworkdataStruct* FieldTestStruct;
 static TtyCmdStatus ttyTestFileOpenCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
 {
-  NaviTestFile = open_file( "battle/message/navi_08.bmd", 0 );
-  u64 fsResult = fsSync((int)NaviTestFile);
-  printf("fsSync() result %d\n", fsResult);
-  if ( fsResult == 1 )
-  {
-    printf("Attempting to open Navi BMD file at 0x%08x\nfileStatus %d\nfileName %s\nbuffer/file size 0x%08x\nunk2 0x%08x\nunk3 0x%08x\npointerToFile 0x%08x\n", 
-    NaviTestFile, 
-    NaviTestFile->fileStatus,
-    NaviTestFile->filename,
-    NaviTestFile->bufferSize,
-    NaviTestFile->unk2,
-    NaviTestFile->unk3,
-    NaviTestFile->pointerToFile);
-  }
+  FieldTestStruct = FUN_00352f40();
+  hexDump("FLD Struct IDK", FieldTestStruct, sizeof(fieldworkdataStruct));
+  return TTY_CMD_STATUS_OK;
+}
+
+ResourceHandleStruct* ModelResourceHandle;
+static TtyCmdStatus ttyTestModelResHndCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+  int ResHnd = intParse( args[0] );
+  ModelResourceHandle = FUN_00015c34(ResHnd);
+  hexDump("Model Resource Handle Struct", ModelResourceHandle, sizeof(ResourceHandleStruct));
   return TTY_CMD_STATUS_OK;
 }
 
@@ -773,7 +771,10 @@ static TtyCmd ttyCommands[] =
   TTY_CMD( ttyGetAffinityCmd, "getaffinity", "Prints affinity of input enemy", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "int", "enemy id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
 
-  TTY_CMD( ttyTestFileOpenCmd, "navi", "Prints the given input back to you", TTY_CMD_FLAG_VARARGS ),
+  TTY_CMD( ttyTestFileOpenCmd, "fld", "Prints the given input back to you", TTY_CMD_FLAG_VARARGS ),
+
+  TTY_CMD( ttyTestModelResHndCmd, "testmodel", "Test Resource handle function", TTY_CMD_FLAG_NONE,
+    TTY_CMD_PARAM( "int", "resource handle id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
 
   TTY_CMD( ttyGetEnemyBtlUnitCmd, "getenemy", "Prints address and contents of currently saved enemy battle struct", TTY_CMD_FLAG_NONE ),
 
