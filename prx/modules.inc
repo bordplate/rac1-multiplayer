@@ -1,6 +1,4 @@
 #include "modules/test/testmodule.h"
-#include "modules/p5/dc/dc.h"
-#include "modules/p5/p5e/p5e.h"
 #include "modules/p5/EXFLW/EXFLW.h"
 
 static ModuleInfo sModules[] =
@@ -11,8 +9,6 @@ static ModuleInfo sModules[] =
     {   "test2",    "test module 2",    "enableTestModule",     NULL,               NULL,                   { "test" } },  
 #endif
 #ifdef GAME_P5
-    {   "EXFLW",    "Expanded Flowscripts Module",    "enableEXFLWModule",     EXFLWInit,  EXFLWShutdown,      NULL    },  
-    {   "dc",       "dc Module",    "enableDCModule",           dcInit,             dcShutdown,             { "EXFLW" } },  
-    {   "p5e",      "P5 Enhanced Module",    "enableP5EModule", p5eInit,            p5eShutdown,            { "EXFLW" } },  
+    {   "EXFLW",    "Expanded Flowscripts Module",    "enableEXFLWModule",     EXFLWInit,  EXFLWShutdown,      NULL    },
 #endif
 };

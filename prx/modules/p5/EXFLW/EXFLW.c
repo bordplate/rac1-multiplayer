@@ -778,27 +778,21 @@ static TtyCmdStatus ttyTestModelResHndCmd( TtyCmd* cmd, const char** args, u32 a
 
 u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 )
 {
-  printf("LoadNaviSoundFile called\n");
-
   char new_acb_path[128];
   char new_awb_path[128];
 
   int naviID = GetCountFunctionHook(9);
 
-  if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 )
+  if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) )
   {
     sprintf( new_acb_path, "sound/battle/spt%02d.acb", naviID );
-    printf( "acp_path %s\n", new_acb_path );
     sprintf( new_awb_path, "sound/battle/spt%02d.awb", naviID );
-    printf( "awb_path %s\n", new_awb_path );
     return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, new_acb_path, new_awb_path, a5);
   }
-  else if ( strcmp( acb_path, "sound_JP/battle/spt02.acb" ) == 0 )
+  else if ( strcmp( acb_path, "sound_JP/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) )
   {
     sprintf( new_acb_path, "sound_JP/battle/spt%02d.acb", naviID );
-    printf( "acp_path %s\n", new_acb_path );
     sprintf( new_awb_path, "sound_JP/battle/spt%02d.awb", naviID );
-    printf( "awb_path %s\n", new_awb_path );
     return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, new_acb_path, new_awb_path, a5);
   }
   return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, acb_path, awb_path, a5);
@@ -806,8 +800,7 @@ u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a
 
 u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9)
 {
-  printf("FUN_00748d78Hook called\na1 -> %d\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> %d\na7 -> %d\na8 -> %d\na9 -> %d\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
-  if ( GetCountFunctionHook(9) == 9 )
+  if ( GetCountFunctionHook(9) == 9 && CONFIG_ENABLED( enableExternalNavi )  )
   {
     param_3 += 100;
   }
