@@ -15,3 +15,79 @@ setBgm:
 setSeq:
     addr: 0x10DB4
     replacedInstr: stdu r1, -0xB0(r1)
+
+PUT_Function:
+    addr: 0x1e9cfc
+    emitTrampoline: no
+
+PUTF_Function:
+    addr: 0x1e9d54
+    emitTrampoline: no
+
+PUTS_Function:
+    addr: 0x1e9d28
+    emitTrampoline: no
+
+EX_FLW_setHumanLv:
+    addr: 0x1edff8
+    emitTrampoline: no
+
+SetCountFunction:
+    addr: 0x24ba4c
+    replacedInstr: lis  r5, 0x10b
+
+GetCountFunction:
+    addr: 0x24bf5c
+    replacedInstr: lis  r4, 0x10b
+
+FLW_AI_ACT_ATTACK:
+    addr: 0x7ba410
+    replacedInstr: stdu  r1, -0x70(r1)
+
+FLW_AI_ACT_SKILL:
+    addr: 0x7ba448
+    replacedInstr: stdu  r1, -0x80(r1)
+
+BIT_CHK_FUNC:
+    addr: 0x24beac
+    replacedInstr: srawi  r4, r3, 0x5
+
+BIT_SET_FUNC:
+    addr: 0x24bef8
+    replacedInstr: srawi  r7, r3, 0x5
+
+BIT_CHK_FUNC_ALT:
+    addr: 0x116a94
+    replacedInstr: lis  r4, 0x107
+
+LoadFutabaNaviBMD:
+    addr: 0x74a3e8
+    emitTrampoline: no
+
+LoadMonaNaviBMD:
+    addr: 0x74a378
+    emitTrampoline: no
+
+LoadNaviSoundFile:
+    addr: 0x10fca4
+    replacedInstr: stdu  r1, -0x80(r1)
+
+FUN_00748d78:
+    addr: 0x748d78
+    replacedInstr: stdu  r1, -0xB0(r1)
+
+scrGetCommandExist:
+    addr: 0x1e9ac0
+    replacedInstr: rlwinm  r4, r3, 0x14, 0x1c, 0x1f
+
+scrGetCommandFunc:
+    addr: 0x1e9b1c
+    replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f
+
+scrGetCommandName:
+    addr: 0x1e9be0
+    replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f
+
+scrGetCommandArgCount:
+    addr: 0x1e9b7c
+    replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f

@@ -21,6 +21,7 @@ typedef enum TtyCmdStatus
 
     /**
      * @brief The TTY command was unable to execute successfully, due to an invalid number of arguments.
+     * 
      */
     TTY_CMD_STATUS_INVALID_ARGC,
 
@@ -139,6 +140,7 @@ typedef struct TtyCmd
 {
     /**
      * @brief The command name.
+     * 
      */
     const char* name;
 

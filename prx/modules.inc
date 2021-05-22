@@ -1,4 +1,5 @@
 #include "modules/test/testmodule.h"
+#include "modules/p5/EXFLW/EXFLW.h"
 
 static ModuleInfo sModules[] =
 {
@@ -8,5 +9,6 @@ static ModuleInfo sModules[] =
     {   "test2",    "test module 2",    "enableTestModule",     NULL,               NULL,                   { "test" } },  
 #endif
 #ifdef GAME_P5
+    {   "EXFLW",    "Expanded Flowscripts Module",    "enableEXFLWModule",     EXFLWInit,  EXFLWShutdown,      NULL    },
 #endif
 };
