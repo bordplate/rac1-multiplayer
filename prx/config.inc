@@ -3,9 +3,9 @@ CONFIG_START()
 
 #ifdef GAME_P5
     CONFIG_SETTING( BOOL, enableEXFLWModule, "Enable Flowscripts module", true )
-    CONFIG_SETTING( BOOL, enablePersonaEnemies, "Enable Persona Using Enemies", true )
-    CONFIG_SETTING( BOOL, enableExternalNavi, "Enable external navigator text file", true )
-    CONFIG_SETTING( BOOL, enableCustomNaviSoundPack, "Enable Custom Navigator SoundPack", true )
+    CONFIG_SETTING( BOOL, enablePersonaEnemies, "Enable Persona Using Enemies", false )
+    CONFIG_SETTING( BOOL, enableExternalNavi, "Enable external navigator text file", false )
+    CONFIG_SETTING( BOOL, enableCustomNaviSoundPack, "Enable Custom Navigator SoundPack", false )
     CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore, "BIT_CHK flags to ignore when logging (1)", 100, 
     0x2101, 0x22ff, 0x2216, 0x2110, 0x2111, 
     0x2112, 0x2113, 0x106e, 0x106f, 0x1070, 
