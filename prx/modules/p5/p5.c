@@ -215,4 +215,84 @@ ResourceHandleStruct* FUN_00015c34( int a1 )
     SHK_FUNCTION_CALL_1( 0x15c34, ResourceHandleStruct*, int, a1 );
 }
 
+int FUN_00014a38(u32 param_1, u32 param_2, u32 param_3, float param_4, float param_5)
+{
+    SHK_FUNCTION_CALL_5( 0x14a38, int, u32, param_1, u32, param_2,  u32, param_3, float, param_4, float, param_5 ); 
+}
+
+void FUN_000148dc(double param_1, u64* param_2, int param_3)
+{
+    SHK_FUNCTION_CALL_3( 0x148dc, void, double, param_1, u64*, param_2, int, param_3 );
+}
+
+void FUN_00324b70(u64* param_1, u64* param_2, u64 param_3)
+{
+    SHK_FUNCTION_CALL_3( 0x324b70, void, u64*, param_1, u64*, param_2, u64, param_3 );
+}
+
+u64 FUN_0032c3d4( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x32c3d4, u64, int, arg );
+}
+
+u64 FUN_002ab314( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x2ab314, u64, int, arg );
+}
+
+int FUN_00320b1c( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x320b1c, int, int, arg );
+}
+
+u64 FUN_002e1338(u64* param_1, u64* param_2, char param_3)
+{
+    SHK_FUNCTION_CALL_3( 0x2e1338, u64, u64*, param_1, u64*, param_2, char, param_3 );
+}
+
+bool FUN_002d128c(int param_1, u64 param_2)
+{
+    SHK_FUNCTION_CALL_2( 0x2d128c, bool, int, param_1, u64, param_2 );
+}
+
+u64 FUN_002d7b6c( int* arg )
+{
+    SHK_FUNCTION_CALL_1( 0x2d7b6c, u64, int*, arg );
+}
+
+int FUN_003316e0( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x3316e0, int, int, arg );
+}
+
+int FUN_002d7b18( int* arg )
+{
+    SHK_FUNCTION_CALL_1( 0x2d7b18, int, int*, arg );
+}
+
+undefined8 FUN_002d0870( int* arg )
+{
+    SHK_FUNCTION_CALL_1( 0x2d0870, undefined8, int*, arg );
+}
+
+undefined8 FUN_002d08b4( int* arg )
+{
+    SHK_FUNCTION_CALL_1( 0x2d08b4, undefined8, int*, arg );
+}
+
+void FUN_0003b4b8(int param_1, char param_2)
+{
+    SHK_FUNCTION_CALL_2( 0x3b4b8, void, int, param_1, char, param_2 );
+}
+
+void FUN_0003b510(int param_1, char param_2)
+{
+    SHK_FUNCTION_CALL_2( 0x3b510, void, int, param_1, char, param_2 );
+}
+
+void FUN_002d9d00(undefined4* param_1)
+{
+    SHK_FUNCTION_CALL_1( 0x2d9d00, void, undefined4*, param_1 );
+}
+
 #endif

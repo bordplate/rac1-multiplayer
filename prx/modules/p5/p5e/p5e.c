@@ -135,6 +135,16 @@ void* LoadEPLHook( char* EPL, u8 a2 )
   {
     isAmbush = true;
   }
+  else if ( strcmp( EPL, "battle/event/BCD/j_sien/bes_j_htb.EPL" ) == 0 )
+  {
+    u32 FutabaOutfit = PlayerUnitGetModelMinorID( 8, 50, 0 );
+    if ( FutabaOutfit != 51 )
+    {
+      char newOutfitEPL[128];
+      sprintf(newOutfitEPL, "battle/event/BCD/j_sien/bes_j_htb_%03d.EPL", FutabaOutfit);
+      return SHK_CALL_HOOK( LoadEPL, newOutfitEPL, a2 );
+    }
+  }
   return SHK_CALL_HOOK( LoadEPL, EPL, a2 );
 }
 

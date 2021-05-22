@@ -938,7 +938,7 @@ typedef struct
 typedef struct ResourceHandleStruct
 {
   u32 field00;
-  u32 field04;
+  u32 ModelIDs;
   u32 handle;
   u32 field0c;
   u32 field10;
@@ -1280,6 +1280,22 @@ u64 scrRunScript( u32 a1, u32 a2, u32 a3, u32 a4 );
 int semaphore_WaitPost( int a1 );
 FieldGetIDStruct* FUN_00352f40( void );
 ResourceHandleStruct* FUN_00015c34( int a1 );
+int FUN_00014a38(u32 param_1, u32 param_2, u32 param_3, float param_4, float param_5);
+void FUN_000148dc(double param_1, u64* param_2, int param_3);
+void FUN_00324b70(u64* param_1, u64* param_2, u64 param_3);
+u64 FUN_0032c3d4( int a1 );
+u64 FUN_002ab314( int a1 );
+int FUN_00320b1c( int a1 );
+u64 FUN_002e1338(u64* param_1, u64* param_2, char param_3);
+bool FUN_002d128c(int param_1, u64 param_2);
+u64 FUN_002d7b6c(int* param_1);
+int FUN_003316e0(int param_1);
+int FUN_002d7b18(int* param_1);
+undefined8 FUN_002d0870(int* param_1);
+undefined8 FUN_002d08b4(int* param_1);
+void FUN_0003b4b8(int param_1, char param_2);
+void FUN_0003b510(int param_1, char param_2);
+void FUN_002d9d00(undefined4* param_1);
 
 #pragma pop
 #endif

@@ -353,6 +353,106 @@ static int FLW_AI_ACT_ATTACKHook( void )
   return SHK_CALL_HOOK(FLW_AI_ACT_ATTACK);
 }
 
+static int EX_FLD_MODEL_ANIM(void)
+{
+  u32 uVar1;
+  int reshnd;
+  ResourceHandleStruct *pMVar4;
+  int animIndex;
+  int isLoop;
+  double unk;
+  fieldworkdataStruct *pFVar5;
+  fieldworkdataStruct *pFVar6;
+  u64 uVar2;
+  ResourceHandleStruct *pMVar7;
+  undefined8 uVar3;
+  ResourceHandleStruct *pMVar8;
+  bool bVar9;
+  bool bVar10;
+  int *piVar11;
+  double animSpeed;
+  
+  reshnd = FLW_GetIntArg(0);
+  pMVar4 = FUN_00015c34(reshnd);
+  if (pMVar4 != (ResourceHandleStruct *)0x0) {
+    animIndex = FLW_GetIntArg(1);
+    isLoop = FLW_GetIntArg(2);
+    unk = FLW_GetFloatArg(3);
+    animSpeed = FLW_GetFloatArg(4);
+    __builtin_clz(isLoop);
+    FUN_00014a38((u32)pMVar4, 1, (u32)((u64)animIndex & 0xffffffffU), unk / 30.0, 1.0);
+    FUN_000148dc(animSpeed,(u64 *)pMVar4,0);
+    pFVar5 = FUN_00352f40();
+    pFVar6 = FUN_00352f40();
+    if (((pFVar6 == (fieldworkdataStruct *)0x0) || (isLoop = FUN_003316e0((int)pFVar6), isLoop == 0)) &&
+       (pFVar5 != (fieldworkdataStruct *)0x0)) {
+      FUN_00324b70((u64 *)pFVar5->field1b8, (u64 *)pMVar4, (s64)animIndex & 0xffffffffU);
+      uVar2 = FUN_0032c3d4((int)pFVar5);
+      pMVar7 = (ResourceHandleStruct *)uVar2;
+      if (pMVar7 == (ResourceHandleStruct *)0x0) {
+        pMVar8 = (ResourceHandleStruct *)0x0;
+      }
+      else {
+        pMVar8 = (ResourceHandleStruct *)0x0;
+        if ((*(u64 *)&pMVar7->field10 & 0x80000) != 0) {
+          pMVar8 = pMVar7;
+        }
+      }
+      if (pMVar4 == pMVar8) {
+        FUN_002ab314(pFVar5->fieldd4);
+      }
+      uVar1 = (u32)((u64)*(undefined8 *)pMVar4 >> 0x3a);
+      animIndex = FUN_00320b1c((int)pFVar5);
+      if ((animIndex != 0) && ((uVar1 == 2 || (uVar1 == 5)))) {
+        uVar2 = FUN_002e1338((u64 *)pFVar5,(u64 *)pMVar4,'\0');
+        piVar11 = (int *)uVar2;
+        if (piVar11 != (int *)0x0) {
+          animIndex = FUN_002d128c((int)piVar11,0x80000);
+          if (animIndex == 0) {
+            uVar2 = FUN_002d7b6c(piVar11);
+            animIndex = (int)uVar2;
+            if (animIndex < 5) {
+              if (animIndex < 2) {
+                return 1;
+              }
+            }
+            else {
+              if (animIndex < 7) {
+                if (animIndex < 6) {
+                  return 1;
+                }
+              }
+              else {
+                if (animIndex != 0x12) {
+                  return 1;
+                }
+              }
+            }
+            FUN_002d7b18(piVar11);
+          }
+          else {
+            FUN_002d7b18(piVar11);
+            uVar3 = FUN_002d0870(piVar11);
+            if ((int)uVar3 == 0) {
+              uVar3 = FUN_002d08b4(piVar11);
+              bVar9 = (int)uVar3 != 0;
+              bVar10 = bVar9;
+            }
+            else {
+              bVar9 = true;
+              bVar10 = false;
+            }
+            FUN_0003b4b8((int)pMVar4,bVar9);
+            FUN_0003b510((int)pMVar4,bVar10);
+            FUN_002d9d00(piVar11);
+          }
+        }
+      }
+    }
+  }
+  return 1;
+}
+
 inline void scrPushInt( int val ) 
 {
   ScriptInterpreter->mStackValues[ ScriptInterpreter->mNumStackValues ] = val;
@@ -602,19 +702,6 @@ static TtyCmdStatus ttyGetEnemyBtlUnitCmd( TtyCmd* cmd, const char** args, u32 a
   return TTY_CMD_STATUS_OK;
 }
 
-#define EnemyAffinityTBL (*((EnemyAffinityTBL**)0xD79FA8))
-
-static TtyCmdStatus ttyGetAffinityCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
-{
-  u32 enemyID = intParse( args[0] );
-  if ( enemyID > 350 )
-  {
-    *error = "Enemy ID should not exceed 350";
-    return TTY_CMD_STATUS_INVALID_ARG;
-  }
-  return TTY_CMD_STATUS_OK;
-}
-
 fileHandleStruct* FutabaNavi = 0;
 undefined4* LoadFutabaNaviBMDHook(void)
 {
@@ -678,14 +765,6 @@ undefined4* LoadMonaNaviBMDHook(void)
     pmVar2 = (int *)pmVar1;
   }
   return (undefined4 *)pmVar2;
-}
-
-fieldworkdataStruct* FieldTestStruct;
-static TtyCmdStatus ttyTestFileOpenCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
-{
-  FieldTestStruct = FUN_00352f40();
-  hexDump("FLD Struct IDK", FieldTestStruct, sizeof(fieldworkdataStruct));
-  return TTY_CMD_STATUS_OK;
 }
 
 ResourceHandleStruct* ModelResourceHandle;
@@ -768,11 +847,6 @@ static TtyCmd ttyCommands[] =
   TTY_CMD( ttyPartyOutCmd, "partyout", "Removes a party member from current active party", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "playerID", "ID of party member to remove", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
 
-  TTY_CMD( ttyGetAffinityCmd, "getaffinity", "Prints affinity of input enemy", TTY_CMD_FLAG_NONE,
-    TTY_CMD_PARAM( "int", "enemy id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
-
-  TTY_CMD( ttyTestFileOpenCmd, "fld", "Prints the given input back to you", TTY_CMD_FLAG_VARARGS ),
-
   TTY_CMD( ttyTestModelResHndCmd, "testmodel", "Test Resource handle function", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "int", "resource handle id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
 
@@ -810,6 +884,7 @@ scrCommandTableEntry exCommandTable[] =
   { EX_FLW_GetEquippedPersona, 1, "GET_EQUIPPED_PERSONA" },
   { EX_FLW_PersonaEvolution, 2, "PERSONA_EVOLUTION2" },
   { EX_FLW_GET_SEQ_ID, 0, "GET_SEQ_ID" },
+  { EX_FLD_MODEL_ANIM, 5, "EX_FLD_MODEL_ANIM" },
 };
 
 static scrCommandTableEntry* scrGetCommandFuncHook( u32 id )
