@@ -3,9 +3,29 @@ CONFIG_START()
 
 #ifdef GAME_P5
     CONFIG_SETTING( BOOL, enableEXFLWModule, "Enable Flowscripts module", true )
-    CONFIG_SETTING( BOOL, enablePersonaEnemies, "Enable Persona Using Enemies", false )
+    CONFIG_SETTING( BOOL, enableDCModule, "Enable dc module", true )
+    CONFIG_SETTING( BOOL, enableP5EModule, "Enable P5 Enhanced module", true )
+    CONFIG_SETTING( BOOL, enableSumire, "Enable Sumire models", true )
+    CONFIG_SETTING( BOOL, enableCutsceneOutfits, "Enable Player Outfits in cutscenes", true )
+    CONFIG_SETTING( BOOL, enableAkechiMod, "Enable Royal Akechi patches", true )
+    CONFIG_SETTING( BOOL, enablePersonaEnemies, "Enable Persona Using Enemies", true )
     CONFIG_SETTING( BOOL, enableExternalNavi, "Enable external navigator text file", false )
     CONFIG_SETTING( BOOL, enableCustomNaviSoundPack, "Enable Custom Navigator SoundPack", false )
+    CONFIG_SETTING( BOOL, forceSingleCombatGAP, "Force Single GAP Player Combat Animations", true )
+    CONFIG_SETTING( BOOL, enableModCPK, "Enable mod cpk", true )
+    CONFIG_SETTING( STRING,  modCPKName,"mod cpk name",  "mod" )
+    CONFIG_SETTING( INT,  extraModCPK,  "Number of extra mod cpk", 0 )
+    CONFIG_SETTING_ARRAY( STRING, extraModCPKName, "names of extra mod cpk", 100,
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod")
     CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore, "BIT_CHK flags to ignore when logging (1)", 100, 
     0x2101, 0x22ff, 0x2216, 0x2110, 0x2111, 
     0x2112, 0x2113, 0x106e, 0x106f, 0x1070, 

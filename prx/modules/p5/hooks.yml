@@ -91,3 +91,7 @@ scrGetCommandName:
 scrGetCommandArgCount:
     addr: 0x1e9b7c
     replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f
+
+criFs_Initialize:
+    addr: 0x114C7C
+    emitTrampoline: no

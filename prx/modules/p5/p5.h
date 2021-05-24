@@ -1296,6 +1296,12 @@ undefined8 FUN_002d08b4(int* param_1);
 void FUN_0003b4b8(int param_1, char param_2);
 void FUN_0003b510(int param_1, char param_2);
 void FUN_002d9d00(undefined4* param_1);
+char* FUN_00968be8( void );
+char* FUN_00968bf4( void );
+char* FUN_001a5834( void );
+int criFsBinder_BindCpk( char* a1 );
+int FUN_00ab563c( int* a1 );
+int FUN_001a52f8( int a1 );
 
 #pragma pop
 #endif

@@ -30,6 +30,7 @@ SHK_HOOK( int, PUTF_Function );
 SHK_HOOK( int, PUTS_Function );
 SHK_HOOK( int, FLW_AI_ACT_ATTACK );
 SHK_HOOK( int, FLW_AI_ACT_SKILL );
+SHK_HOOK( int, criFs_Initialize );
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
 SHK_HOOK( void, SetCountFunction, u32 a1, u32 a2 );
 SHK_HOOK( int, GetCountFunction, u32 a1 );
@@ -935,6 +936,55 @@ static u32 scrGetCommandArgCountHook( u32 functionID )
   }
 }
 
+int criFs_InitializeHook( void )
+{
+  int iVar1;
+  char *pcVar2;
+  char *pcVar3;
+  char acStack288 [264];
+
+  iVar1 = FUN_00ab563c(0x00d4bd54);
+  iVar1 = FUN_001a52f8(iVar1);
+  if (iVar1 != 2) 
+  {
+    pcVar2 = FUN_001a5834();
+    sprintf(acStack288,"%s/hdd.cpk",pcVar2);
+    criFsBinder_BindCpk(acStack288);
+  }
+  
+  if ( CONFIG_ENABLED( enableModCPK ) )
+  {
+    pcVar2 = FUN_00968be8();
+    pcVar3 = FUN_00968bf4();
+    iVar1 = sprintf(acStack288,"%s%s/%s.cpk",pcVar2,pcVar3, CONFIG_STRING(modCPKName));
+    iVar1 = criFsBinder_BindCpk(acStack288);
+  }
+
+  u32 extraCPK = CONFIG_INT( extraModCPK );
+  if ( CONFIG_ENABLED( enableModCPK ) && extraCPK > 0 )
+  {
+    for (int i = 0; i < extraCPK; i++)
+    {
+      pcVar2 = FUN_00968be8();
+      pcVar3 = FUN_00968bf4();
+      iVar1 = sprintf(acStack288,"%s%s/%s_%02d.cpk", pcVar2, pcVar3, CONFIG_STRING_ARRAY(extraModCPKName)[i], i + 1);
+      iVar1 = criFsBinder_BindCpk(acStack288);
+    }
+  }
+
+  pcVar2 = FUN_00968be8();
+  pcVar3 = FUN_00968bf4();
+  iVar1 = sprintf(acStack288,"%s%s/ps3.cpk",pcVar2,pcVar3);
+  iVar1 = criFsBinder_BindCpk(acStack288);
+
+  pcVar2 = FUN_00968be8();
+  pcVar3 = FUN_00968bf4();
+  iVar1 = sprintf(acStack288,"%s%s/data.cpk",pcVar2,pcVar3);
+  iVar1 = criFsBinder_BindCpk(acStack288);
+
+  return iVar1;
+}
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
@@ -966,6 +1016,7 @@ void EXFLWInit( void )
   SHK_BIND_HOOK( LoadMonaNaviBMD, LoadMonaNaviBMDHook );
   SHK_BIND_HOOK( LoadNaviSoundFile, LoadNaviSoundFileHook );
   SHK_BIND_HOOK( FUN_00748d78, FUN_00748d78Hook );
+  SHK_BIND_HOOK( criFs_Initialize, criFs_InitializeHook );
 }
 
 void EXFLWShutdown( void )

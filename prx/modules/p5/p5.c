@@ -295,4 +295,34 @@ void FUN_002d9d00(undefined4* param_1)
     SHK_FUNCTION_CALL_1( 0x2d9d00, void, undefined4*, param_1 );
 }
 
+char* FUN_00968be8( void )
+{
+    SHK_FUNCTION_CALL_0( 0x968be8, char* );
+}
+
+char* FUN_00968bf4( void )
+{
+    SHK_FUNCTION_CALL_0( 0x968bf4, char* );
+}
+
+char* FUN_001a5834( void )
+{
+    SHK_FUNCTION_CALL_0( 0x1a5834, char* );
+}
+
+int criFsBinder_BindCpk( char* arg )
+{
+    SHK_FUNCTION_CALL_1( 0x114b74, int, char*, arg );
+}
+
+int FUN_00ab563c( int* arg )
+{
+    SHK_FUNCTION_CALL_1( 0xab563c, int, int*, arg );
+}
+
+int FUN_001a52f8( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x1a52f8, int, int, arg );
+}
+
 #endif
