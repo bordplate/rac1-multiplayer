@@ -30,7 +30,6 @@ SHK_HOOK( int, PUTF_Function );
 SHK_HOOK( int, PUTS_Function );
 SHK_HOOK( int, FLW_AI_ACT_ATTACK );
 SHK_HOOK( int, FLW_AI_ACT_SKILL );
-SHK_HOOK( int, criFs_Initialize );
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
 SHK_HOOK( void, SetCountFunction, u32 a1, u32 a2 );
 SHK_HOOK( int, GetCountFunction, u32 a1 );
@@ -43,6 +42,7 @@ SHK_HOOK( char*, scrGetCommandName, u32 a1 );
 SHK_HOOK( scrCommandTableEntry*, scrGetCommandFunc, u32 id );
 SHK_HOOK( undefined4*, LoadFutabaNaviBMD, void );
 SHK_HOOK( undefined4*, LoadMonaNaviBMD, void );
+SHK_HOOK( void, SomethingAboutSelectingNaviSoundToLoad );
 SHK_HOOK( u64, LoadNaviSoundFile, u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 );
 SHK_HOOK( u64, FUN_00748d78, u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9);
 
@@ -334,7 +334,7 @@ static int EX_FLW_AI_ACT_PERSONA_SKILL( void )
   btlUnit_Unit* EnemyUnit = FLW_GetBattleUnitStructFromContext();
   if ( CONFIG_ENABLED( enablePersonaEnemies ) )
   {
-    SetCountFunctionHook( 300, FLW_GetIntArg(0) );
+    EnemyPersona = FLW_GetIntArg(0);
     DEBUG_LOG(" Enemy Persona set to %03d with skillID %03d\n", EnemyPersona, EnemyUnit->context.enemy.ActSkillID);
   }
   EnemyUnit->context.enemy.ActSkillID = FLW_GetIntArg(1);
@@ -344,13 +344,13 @@ static int EX_FLW_AI_ACT_PERSONA_SKILL( void )
 
 static int FLW_AI_ACT_SKILLHook( void )
 {
-  SetCountFunctionHook( 300, 0 );
+  EnemyPersona = 0;
   return SHK_CALL_HOOK(FLW_AI_ACT_SKILL);
 }
 
 static int FLW_AI_ACT_ATTACKHook( void )
 {
-  SetCountFunctionHook( 300, 0 );
+  EnemyPersona = 0;
   return SHK_CALL_HOOK(FLW_AI_ACT_ATTACK);
 }
 
@@ -574,7 +574,7 @@ static TtyCmdStatus ttyGetCountCmd( TtyCmd* cmd, const char** args, u32 argc, ch
     *error = "Count should not be higher than 512";
     return TTY_CMD_STATUS_INVALID_ARG;
   }
-  GetCountFunctionHook( count );
+  printf("%d\n",GetCountFunctionHook( count ));
   return TTY_CMD_STATUS_OK;
 }
 
@@ -626,7 +626,7 @@ static TtyCmdStatus ttyHealHPCmd( TtyCmd* cmd, const char** args, u32 argc, char
   return TTY_CMD_STATUS_OK;
 }
 
-void PartyIn( int unitID )
+static void PartyIn( int unitID )
 {
   int v0; // r30
   int i; // r30
@@ -704,7 +704,7 @@ static TtyCmdStatus ttyGetEnemyBtlUnitCmd( TtyCmd* cmd, const char** args, u32 a
 }
 
 fileHandleStruct* FutabaNavi = 0;
-undefined4* LoadFutabaNaviBMDHook(void)
+static undefined4* LoadFutabaNaviBMDHook(void)
 {
   DEBUG_LOG("LoadFutabaNaviBMDHook called\n");
   idkman* pmVar1;
@@ -744,7 +744,7 @@ undefined4* LoadFutabaNaviBMDHook(void)
   return (undefined4 *)pmVar2;
 }
 
-undefined4* LoadMonaNaviBMDHook(void)
+static undefined4* LoadMonaNaviBMDHook(void)
 {
   DEBUG_LOG("LoadMonaNaviBMDHook called\n");
   idkman* pmVar1;
@@ -777,20 +777,20 @@ static TtyCmdStatus ttyTestModelResHndCmd( TtyCmd* cmd, const char** args, u32 a
   return TTY_CMD_STATUS_OK;
 }
 
-u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 )
+static u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 )
 {
   char new_acb_path[128];
   char new_awb_path[128];
 
   int naviID = GetCountFunctionHook(9);
 
-  if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) )
+  if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) && naviID != 8 )
   {
     sprintf( new_acb_path, "sound/battle/spt%02d.acb", naviID );
     sprintf( new_awb_path, "sound/battle/spt%02d.awb", naviID );
     return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, new_acb_path, new_awb_path, a5);
   }
-  else if ( strcmp( acb_path, "sound_JP/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) )
+  else if ( strcmp( acb_path, "sound_JP/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) && naviID != 8 )
   {
     sprintf( new_acb_path, "sound_JP/battle/spt%02d.acb", naviID );
     sprintf( new_awb_path, "sound_JP/battle/spt%02d.awb", naviID );
@@ -799,12 +799,13 @@ u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a
   return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, acb_path, awb_path, a5);
 }
 
-u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9)
+static u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9)
 {
   if ( GetCountFunctionHook(9) == 9 && CONFIG_ENABLED( enableExternalNavi )  )
   {
     param_3 += 100;
   }
+  printf("Navi dialogue function called\na1 -> %x\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> %x\na7 -> %d\na8 -> %d\na9 -> %d\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
   return SHK_CALL_HOOK(FUN_00748d78, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
 }
 // List of commands that can be handled by the command listener
@@ -883,12 +884,12 @@ scrCommandTableEntry exCommandTable[] =
 
 static scrCommandTableEntry* scrGetCommandFuncHook( u32 id )
 {
-  DEBUG_LOG("scrGetCommandFunc called on function ID 0x%04x\n", id);
+  // DEBUG_LOG("scrGetCommandFunc called on function ID 0x%04x\n", id);
   if ( id >= 0x6000 )
   {
-    DEBUG_LOG("function ID 0x%x called\nName %s\nnumOfArgs %02d\n",
-     id, exCommandTable[id - 0x6000].name, 
-     exCommandTable[id - 0x6000].argCount);
+    // DEBUG_LOG("function ID 0x%x called\nName %s\nnumOfArgs %02d\n",
+    // id, exCommandTable[id - 0x6000].name, 
+    // exCommandTable[id - 0x6000].argCount);
     return exCommandTable[id & 0x0FFF].function;
   }
   else
@@ -899,7 +900,7 @@ static scrCommandTableEntry* scrGetCommandFuncHook( u32 id )
 
 static bool scrGetCommandExistHook( u32 functionID )
 {
-  DEBUG_LOG("scrGetCommandExist called on function ID 0x%04x\n", functionID);
+  // DEBUG_LOG("scrGetCommandExist called on function ID 0x%04x\n", functionID);
   if ( functionID >= 0x6000 )
   {
     return true;
@@ -912,7 +913,7 @@ static bool scrGetCommandExistHook( u32 functionID )
 
 static char* scrGetCommandNameHook( u32 functionID )
 {
-  DEBUG_LOG("scrGetCommandName called on function ID 0x%04x\n", functionID);
+  // DEBUG_LOG("scrGetCommandName called on function ID 0x%04x\n", functionID);
   if ( functionID >= 0x6000 )
   {
     return exCommandTable[functionID & 0x0FFF].name;
@@ -925,7 +926,7 @@ static char* scrGetCommandNameHook( u32 functionID )
 
 static u32 scrGetCommandArgCountHook( u32 functionID )
 {
-  DEBUG_LOG("scrGetCommandArgCount called on function ID 0x%04x\n", functionID);
+  // DEBUG_LOG("scrGetCommandArgCount called on function ID 0x%04x\n", functionID);
   if ( functionID >= 0x6000 )
   {
     return exCommandTable[functionID & 0x0FFF].argCount;
@@ -936,53 +937,16 @@ static u32 scrGetCommandArgCountHook( u32 functionID )
   }
 }
 
-int criFs_InitializeHook( void )
+static void SomethingAboutSelectingNaviSoundToLoadHook ( NaviSoundStructIDK* a1 )
 {
-  int iVar1;
-  char *pcVar2;
-  char *pcVar3;
-  char acStack288 [264];
-
-  iVar1 = FUN_00ab563c(0x00d4bd54);
-  iVar1 = FUN_001a52f8(iVar1);
-  if (iVar1 != 2) 
+  int fakeNaviID = 8;
+  if (a1->navisubstruct->naviID == 9 && GetCountFunctionHook(9) == 9) 
   {
-    pcVar2 = FUN_001a5834();
-    sprintf(acStack288,"%s/hdd.cpk",pcVar2);
-    criFsBinder_BindCpk(acStack288);
+    a1->navisubstruct->naviID = 8;
+    fakeNaviID = 9;
   }
-  
-  if ( CONFIG_ENABLED( enableModCPK ) )
-  {
-    pcVar2 = FUN_00968be8();
-    pcVar3 = FUN_00968bf4();
-    iVar1 = sprintf(acStack288,"%s%s/%s.cpk",pcVar2,pcVar3, CONFIG_STRING(modCPKName));
-    iVar1 = criFsBinder_BindCpk(acStack288);
-  }
-
-  u32 extraCPK = CONFIG_INT( extraModCPK );
-  if ( CONFIG_ENABLED( enableModCPK ) && extraCPK > 0 )
-  {
-    for (int i = 0; i < extraCPK; i++)
-    {
-      pcVar2 = FUN_00968be8();
-      pcVar3 = FUN_00968bf4();
-      iVar1 = sprintf(acStack288,"%s%s/%s_%02d.cpk", pcVar2, pcVar3, CONFIG_STRING_ARRAY(extraModCPKName)[i], i + 1);
-      iVar1 = criFsBinder_BindCpk(acStack288);
-    }
-  }
-
-  pcVar2 = FUN_00968be8();
-  pcVar3 = FUN_00968bf4();
-  iVar1 = sprintf(acStack288,"%s%s/ps3.cpk",pcVar2,pcVar3);
-  iVar1 = criFsBinder_BindCpk(acStack288);
-
-  pcVar2 = FUN_00968be8();
-  pcVar3 = FUN_00968bf4();
-  iVar1 = sprintf(acStack288,"%s%s/data.cpk",pcVar2,pcVar3);
-  iVar1 = criFsBinder_BindCpk(acStack288);
-
-  return iVar1;
+  SHK_CALL_HOOK(SomethingAboutSelectingNaviSoundToLoad, a1);
+  a1->navisubstruct->naviID = fakeNaviID;
 }
 
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
@@ -1016,7 +980,7 @@ void EXFLWInit( void )
   SHK_BIND_HOOK( LoadMonaNaviBMD, LoadMonaNaviBMDHook );
   SHK_BIND_HOOK( LoadNaviSoundFile, LoadNaviSoundFileHook );
   SHK_BIND_HOOK( FUN_00748d78, FUN_00748d78Hook );
-  SHK_BIND_HOOK( criFs_Initialize, criFs_InitializeHook );
+  SHK_BIND_HOOK( SomethingAboutSelectingNaviSoundToLoad, SomethingAboutSelectingNaviSoundToLoadHook );
 }
 
 void EXFLWShutdown( void )

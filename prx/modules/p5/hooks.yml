@@ -60,6 +60,94 @@ BIT_CHK_FUNC_ALT:
     addr: 0x116a94
     replacedInstr: lis  r4, 0x107
 
+BlackMaskBossVoice:
+    addr: 0x74c12c
+    replacedInstr: stdu  r1, -0x890(r1)
+
+LoadPlayerCombatVoicePack:
+    addr: 0x74b124
+    emitTrampoline: no
+
+LoadPartyPanelSPD:
+    addr: 0x1c2c74
+    replacedInstr: stdu  r1, -0x80(r1)
+
+LoadPartyPanelPLG:
+    addr: 0x118280
+    replacedInstr: stdu  r1, -0xA0(r1)
+
+Load2DUIDDS:
+    addr: 0x426ab8
+    replacedInstr: stdu  r1, -0x90(r1)
+
+LoadBEDFile:
+    addr: 0x735164
+    replacedInstr: stdu  r1, -0xC0(r1)
+
+LoadCombatCutin:
+    addr: 0x967abc
+    replacedInstr: stdu  r1, -0xB0(r1)
+
+LoadAnimationPack:
+    addr: 0x190ac
+    replacedInstr: stdu  r1, -0x70(r1)
+
+LoadBCDFunction:
+    addr: 0x877b68
+    replacedInstr: stdu  r1, -0xA0(r1)
+
+CombatPersonaCueID:
+    addr: 0xb25390
+    emitTrampoline: no
+
+setBlackMaskCueID:
+    addr: 0xb2d664
+    emitTrampoline: no
+
+GenericCharacterModelLoader:
+    addr: 0x39b74
+    replacedInstr: stdu  r1, -0xB0(r1)
+
+LoadEPL:
+    addr: 0x62dfdc
+    replacedInstr: stdu  r1, -0xA0(r1)
+
+BtlUnitGetUnitID:
+    addr: 0x258948
+    emitTrampoline: no
+
+LoadShdPersonaEnemy:
+    addr: 0x51b864
+    emitTrampoline: no
+
+ParseUNITTBL:
+    addr: 0x264950
+    emitTrampoline: no
+
+ReturnAddressOfUNITTBL_EnemyStats:
+    addr: 0x2636dc
+    emitTrampoline: no
+
+ReturnAddressOfUNITTBL_EnemyAffinities:
+    addr: 0x263728
+    emitTrampoline: no
+
+ReturnAddressOfUNITTBL_PersonaAffinities:
+    addr: 0x263660
+    emitTrampoline: no
+
+ReturnAddressOfUNITTBL_Segment3:
+    addr: 0x2637ac
+    emitTrampoline: no
+
+ReturnAddressOfELSAITBL_Segment1:
+    addr: 0x263DF8
+    replacedInstr: rlwinm  r3, r3, 0x0, 0x10, 0x1f
+
+CalculateShdPersonaEnemyEntry:
+    addr: 0x511d6c
+    replacedInstr: stdu  r1, -0x80(r1)
+
 LoadFutabaNaviBMD:
     addr: 0x74a3e8
     emitTrampoline: no
@@ -92,6 +180,82 @@ scrGetCommandArgCount:
     addr: 0x1e9b7c
     replacedInstr: rlwinm  r5, r3, 0x14, 0x1c, 0x1f
 
+FUN_0026b390:
+    addr: 0x26b390
+    replacedInstr: stdu  r1, -0x70(r1)
+
+FUN_0026b360:
+    addr: 0x26b360
+    replacedInstr: stdu  r1, -0x70(r1)
+
+FUN_0026b2b0:
+    addr: 0x26b2b0
+    replacedInstr: stdu  r1, -0x70(r1)
+
+FUN_0026b2e0:
+    addr: 0x26b2e0
+    replacedInstr: stdu  r1, -0x70(r1)
+
+FUN_0026b320:
+    addr: 0x26b320
+    replacedInstr: stdu  r1, -0x70(r1)
+
+FUN_0026aff0:
+    addr: 0x26aff0
+    replacedInstr: stdu  r1, -0x90(r1)
+
+FUN_0026b094:
+    addr: 0x26b094
+    replacedInstr: stdu  r1, -0x90(r1)
+
+FUN_0026b148:
+    addr: 0x26b148
+    replacedInstr: stdu  r1, -0x90(r1)
+
+FUN_0026b1fc:
+    addr: 0x26b1fc
+    replacedInstr: stdu  r1, -0x90(r1)
+
+FUN_0072360c:
+    addr: 0x72360c
+    emitTrampoline: no
+
 criFs_Initialize:
     addr: 0x114C7C
     emitTrampoline: no
+
+crifsloader_load_registered_file:
+    addr: 0xAC0A6C
+    replacedInstr: stdu  r1, -0x130(r1)
+
+SetEnemyAkechiPersona:
+    addr: 0x785578
+    replacedInstr: stdu r1, -0xD0(r1)
+
+EnemyHasCombatCutin:
+    addr: 0x7852a4
+    replacedInstr: stdu r1, -0xB0(r1)
+
+SomethingAboutSelectingNaviSoundToLoad:
+    addr: 0x745774
+    replacedInstr: stdu r1, -0x2D0(r1)
+
+JokerPersonaNameCueID:
+    addr: 0xb24b74
+    replacedInstr: stdu r1, -0x90(r1)
+
+LoadMeleeWeaponModelTable:
+    addr: 0x3a5d8
+    replacedInstr: stdu r1, -0x80(r1)
+
+LoadGunWeaponModelTable:
+    addr: 0x3a618
+    replacedInstr: stdu r1, -0x80(r1)
+
+FUN_0003a658:
+    addr: 0x3a658
+    replacedInstr: stdu r1, -0x80(r1)
+
+FUN_0003a698:
+    addr: 0x3a698
+    replacedInstr: stdu r1, -0x80(r1)

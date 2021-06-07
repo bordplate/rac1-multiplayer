@@ -325,4 +325,9 @@ int FUN_001a52f8( int arg )
     SHK_FUNCTION_CALL_1( 0x1a52f8, int, int, arg );
 }
 
+int FUN_2604C4( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x2604C4, int, int, arg );
+}
+
 #endif
