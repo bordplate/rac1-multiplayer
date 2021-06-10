@@ -801,7 +801,7 @@ static u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path
 
 static u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9)
 {
-  if ( GetCountFunctionHook(9) == 9 && CONFIG_ENABLED( enableExternalNavi )  )
+  if ( GetCountFunctionHook(9) == 9 && CONFIG_ENABLED( enableExternalNavi ) && GetEquippedPersonaFunction(9) != Persona_RobinHood )
   {
     param_3 += 100;
   }
@@ -859,12 +859,15 @@ static u64 mainUpdateHook( f32 deltaTime )
   // Process TTY commands
   ttyCmdProcess( ttyCommands );
 
-  if (testBF == (void*)0x0)
+  if ( CONFIG_ENABLED (enableGlobalBF))
   {
-    testBF = open_file( "script/test.bf", 0 );
-    u64 fsSyncResult = fsSync((int)testBF);
+    if (testBF == (void*)0x0)
+    {
+      testBF = open_file( "script/test.bf", 0 );
+      u64 fsSyncResult = fsSync((int)testBF);
+    }
+    scrRunScript(0, testBF->pointerToFile, testBF->bufferSize, 0);
   }
-  scrRunScript(0, testBF->pointerToFile, testBF->bufferSize, 0);
 
   return SHK_CALL_HOOK( mainUpdate, deltaTime );
 }
@@ -939,12 +942,17 @@ static u32 scrGetCommandArgCountHook( u32 functionID )
 
 static void SomethingAboutSelectingNaviSoundToLoadHook ( NaviSoundStructIDK* a1 )
 {
-  int fakeNaviID = 8;
+  int fakeNaviID = 0;
   if (a1->navisubstruct->naviID == 9 && GetCountFunctionHook(9) == 9) 
   {
     a1->navisubstruct->naviID = 8;
     fakeNaviID = 9;
   }
+  else if ( GetCountFunctionHook(9) == 8 )
+  {
+    fakeNaviID = 8;
+  }
+  else fakeNaviID = 3;
   SHK_CALL_HOOK(SomethingAboutSelectingNaviSoundToLoad, a1);
   a1->navisubstruct->naviID = fakeNaviID;
 }

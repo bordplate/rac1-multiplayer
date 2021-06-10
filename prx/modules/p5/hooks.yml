@@ -222,7 +222,7 @@ FUN_0072360c:
 
 criFs_Initialize:
     addr: 0x114C7C
-    emitTrampoline: no
+    replacedInstr: stdu  r1, -0x190(r1)
 
 crifsloader_load_registered_file:
     addr: 0xAC0A6C
@@ -259,3 +259,11 @@ FUN_0003a658:
 FUN_0003a698:
     addr: 0x3a698
     replacedInstr: stdu r1, -0x80(r1)
+
+criFsBinder_BindCpk:
+    addr: 0x114b74
+    replacedInstr: stdu r1, -0x90(r1)
+    
+criFsBinder_SetPriority:
+    addr: 0xAB8ED4
+    replacedInstr: stdu r1, -0x90(r1)

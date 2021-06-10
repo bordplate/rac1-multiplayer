@@ -30,6 +30,8 @@ SHK_HOOK( u16, LoadMeleeWeaponModelTable, int a1 );
 SHK_HOOK( u16, LoadGunWeaponModelTable, int a1 );
 SHK_HOOK( u16, FUN_0003a658, int a1 );
 SHK_HOOK( u16, FUN_0003a698, int a1 );
+SHK_HOOK( int, criFsBinder_BindCpk, char* arg );
+SHK_HOOK( u64, criFsBinder_SetPriority, u32 a1, u32 a2 );
 SHK_HOOK( int, crifsloader_load_registered_file, fileAccessStruct* a1, int a2, int a3, int a4, int a5 );
 SHK_HOOK( int, GenericCharacterModelLoader, char* result, u64 modelType, u64 characterID, u64 modelID, u64 modelSubID );
 
@@ -171,8 +173,19 @@ static int forceSingleGAP( int playerID )
   else return 1;
 }
 
+static int criFsBinder_BindCpkHook( char* arg )
+{
+  int result = SHK_CALL_HOOK( criFsBinder_BindCpk, arg );
+  DEBUG_LOG("criFsBinder_BindCpk result %d\n", result );
+  return result;
+}
+
 static int criFs_InitializeHook( void )
 {
+  if ( !CONFIG_ENABLED( enableModCPK ) )
+  {
+    return SHK_CALL_HOOK( criFs_Initialize );
+  }
   int iVar1;
   char *pcVar2;
   char *pcVar3;
@@ -184,7 +197,7 @@ static int criFs_InitializeHook( void )
   {
     pcVar2 = FUN_001a5834();
     sprintf(acStack288,"%s/hdd.cpk",pcVar2);
-    criFsBinder_BindCpk(acStack288);
+    criFsBinder_BindCpkHook(acStack288);
   }
 
   pcVar2 = FUN_00968be8();
@@ -193,7 +206,7 @@ static int criFs_InitializeHook( void )
   if ( CONFIG_ENABLED( enableModCPK ) )
   {
     iVar1 = sprintf(acStack288,"%s%s/%s.cpk",pcVar2,pcVar3, CONFIG_STRING(modCPKName));
-    iVar1 = criFsBinder_BindCpk(acStack288);
+    iVar1 = criFsBinder_BindCpkHook(acStack288);
   }
 
   u32 extraCPK = CONFIG_INT( extraModCPK );
@@ -202,17 +215,22 @@ static int criFs_InitializeHook( void )
     for (int i = 0; i < extraCPK; i++)
     {
       iVar1 = sprintf(acStack288,"%s%s/%s_%02d.cpk", pcVar2, pcVar3, CONFIG_STRING_ARRAY(extraModCPKName)[i], i + 1);
-      iVar1 = criFsBinder_BindCpk(acStack288);
+      iVar1 = criFsBinder_BindCpkHook(acStack288);
     }
   }
 
   iVar1 = sprintf(acStack288,"%s%s/ps3.cpk",pcVar2,pcVar3);
-  iVar1 = criFsBinder_BindCpk(acStack288);
-
+  iVar1 = criFsBinder_BindCpkHook(acStack288);
   iVar1 = sprintf(acStack288,"%s%s/data.cpk",pcVar2,pcVar3);
-  iVar1 = criFsBinder_BindCpk(acStack288);
+  iVar1 = criFsBinder_BindCpkHook(acStack288);
 
   return iVar1;
+}
+
+static u64 criFsBinder_SetPriorityHook( u32 a1, u32 a2 )
+{
+  printf("criFsBinder_SetPriority called; a1 -> 0x%x ;  a2 -> 0x%x\n", a1, a2);
+  return SHK_CALL_HOOK( criFsBinder_SetPriority, a1, a2 );
 }
 
 static int crifsloader_load_registered_fileHook( fileAccessStruct* a1, int a2, int a3, int a4, int a5 )
@@ -302,7 +320,9 @@ void p5eInit( void )
   SHK_BIND_HOOK( setBgm, setBgmHook );
   SHK_BIND_HOOK( LoadEPL, LoadEPLHook );
   SHK_BIND_HOOK( GenericCharacterModelLoader, GenericCharacterModelLoaderHook );
+  SHK_BIND_HOOK( criFsBinder_BindCpk, criFsBinder_BindCpkHook );
   SHK_BIND_HOOK( criFs_Initialize, criFs_InitializeHook );
+  SHK_BIND_HOOK( criFsBinder_SetPriority, criFsBinder_SetPriorityHook );
   SHK_BIND_HOOK( crifsloader_load_registered_file, crifsloader_load_registered_fileHook );
   SHK_BIND_HOOK( LoadMeleeWeaponModelTable, LoadMeleeWeaponModelTableHook );
   SHK_BIND_HOOK( LoadGunWeaponModelTable, LoadGunWeaponModelTableHook );

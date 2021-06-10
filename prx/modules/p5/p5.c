@@ -310,9 +310,14 @@ char* FUN_001a5834( void )
     SHK_FUNCTION_CALL_0( 0x1a5834, char* );
 }
 
-int criFsBinder_BindCpk( char* arg )
+/*int criFsBinder_BindCpk( char* arg )
 {
     SHK_FUNCTION_CALL_1( 0x114b74, int, char*, arg );
+}*/
+
+int criFsBinder_SetPriority ( int cpkBinder, int priority )
+{
+   SHK_FUNCTION_CALL_2( 0xAB8ED4, int, int, cpkBinder, int, priority );
 }
 
 int FUN_00ab563c( int* arg )

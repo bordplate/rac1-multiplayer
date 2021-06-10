@@ -1436,10 +1436,19 @@ void FUN_002d9d00(undefined4* param_1);
 char* FUN_00968be8( void );
 char* FUN_00968bf4( void );
 char* FUN_001a5834( void );
-int criFsBinder_BindCpk( char* a1 );
+/*int criFsBinder_BindCpk( char* a1 );*/
 int FUN_00ab563c( int* a1 );
 int FUN_001a52f8( int a1 );
 int FUN_2604C4( int arg );
+
+/**
+ * @brief Set priority of target CPK
+ * 
+ * @param cpkBind result ID of bindCPK for desired CPK
+ * @param priority target load priority of CPK
+ * @return int 
+ */
+int criFsBinder_SetPriority(int cpkBind, int priority);
 
 #pragma pop
 #endif
