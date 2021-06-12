@@ -13,7 +13,6 @@ u16 sequenceIDGlobal;
 u32 EnemyPersona;
 u32 GlobalEnemyID;
 u32 GlobalCounts[256];
-void* GlobalBtlUnitEnemyAddress;
 
 typedef struct
 {

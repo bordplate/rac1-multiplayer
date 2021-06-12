@@ -267,3 +267,19 @@ criFsBinder_BindCpk:
 criFsBinder_SetPriority:
     addr: 0xAB8ED4
     replacedInstr: stdu r1, -0x90(r1)
+
+SetUpEncounterFlags:
+    addr: 0x630060
+    replacedInstr: stdu r1, -0xA0(r1)
+
+FUN_00263b94:
+    addr: 0x263b94
+    replacedInstr: rlwinm  r3, r3, 0x0, 0x10, 0x1f
+
+BlackMaskEncounterIntroBCD:
+    addr: 0x787f2c
+    replacedInstr: stdu r1, -0x110(r1)
+
+FUN_006a84ac:
+    addr: 0x6a84ac
+    replacedInstr: stdu r1, -0x170(r1)

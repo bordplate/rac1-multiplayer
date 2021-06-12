@@ -35,9 +35,13 @@ SHK_HOOK( int, LoadAnimationPack, u64 param_1, int animationID, char* result, in
 SHK_HOOK( void, CombatPersonaCueID, CueIDThingy* param_1, int param_2, short param_3, char param_4, char param_5);
 SHK_HOOK( void, JokerPersonaNameCueID, CueIDThingy* param_1, int param_2 );
 SHK_HOOK( u64, BtlUnitGetUnitID, btlUnit_Unit* btlUnit );
+SHK_HOOK( u64, FUN_00263b94, int a1 );
 SHK_HOOK( int, LoadShdPersonaEnemy, char* result );
-SHK_HOOK( int, SetEnemyAkechiPersona, int a1, int a2, int a3 );
+SHK_HOOK( int, SetEnemyAkechiPersona, u64 a1, u64 a2, EnemyPersonaFunctionStruct1* a3 );
 SHK_HOOK( bool, EnemyHasCombatCutin, int a1, int a2 );
+SHK_HOOK( int, SetUpEncounterFlags, EncounterFuncStruct* a1, EncounterStructShort* a2);
+SHK_HOOK( int, BlackMaskEncounterIntroBCD, int a1, int a2, EncounterFuncStruct* a3);
+SHK_HOOK( bool, FUN_006a84ac, EncounterFuncStruct* a1);
 // EXIST stuff
 SHK_HOOK( int, FUN_0026b390, u16 a1 );
 SHK_HOOK( int, FUN_0026b360, u16 a1 );
@@ -67,10 +71,13 @@ static u64 BtlUnitGetUnitIDHook( btlUnit_Unit* btlUnit  )
     if ( unitType == 2 )
     {
       GlobalEnemyID = unitID;
-      GlobalBtlUnitEnemyAddress = btlUnit;
       enemyBtlUnit = btlUnit;
     }
-    else GlobalEnemyID = 0;
+    else
+    {
+      GlobalEnemyID = 0;
+      enemyBtlUnit = 0;
+    }
   }
   return unitID;
 }
@@ -794,14 +801,42 @@ static int isPartyMemberExist4(u16 a1)
   return SHK_CALL_HOOK( FUN_0026b1fc, 2 );
 }
 
-static int SetEnemyAkechiPersonaHook( int a1, int a2, int a3 )
+static int SetEnemyAkechiPersonaHook( u64 a1, u64 a2, EnemyPersonaFunctionStruct1* a3 )
 {
-  int result = SHK_CALL_HOOK( SetEnemyAkechiPersona, a1, a2, a3 );
-  if ( GlobalEnemyID >= 350 )
+  // Field04 is pointer to battle struct of the battle unit currently acting
+  if ( a3->field0c->field18->field04->unitType == 2) // only execute on enemy units
   {
-    return EnemyPersona;
+    int PersonaEnemyID = a3->field0c->field18->field04->unitID;
+    
+    if ( PersonaEnemyID >= 350 )
+    {
+      // set enemy unit to black mask akechi so that the function returns a persona
+      a3->field0c->field18->field04->unitID = 232;
+    }
+
+    int result = SHK_CALL_HOOK( SetEnemyAkechiPersona, a1, a2, a3 ); //call original function and store result
+
+    // restore enemy id
+    a3->field0c->field18->field04->unitID = PersonaEnemyID; 
+
+    if ( PersonaEnemyID >= 350 )
+    {
+      DEBUG_LOG("Enemy %d summoning Persona %d\n", PersonaEnemyID, EnemyPersona);
+      return EnemyPersona;
+    }
+
+    // black mask conditional to avoid using same Loki ID as player Akechi
+    else if ( PersonaEnemyID = 232 && CONFIG_ENABLED( enableAkechiMod ) ) 
+    {
+      DEBUG_LOG("Enemy %d summoning Persona %d\n", PersonaEnemyID, 239);
+      return 239;
+    }
+
+    if ( result > 0 ) DEBUG_LOG("Enemy %d summoning Persona %d\n", PersonaEnemyID, result);
+
+    return result;
   }
-  else return result;
+  return SHK_CALL_HOOK( SetEnemyAkechiPersona, a1, a2, a3 ); // Player unit is executing this function, use original function
 }
 
 static bool EnemyHasCombatCutinHook( int a1, int a2 )
@@ -812,6 +847,51 @@ static bool EnemyHasCombatCutinHook( int a1, int a2 )
     return true;
   }
   else return result;
+}
+
+static int SetUpEncounterFlagsHook( EncounterFuncStruct* a1, EncounterStructShort* a2)
+{
+  int encounterIDReal = a2->encounterIDLocal;
+  if ( encounterIDReal >= 830 )
+  {
+    a2->encounterIDLocal = 781;
+  }
+  int result = SHK_CALL_HOOK( SetUpEncounterFlags, a1, a2 );
+  a1->encounterIDLocal = encounterIDReal;
+  a2->encounterIDLocal = (u16)encounterIDReal;
+  return result;
+}
+
+static u64 FUN_00263b94Hook( int a1 )
+{
+  if ( a1 == 781 ) a1 = EncounterIDGlobal;
+  u64 result = SHK_CALL_HOOK( FUN_00263b94, a1 );
+  return result;
+}
+
+static int BlackMaskEncounterIntroBCDHook( int a1, int a2, EncounterFuncStruct* a3)
+{
+  int encounterIDReal = a3->encounterIDLocal;
+  if ( encounterIDReal >= 830 )
+  {
+    a3->encounterIDLocal = 781;
+  }
+  int result = SHK_CALL_HOOK( BlackMaskEncounterIntroBCD, a1, a2, a3 );
+  a3->encounterIDLocal = encounterIDReal;
+  return result;
+}
+
+static bool FUN_006a84acHook( EncounterFuncStruct* a1)
+{
+  int realUnitID = 0;
+  if ( enemyBtlUnit != 0x0 && enemyBtlUnit->unitType == 2 && enemyBtlUnit->unitID >= 350 )
+  {
+    realUnitID = enemyBtlUnit->unitID;
+    enemyBtlUnit->unitID = 232;
+  }
+  bool result = SHK_CALL_HOOK( FUN_006a84ac, a1 );
+  if ( realUnitID != 0 ) enemyBtlUnit->unitID = realUnitID;
+  return result;
 }
 
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
@@ -842,6 +922,7 @@ void dcInit( void )
   SHK_BIND_HOOK( ReturnAddressOfUNITTBL_Segment3, ReturnAddressOfUNITTBL_Segment3Hook );
   SHK_BIND_HOOK( ReturnAddressOfELSAITBL_Segment1, ReturnAddressOfELSAITBL_Segment1Hook );
   SHK_BIND_HOOK( CalculateShdPersonaEnemyEntry, CalculateShdPersonaEnemyEntryHook );
+  SHK_BIND_HOOK( SetUpEncounterFlags, SetUpEncounterFlagsHook );
   SHK_BIND_HOOK( FUN_0026b390, isPersonaExist );
   SHK_BIND_HOOK( FUN_0026b360, isPersonaExist2 );
   SHK_BIND_HOOK( FUN_0026b2b0, isEnemyExist );
@@ -853,6 +934,9 @@ void dcInit( void )
   SHK_BIND_HOOK( FUN_0026b1fc, isPartyMemberExist4 );
   SHK_BIND_HOOK( SetEnemyAkechiPersona, SetEnemyAkechiPersonaHook );
   SHK_BIND_HOOK( EnemyHasCombatCutin, EnemyHasCombatCutinHook );
+  SHK_BIND_HOOK( FUN_00263b94, FUN_00263b94Hook );
+  SHK_BIND_HOOK( BlackMaskEncounterIntroBCD, BlackMaskEncounterIntroBCDHook );
+  SHK_BIND_HOOK( FUN_006a84ac, FUN_006a84acHook );
 }
 
 void dcShutdown( void )

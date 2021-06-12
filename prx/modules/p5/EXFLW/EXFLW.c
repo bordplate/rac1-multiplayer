@@ -335,8 +335,11 @@ static int EX_FLW_AI_ACT_PERSONA_SKILL( void )
   if ( CONFIG_ENABLED( enablePersonaEnemies ) )
   {
     EnemyPersona = FLW_GetIntArg(0);
-    DEBUG_LOG(" Enemy Persona set to %03d with skillID %03d\n", EnemyPersona, EnemyUnit->context.enemy.ActSkillID);
   }
+  else EnemyPersona = 0;
+
+  if ( EnemyPersona > 0 ) DEBUG_LOG("AI_ACT_PERSONA_SKILL Persona ID %03d with skill ID %03d\n", EnemyPersona, FLW_GetIntArg(1));
+
   EnemyUnit->context.enemy.ActSkillID = FLW_GetIntArg(1);
   EnemyUnit->context.enemy.Act_Type = 1;
   return 1;
@@ -805,7 +808,7 @@ static u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, 
   {
     param_3 += 100;
   }
-  printf("Navi dialogue function called\na1 -> %x\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> %x\na7 -> %d\na8 -> %d\na9 -> %d\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
+  /*DEBUG_LOG("Navi dialogue function called\na1 -> %x\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> %x\na7 -> %d\na8 -> %d\na9 -> %d\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);*/
   return SHK_CALL_HOOK(FUN_00748d78, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
 }
 // List of commands that can be handled by the command listener
