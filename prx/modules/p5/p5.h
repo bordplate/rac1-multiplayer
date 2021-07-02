@@ -9,10 +9,33 @@
 
 // Globals
 u16 EncounterIDGlobal;
+u16 LastUsedEncounterID;
 u16 sequenceIDGlobal;
 u32 EnemyPersona;
 u32 GlobalEnemyID;
 u32 GlobalCounts[256];
+bool isAmbush;
+bool wasBGMReplaced;
+
+typedef struct
+{
+  u32 modelID;
+  u32 bgmId;
+} btlEquipBgmTableEntry;
+
+btlEquipBgmTableEntry btlEquipBgmTable[20];
+
+typedef struct
+{
+  u32 flags;
+  u16 Field04;
+  u16 Field06;
+  u16 BattleUnitID[5];
+  u16 FieldID;
+  u16 RoomID;
+  u16 BGMID;
+} encounterIDTBL;
+
 
 typedef struct
 {
@@ -1439,6 +1462,7 @@ char* FUN_001a5834( void );
 int FUN_00ab563c( int* a1 );
 int FUN_001a52f8( int a1 );
 int FUN_2604C4( int arg );
+void LoadEncounterEventSoundbank( int encounterID );
 
 /**
  * @brief Set priority of target CPK

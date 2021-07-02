@@ -30,6 +30,8 @@ SHK_HOOK( int, PUTF_Function );
 SHK_HOOK( int, PUTS_Function );
 SHK_HOOK( int, FLW_AI_ACT_ATTACK );
 SHK_HOOK( int, FLW_AI_ACT_SKILL );
+SHK_HOOK( int, PERSONA_EVOLUTION );
+SHK_HOOK( int, FUN_3b9644, int charID, int expressionID);
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
 SHK_HOOK( void, SetCountFunction, u32 a1, u32 a2 );
 SHK_HOOK( int, GetCountFunction, u32 a1 );
@@ -37,6 +39,7 @@ SHK_HOOK( bool, BIT_CHK_FUNC, u64 a1 );
 SHK_HOOK( int, BIT_SET_FUNC, u64 flag, u8 targetState );
 SHK_HOOK( bool, BIT_CHK_FUNC_ALT, u64 a1 );
 SHK_HOOK( bool, scrGetCommandExist, u32 a1 );
+SHK_HOOK( void, LoadSoundByCueIDCombatVoiceFunction, CueIDThingy* a1, u32* a2, u32 cueID, u8 idk );
 SHK_HOOK( u32, scrGetCommandArgCount, u32 a1 );
 SHK_HOOK( char*, scrGetCommandName, u32 a1 );
 SHK_HOOK( scrCommandTableEntry*, scrGetCommandFunc, u32 id );
@@ -107,7 +110,7 @@ static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
       {
         EncounterIDGlobal = 0;
       }
-      DEBUG_LOG("Encounter ID Obtained -> %03d\n", EncounterIDGlobal);
+      printf("Encounter ID Obtained -> %03d\n", EncounterIDGlobal);
     }
     else DEBUG_LOG("Unknown Params size in seqID 4 -> %d\n", paramsSize);
   }
@@ -164,6 +167,16 @@ static int PUTS_FunctionHook( void )
 {
   printf ("%s\n", FLW_GetStringArg(0));
   return 1;
+}
+
+static int PERSONA_EVOLUTIONHook( void )
+{
+  int characterID = FLW_GetIntArg(0);
+  if ( GetEquippedPersonaFunction( characterID ) > 210 ) // prevent evolution if persona is already evolved
+  {
+    return 1;
+  }
+  else return SHK_CALL_HOOK( PERSONA_EVOLUTION );
 }
 
 static int EX_FLW_PersonaEvolution( void )
@@ -960,6 +973,21 @@ static void SomethingAboutSelectingNaviSoundToLoadHook ( NaviSoundStructIDK* a1 
   a1->navisubstruct->naviID = fakeNaviID;
 }
 
+static int FUN_3b9644Hook(int charID, int expressionID)
+{
+  if ( charID == 9 && GetEquippedPersonaFunction(9) != Persona_RobinHood && CONFIG_ENABLED( enableAkechiMod ) )
+  {
+    expressionID += 100;
+  }
+  return SHK_CALL_HOOK(FUN_3b9644, charID, expressionID);
+}
+
+static void LoadSoundByCueIDCombatVoiceFunctionHook( CueIDThingy* a1, u32* a2, u32 cueID, u8 idk )
+{
+  printf("Unit voice cue ID called -> %d\n", cueID);
+  return SHK_CALL_HOOK( LoadSoundByCueIDCombatVoiceFunction, a1, a2, cueID, idk );
+}
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
@@ -975,6 +1003,7 @@ void EXFLWInit( void )
   SHK_BIND_HOOK( setSeq, setSeqHook );
   SHK_BIND_HOOK( SetCountFunction, SetCountFunctionHook );
   SHK_BIND_HOOK( GetCountFunction, GetCountFunctionHook );
+  SHK_BIND_HOOK( PERSONA_EVOLUTION, PERSONA_EVOLUTIONHook );
   SHK_BIND_HOOK( FLW_AI_ACT_SKILL, FLW_AI_ACT_SKILLHook );
   SHK_BIND_HOOK( FLW_AI_ACT_ATTACK, FLW_AI_ACT_ATTACKHook );
   SHK_BIND_HOOK( BIT_SET_FUNC, BIT_SET_FUNCHook );
@@ -984,6 +1013,8 @@ void EXFLWInit( void )
   SHK_BIND_HOOK( scrGetCommandExist, scrGetCommandExistHook );
   SHK_BIND_HOOK( scrGetCommandName, scrGetCommandNameHook );
   SHK_BIND_HOOK( scrGetCommandArgCount, scrGetCommandArgCountHook );
+  SHK_BIND_HOOK( FUN_3b9644, FUN_3b9644Hook );
+  SHK_BIND_HOOK( LoadSoundByCueIDCombatVoiceFunction, LoadSoundByCueIDCombatVoiceFunctionHook );
   // Handle command handling in main update function
   SHK_BIND_HOOK( mainUpdate, mainUpdateHook );
   // Load Custom Navigator file

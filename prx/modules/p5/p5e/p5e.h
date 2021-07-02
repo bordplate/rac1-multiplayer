@@ -6,18 +6,8 @@
 #include "lib/common.h"
 #include "lib/shk.h"
 
-bool isAmbush;
-
 void p5eInit( void );
 void p5eShutdown( void );
-
-typedef struct
-{
-  u32 modelID;
-  u32 bgmId;
-} btlEquipBgmTableEntry;
-
-btlEquipBgmTableEntry btlEquipBgmTable[20];
 
 typedef struct
 {

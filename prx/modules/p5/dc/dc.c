@@ -23,6 +23,7 @@
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( void, setBlackMaskCueID );
+SHK_HOOK( void, IsEncounterEventSoundBankExist, EncounterFuncStruct* a1 );
 SHK_HOOK( void*, BlackMaskBossVoice, structA* a1 );
 SHK_HOOK( void*, LoadPlayerCombatVoicePack, structA* a1 );
 SHK_HOOK( void*, LoadPartyPanelSPD, char* a1 );
@@ -35,13 +36,12 @@ SHK_HOOK( int, LoadAnimationPack, u64 param_1, int animationID, char* result, in
 SHK_HOOK( void, CombatPersonaCueID, CueIDThingy* param_1, int param_2, short param_3, char param_4, char param_5);
 SHK_HOOK( void, JokerPersonaNameCueID, CueIDThingy* param_1, int param_2 );
 SHK_HOOK( u64, BtlUnitGetUnitID, btlUnit_Unit* btlUnit );
-SHK_HOOK( u64, FUN_00263b94, int a1 );
+SHK_HOOK( encounterIDTBL*, FUN_00263b94, int a1 );
 SHK_HOOK( int, LoadShdPersonaEnemy, char* result );
 SHK_HOOK( int, SetEnemyAkechiPersona, u64 a1, u64 a2, EnemyPersonaFunctionStruct1* a3 );
 SHK_HOOK( bool, EnemyHasCombatCutin, int a1, int a2 );
 SHK_HOOK( int, SetUpEncounterFlags, EncounterFuncStruct* a1, EncounterStructShort* a2);
 SHK_HOOK( int, BlackMaskEncounterIntroBCD, int a1, int a2, EncounterFuncStruct* a3);
-SHK_HOOK( bool, FUN_006a84ac, EncounterFuncStruct* a1);
 // EXIST stuff
 SHK_HOOK( int, FUN_0026b390, u16 a1 );
 SHK_HOOK( int, FUN_0026b360, u16 a1 );
@@ -85,9 +85,17 @@ static u64 BtlUnitGetUnitIDHook( btlUnit_Unit* btlUnit  )
 static int LoadShdPersonaEnemyHook( char* result )
 {
   int size;
-  if ( GlobalEnemyID >= 351 )
+  if ( GlobalEnemyID >= 451 )
   {
-    size = sprintf(result, "init/shdCustomEnemy.pdd");
+    size = sprintf(result, "init/shdCustomEnemy3.pdd");
+  }
+  else if ( GlobalEnemyID >= 401 )
+  {
+    size = sprintf(result, "init/shdCustomEnemy2.pdd");
+  }
+  else if ( GlobalEnemyID >= 351 )
+  {
+    size = sprintf(result, "init/shdCustomEnemy1.pdd");
   }
   else size = sprintf(result, "init/shdPersonaEnemy.pdd");
 
@@ -124,6 +132,18 @@ static void* BlackMaskBossVoiceHook( structA* a1 )
   sprintf(acStack1056,"sound_JP/battle/be_boss_%04d.awb",uVar2);
   }
   FUN_0074ae50(ppuVar3, acStack2080, acStack1056, 0x100e8);
+
+  // enable Fast Persona Summon Animation from config
+  // This is done here because this needs to happen before
+  // the first AI action
+  for ( int i = 0; i <= sizeof(CONFIG_INT_ARRAY( fastSummonEnemy )); i++ )
+  {
+    if ( (u16)CONFIG_INT_ARRAY( fastSummonEnemy )[i] == uVar2)
+    {
+      a1->field0C->btlUnitPointer->context.player.TacticsState = 4;
+    }
+  }
+    
   return ppuVar3;
 }
 
@@ -315,7 +335,7 @@ static void* LoadBCDFunctionHook( char* a1 , u32 a2, u32 a3, int* a4 )
   {
     a1 = "battle/event/BCD/goodbye/bksk_aketi_b.BCD";
   }
-  else if ( CONFIG_ENABLED( enablePersonaEnemies ) && strcmp( a1, "battle/event/BCD/030d/000/bes_030d_000.BCD" ) == 0 )
+  else if ( CONFIG_ENABLED( enablePersonaEnemies ) && strcmp( a1, "battle/event/BCD/030c/000/bes_030c_000.BCD" ) == 0 )
   {
     char introBCD[128];
     sprintf(introBCD, "battle/event/BCD/%04x/000/bes_%04x_000.BCD", EncounterIDGlobal, EncounterIDGlobal);
@@ -735,11 +755,20 @@ static u64* ReturnAddressOfELSAITBL_Segment1Hook( u32 a1 )
 
 static u64 CalculateShdPersonaEnemyEntryHook( shdHelper* param_1, u32 param_2 )
 {
-  if ( param_2 >= 351 )
+  if ( param_2 >= 451 )
   {
-    param_2 = param_2 - 109;
+    param_2 = param_2 - 250;
+  }
+  else if ( param_2 >= 401 )
+  {
+    param_2 = param_2 - 200;
+  }
+  else if ( param_2 >= 351 )
+  {
+    param_2 = param_2 - 150;
   }
   u64 returnVal = SHK_CALL_HOOK( CalculateShdPersonaEnemyEntry, param_1, param_2);
+  printf("shdPersonaEnemy Entry %03d\n", param_2-141);
   DEBUG_LOG("CalculateShdPersonaEnemyEntry returned address -> 0x%08x\n", returnVal);
   return returnVal;
 }
@@ -760,6 +789,14 @@ static int isEnemyExist(u16 a1)
   {
     return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
   }
+  else if ( a1 >= 114 && a1 <= 120 ) // original enemies not in exist
+  {
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+  }
+  else if ( a1 >= 145 && a1 <= 169 && a1 != 157 ) // big range, exclude reaper
+  {
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+  }
   else return SHK_CALL_HOOK( FUN_0026b2b0, a1 );
 }
 
@@ -767,7 +804,15 @@ static int isEnemyExist2(u16 a1)
 {
   if ( a1 >= 350 )
   {
-    return SHK_CALL_HOOK( FUN_0026b2e0, 69 );
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+  }
+  else if ( a1 >= 114 && a1 <= 120 ) // original enemies not in exist
+  {
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+  }
+  else if ( a1 >= 145 && a1 <= 169 && a1 != 157 ) // big range, exclude reaper
+  {
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
   }
   else return SHK_CALL_HOOK( FUN_0026b2e0, a1 );
 }
@@ -776,7 +821,15 @@ static int isEnemyExist3(u16 a1)
 {
   if ( a1 >= 350 )
   {
-    return SHK_CALL_HOOK( FUN_0026b320, 69 );
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+  }
+  else if ( a1 >= 114 && a1 <= 120 ) // original enemies not in exist
+  {
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+  }
+  else if ( a1 >= 145 && a1 <= 169 && a1 != 157 ) // big range, exclude reaper
+  {
+    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
   }
   else return SHK_CALL_HOOK( FUN_0026b320, a1 );
 }
@@ -808,16 +861,7 @@ static int SetEnemyAkechiPersonaHook( u64 a1, u64 a2, EnemyPersonaFunctionStruct
   {
     int PersonaEnemyID = a3->field0c->field18->field04->unitID;
     
-    if ( PersonaEnemyID >= 350 )
-    {
-      // set enemy unit to black mask akechi so that the function returns a persona
-      a3->field0c->field18->field04->unitID = 232;
-    }
-
     int result = SHK_CALL_HOOK( SetEnemyAkechiPersona, a1, a2, a3 ); //call original function and store result
-
-    // restore enemy id
-    a3->field0c->field18->field04->unitID = PersonaEnemyID; 
 
     if ( PersonaEnemyID >= 350 )
     {
@@ -826,13 +870,13 @@ static int SetEnemyAkechiPersonaHook( u64 a1, u64 a2, EnemyPersonaFunctionStruct
     }
 
     // black mask conditional to avoid using same Loki ID as player Akechi
-    else if ( PersonaEnemyID = 232 && CONFIG_ENABLED( enableAkechiMod ) ) 
+    else if ( PersonaEnemyID == 232 && CONFIG_ENABLED( enableAkechiMod ) ) 
     {
-      DEBUG_LOG("Enemy %d summoning Persona %d\n", PersonaEnemyID, 239);
+      DEBUG_LOG("Black Mask enemy ID %d summoning Persona %d\n", PersonaEnemyID, 239);
       return 239;
     }
 
-    if ( result > 0 ) DEBUG_LOG("Enemy %d summoning Persona %d\n", PersonaEnemyID, result);
+    if ( result > 0 ) DEBUG_LOG("Akechi Enemy ID %d summoning Persona %d\n", PersonaEnemyID, result);
 
     return result;
   }
@@ -854,7 +898,7 @@ static int SetUpEncounterFlagsHook( EncounterFuncStruct* a1, EncounterStructShor
   int encounterIDReal = a2->encounterIDLocal;
   if ( encounterIDReal >= 830 )
   {
-    a2->encounterIDLocal = 781;
+    a2->encounterIDLocal = 780;
   }
   int result = SHK_CALL_HOOK( SetUpEncounterFlags, a1, a2 );
   a1->encounterIDLocal = encounterIDReal;
@@ -862,10 +906,59 @@ static int SetUpEncounterFlagsHook( EncounterFuncStruct* a1, EncounterStructShor
   return result;
 }
 
-static u64 FUN_00263b94Hook( int a1 )
+static encounterIDTBL* FUN_00263b94Hook( int a1 )
 {
-  if ( a1 == 781 ) a1 = EncounterIDGlobal;
-  u64 result = SHK_CALL_HOOK( FUN_00263b94, a1 );
+  encounterIDTBL* result;
+  if ( a1 == 780 && EncounterIDGlobal != 780 ) 
+  {
+    result = SHK_CALL_HOOK( FUN_00263b94, EncounterIDGlobal );
+  }
+  else result = SHK_CALL_HOOK( FUN_00263b94, a1 );
+
+  if ( LastUsedEncounterID != a1 && a1 != 780 ) // prevent spam
+  {
+    printf("Encounter Block %03d loaded\n", a1);
+    hexDump("TBL Data", result, 24);
+    LastUsedEncounterID = a1;
+  }
+
+  u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
+  u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
+  // Fix bgm if it was previously set to a different DLC
+  for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
+  {
+    btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
+    if ( result->BGMID == pEntry->bgmId && wasBGMReplaced )
+    {
+      result->BGMID = 0;
+      wasBGMReplaced = false;
+    }
+  }
+  if ( result->BGMID == 907 && wasBGMReplaced )
+  {
+    result->BGMID = 0;
+    wasBGMReplaced = false;
+  }
+
+  if ( result->BGMID == 0 && CONFIG_ENABLED( enableExpandedBGM ) ) // Last Surprise
+  {
+    for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
+    {
+      btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
+      if ( pEntry->modelID == playerOutfitModel )
+      {
+        result->BGMID = pEntry->bgmId;
+        wasBGMReplaced = true;
+        isAmbush = false;
+        break;
+      }
+    }
+    if ( isAmbush )
+    {
+      result->BGMID = 907; // Take Over
+    }
+  }
+
   return result;
 }
 
@@ -874,24 +967,17 @@ static int BlackMaskEncounterIntroBCDHook( int a1, int a2, EncounterFuncStruct* 
   int encounterIDReal = a3->encounterIDLocal;
   if ( encounterIDReal >= 830 )
   {
-    a3->encounterIDLocal = 781;
+    a3->encounterIDLocal = 780;
   }
   int result = SHK_CALL_HOOK( BlackMaskEncounterIntroBCD, a1, a2, a3 );
   a3->encounterIDLocal = encounterIDReal;
   return result;
 }
 
-static bool FUN_006a84acHook( EncounterFuncStruct* a1)
+static void IsEncounterEventSoundBankExistHook( EncounterFuncStruct* a1 )
 {
-  int realUnitID = 0;
-  if ( enemyBtlUnit != 0x0 && enemyBtlUnit->unitType == 2 && enemyBtlUnit->unitID >= 350 )
-  {
-    realUnitID = enemyBtlUnit->unitID;
-    enemyBtlUnit->unitID = 232;
-  }
-  bool result = SHK_CALL_HOOK( FUN_006a84ac, a1 );
-  if ( realUnitID != 0 ) enemyBtlUnit->unitID = realUnitID;
-  return result;
+  if ( EncounterIDGlobal >= 830 ) return LoadEncounterEventSoundbank( EncounterIDGlobal );
+  else return SHK_CALL_HOOK( IsEncounterEventSoundBankExist, a1 );
 }
 
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
@@ -936,7 +1022,7 @@ void dcInit( void )
   SHK_BIND_HOOK( EnemyHasCombatCutin, EnemyHasCombatCutinHook );
   SHK_BIND_HOOK( FUN_00263b94, FUN_00263b94Hook );
   SHK_BIND_HOOK( BlackMaskEncounterIntroBCD, BlackMaskEncounterIntroBCDHook );
-  SHK_BIND_HOOK( FUN_006a84ac, FUN_006a84acHook );
+  SHK_BIND_HOOK( IsEncounterEventSoundBankExist, IsEncounterEventSoundBankExistHook );
 }
 
 void dcShutdown( void )

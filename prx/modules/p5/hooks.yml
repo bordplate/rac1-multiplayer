@@ -280,6 +280,18 @@ BlackMaskEncounterIntroBCD:
     addr: 0x787f2c
     replacedInstr: stdu r1, -0x110(r1)
 
-FUN_006a84ac:
-    addr: 0x6a84ac
-    replacedInstr: stdu r1, -0x170(r1)
+IsEncounterEventSoundBankExist:
+    addr: 0x74d250
+    replacedInstr: stdu r1, -0x70(r1)
+
+FUN_3b9644:
+    addr: 0x3b9644
+    replacedInstr: stdu r1, -0x90(r1)
+
+LoadSoundByCueIDCombatVoiceFunction:
+    addr: 0x74aac0
+    replacedInstr: stdu r1, -0xE0(r1)
+
+PERSONA_EVOLUTION:
+    addr: 0x1ee1bc
+    replacedInstr: stdu r1, -0x80(r1)

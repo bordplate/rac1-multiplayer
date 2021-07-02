@@ -35,30 +35,6 @@ SHK_HOOK( u64, criFsBinder_SetPriority, u32 a1, u32 a2 );
 SHK_HOOK( int, crifsloader_load_registered_file, fileAccessStruct* a1, int a2, int a3, int a4, int a5 );
 SHK_HOOK( int, GenericCharacterModelLoader, char* result, u64 modelType, u64 characterID, u64 modelID, u64 modelSubID );
 
-btlEquipBgmTableEntry btlEquipBgmTable[] =
-{
-  { 159, 2000 }, // DLC_001
-  { 158, 2002 }, // DLC_002
-  { 161, 2004 }, // DLC_003
-  { 160, 2006 }, // DLC_004
-  { 163, 2008 }, // DLC_005
-  { 166, 2102 }, // DLC_006
-  { 167, 2201 }, // DLC_007
-  { 168, 2203 }, // DLC_008
-  { 169, 2205 }, // DLC_009
-  { 162, 2207 }, // DLC_010
-  { 170, 2209 }, // DLC_011
-  { 171, 2211 }, // DLC_012
-  { 172, 2213 }, // DLC_013
-  { 173, 2215 }, // DLC_014
-  { 174, 2217 }, // DLC_015
-  { 175, 2310 }, // DLC_016
-  { 176, 2330 }, // DLC_017
-  { 177, 2332 }, // DLC_018
-  { 178, 2334 }, // DLC_019
-  { 179, 2336 }, // DLC_020
-};
-
 static void setBgmHook( int id )
 {
   if ( id == 300 && CONFIG_ENABLED( enableExpandedBGM ) ) // Last Surprise
@@ -229,7 +205,7 @@ static int criFs_InitializeHook( void )
 
 static u64 criFsBinder_SetPriorityHook( u32 a1, u32 a2 )
 {
-  printf("criFsBinder_SetPriority called; a1 -> 0x%x ;  a2 -> 0x%x\n", a1, a2);
+  DEBUG_LOG("criFsBinder_SetPriority called; a1 -> 0x%x ;  a2 -> 0x%x\n", a1, a2);
   return SHK_CALL_HOOK( criFsBinder_SetPriority, a1, a2 );
 }
 
