@@ -37,30 +37,28 @@ SHK_HOOK( int, GenericCharacterModelLoader, char* result, u64 modelType, u64 cha
 
 static void setBgmHook( int id )
 {
-  if ( id == 300 && CONFIG_ENABLED( enableExpandedBGM ) ) // Last Surprise
+  u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
+  u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
+  // Fix bgm if it was previously set to a different DLC
+  encounterIDTBL* result = GetEncounterEntryFromTBL( LastUsedEncounterID );
+  for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
   {
-    u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
-    u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
-    for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
+    btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
+    if ( result->BGMID == pEntry->bgmId && wasBGMReplaced )
     {
-      btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
-      if ( pEntry->modelID == playerOutfitModel )
-      {
-        id = pEntry->bgmId;
-        isAmbush = false;
-        break;
-      }
-    }
-    if ( isAmbush )
-    {
-      id = 907; // Take Over
+      result->BGMID = 0;
+      wasBGMReplaced = false;
     }
   }
-  else if ( id == 340 && CONFIG_ENABLED( enableExpandedBGM ) ) // Victory theme
+  if ( result->BGMID == 907 && wasBGMReplaced )
+  {
+    result->BGMID = 0;
+    wasBGMReplaced = false;
+  }
+
+  if ( id == 340 && CONFIG_ENABLED( enableExpandedBGM ) ) // Victory theme
   { 
     isAmbush = false;
-    u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
-    u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
     for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
     {
       btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];

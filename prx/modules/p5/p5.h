@@ -1473,6 +1473,8 @@ void LoadEncounterEventSoundbank( int encounterID );
  */
 int criFsBinder_SetPriority(int cpkBind, int priority);
 
+encounterIDTBL* GetEncounterEntryFromTBL( int encounterID);
+
 #pragma pop
 #endif
 #endif

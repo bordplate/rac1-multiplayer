@@ -364,4 +364,9 @@ void LoadEncounterEventSoundbank( int encounterID )
     SHK_FUNCTION_CALL_1( 0x745b9c, void, int, encounterID );
 }
 
+encounterIDTBL* GetEncounterEntryFromTBL( int encounterID)
+{
+    SHK_FUNCTION_CALL_1(0x263b94, encounterIDTBL*, int, encounterID);
+}
+
 #endif

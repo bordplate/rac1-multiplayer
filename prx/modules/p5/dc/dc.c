@@ -804,15 +804,15 @@ static int isEnemyExist2(u16 a1)
 {
   if ( a1 >= 350 )
   {
-    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+    return SHK_CALL_HOOK( FUN_0026b2e0, 69 );
   }
   else if ( a1 >= 114 && a1 <= 120 ) // original enemies not in exist
   {
-    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+    return SHK_CALL_HOOK( FUN_0026b2e0, 69 );
   }
   else if ( a1 >= 145 && a1 <= 169 && a1 != 157 ) // big range, exclude reaper
   {
-    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+    return SHK_CALL_HOOK( FUN_0026b2e0, 69 );
   }
   else return SHK_CALL_HOOK( FUN_0026b2e0, a1 );
 }
@@ -821,15 +821,15 @@ static int isEnemyExist3(u16 a1)
 {
   if ( a1 >= 350 )
   {
-    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+    return SHK_CALL_HOOK( FUN_0026b320, 69 );
   }
   else if ( a1 >= 114 && a1 <= 120 ) // original enemies not in exist
   {
-    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+    return SHK_CALL_HOOK( FUN_0026b320, 69 );
   }
   else if ( a1 >= 145 && a1 <= 169 && a1 != 157 ) // big range, exclude reaper
   {
-    return SHK_CALL_HOOK( FUN_0026b2b0, 69 );
+    return SHK_CALL_HOOK( FUN_0026b320, 69 );
   }
   else return SHK_CALL_HOOK( FUN_0026b320, a1 );
 }
@@ -912,8 +912,12 @@ static encounterIDTBL* FUN_00263b94Hook( int a1 )
   if ( a1 == 780 && EncounterIDGlobal != 780 ) 
   {
     result = SHK_CALL_HOOK( FUN_00263b94, EncounterIDGlobal );
+    LastUsedEncounterID = EncounterIDGlobal;
   }
-  else result = SHK_CALL_HOOK( FUN_00263b94, a1 );
+  else 
+  {
+    result = SHK_CALL_HOOK( FUN_00263b94, a1 );
+  }
 
   if ( LastUsedEncounterID != a1 && a1 != 780 ) // prevent spam
   {
@@ -924,22 +928,6 @@ static encounterIDTBL* FUN_00263b94Hook( int a1 )
 
   u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
   u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
-  // Fix bgm if it was previously set to a different DLC
-  for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
-  {
-    btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
-    if ( result->BGMID == pEntry->bgmId && wasBGMReplaced )
-    {
-      result->BGMID = 0;
-      wasBGMReplaced = false;
-    }
-  }
-  if ( result->BGMID == 907 && wasBGMReplaced )
-  {
-    result->BGMID = 0;
-    wasBGMReplaced = false;
-  }
-
   if ( result->BGMID == 0 && CONFIG_ENABLED( enableExpandedBGM ) ) // Last Surprise
   {
     for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
