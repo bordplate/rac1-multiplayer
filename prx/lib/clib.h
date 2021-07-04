@@ -53,6 +53,7 @@ char * strrchr( const char * s, int c );
 size_t strspn( const char * s1, const char * s2 );
 char * strstr( const char * s1, const char * s2 );
 size_t strxfrm( char * s1, const char * s2, size_t n );
+double pow( double x, double y );
 
 // stdio.h
 void _putchar( char c );

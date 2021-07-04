@@ -421,6 +421,27 @@ size_t strxfrm( char * s1, const char * s2, size_t n )
     return len;
 }
 
+double pow( double x, double y )
+{
+    if (y == 0)
+    {
+        return 1;
+    }
+    else if (y < 0)
+    {
+        return 1 / pow(x, -y);
+    }
+    else if ((int)y % 2 == 0)
+    {
+        float halfPow = pow(x, y / 2);
+        return halfPow * halfPow;
+    }
+    else
+    {
+        return x * pow(x, y - 1);
+    }
+}
+
 void _Assert( const char* pCond, const char* pFile, s32 line )
 {
     printf( "%s:%d assertion failed! %s\n", pFile, line, pCond );
@@ -431,6 +452,8 @@ void _putchar( char c )
 {
     static u8 buffer[1024];
     static s32 bufferIndex = 0;
+    if ( c == 0 ) return;
+
     assert( bufferIndex < sizeof( buffer ) );
     buffer[ bufferIndex++ ] = c;
 

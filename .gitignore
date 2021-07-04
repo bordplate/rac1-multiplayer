@@ -1,5 +1,9 @@
 *.7z
-userconfig.mk
+
+# remove userconfigs but keep templates
+userconfig*
+!*.template.mk
+
 .vscode/*
 loader/build/*
 prx/build/*

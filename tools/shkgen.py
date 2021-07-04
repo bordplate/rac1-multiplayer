@@ -1,6 +1,7 @@
 import os
 import argparse
 import sys
+import yaml
 
 # limited to one instruction to make hooking stubs possible
 ASM_INJECT_HOOK_PATCH_TEMPLATE = \
@@ -79,6 +80,18 @@ _shk_prx_trampoline_{HOOK}:
 .int {TOC}
 '''
 
+ASM_PRX_HOOK_TRAMPOLINE_EMPTY_TEMPLATE = \
+'''
+.text
+.global ._shk_prx_trampoline_{HOOK}
+._shk_prx_trampoline_{HOOK}:
+
+.data
+.global _shk_prx_trampoline_{HOOK}
+_shk_prx_trampoline_{HOOK}:
+'''
+
+
 # pointer to function pointer lookup table (in PRX memory)
 ASM_INJECT_HOOK_PTR_TABLE_TEMPLATE = \
 '''
@@ -103,7 +116,7 @@ ASM_PRX_HOOK_PTR_TABLE_ENTRY_TEMPLATE = \
 '''
 .global _shk_prx_ptr_{HOOK} 
 _shk_prx_ptr_{HOOK}:
-.int 0xDEADBABE
+.int _shk_prx_trampoline_{HOOK}
 '''
 
 MK_INJECT_TEMPLATE = \
@@ -123,24 +136,31 @@ PATCH_FILE = {PATCH_FILE}
 BIN2RPCS3PATCH = $(TOOLS_DIR)/bin2rpcs3patch.py
 
 compile:
-	$(CC) "$(IN_DIR)/shk_elf.gen.s" -o "$(TMP_DIR)/shk_elf.o" -T "$(IN_DIR)/shk_elf.gen.ld" -v -Xlinker -Map=$(TMP_DIR)\shk_elf.map -Wa,-mregnames -nostartfiles -nodefaultlibs
+	"$(CC)" "$(IN_DIR)/shk_elf.gen.s" -o "$(TMP_DIR)/shk_elf.o" -T "$(IN_DIR)/shk_elf.gen.ld" -v -Xlinker -Map="$(TMP_DIR)\shk_elf.map" -Wa,-mregnames -nostartfiles -nodefaultlibs
 
 binary: compile{HOOK_OUTPUTS}
-	$(OBJCOPY) -O binary --only-section=.text.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_shared.bin" -v
-	$(OBJCOPY) -O binary --only-section=.data.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.data.shk_elf_shared.bin" -v
+	"$(OBJCOPY)" -O binary --only-section=.text.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_shared.bin" -v
+	"$(OBJCOPY)" -O binary --only-section=.data.shk_elf_shared "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.data.shk_elf_shared.bin" -v
 
 patch: binary
-	$(PYTHON) $(BIN2RPCS3PATCH) --input{HOOK_INPUTS} "$(TMP_DIR)/.text.shk_elf_shared.bin" "$(TMP_DIR)/.data.shk_elf_shared.bin" --address{HOOK_ADDRESSES} $(SHARED_TEXT_ADDRESS) $(SHARED_DATA_ADDRESS) --output "$(PATCH_FILE)" --replace_patch shk_elf_inject --indent 3
+	$(PYTHON) "$(BIN2RPCS3PATCH)" --input{HOOK_INPUTS} "$(TMP_DIR)/.text.shk_elf_shared.bin" "$(TMP_DIR)/.data.shk_elf_shared.bin" --address{HOOK_ADDRESSES} $(SHARED_TEXT_ADDRESS) $(SHARED_DATA_ADDRESS) --output "$(PATCH_FILE)" --replace_patch shk_elf_inject_{GAME} --indent 3
 '''
 
 MK_INJECT_HOOK_OUTPUT_TEMPLATE = \
 '''
-	$(OBJCOPY) -O binary --only-section=.text.shk_elf_patch_{HOOK} "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_patch_{HOOK}.bin" -v
+	"$(OBJCOPY)" -O binary --only-section=.text.shk_elf_patch_{HOOK} "$(TMP_DIR)/shk_elf.o" "$(TMP_DIR)/.text.shk_elf_patch_{HOOK}.bin" -v
 '''
 
 MK_INJECT_HOOK_INPUT_TEMPLATE = \
 '''
 "$(TMP_DIR)/.text.shk_elf_patch_{HOOK}.bin"
+'''
+
+MK_LOADER_TEMPLATE = \
+'''
+SHK_ELF_LOADER_INJECT_ADDRESS = {LOADER_INJECT_ADDR}
+SHK_ELF_LOADER_ADDRESS = {LOADER_ADDR}
+SHK_ELF_LD = build/shk_elf_loader.gen.ld
 '''
 
 ASM_HOOK_PTR_SIZE = 4
@@ -163,11 +183,15 @@ def fillTemplate( template, **kwargs ):
 def writeAsmInjectHookSharedData( f ):
     f.write( fillTemplate( ASM_INJECT_HOOK_PTR_TABLE_TEMPLATE ) + "\n" )
     
-def writeAsmPrxHookTrampoline( f, func, instrs, tocAddr ):
-    t = fillTemplate( ASM_PRX_HOOK_TRAMPOLINE_TEMPLATE, HOOK=func, TOC=hex( tocAddr ) )
-    for i, instr in enumerate( instrs ):
-        t = setTemplateVar( t, f"{{INSTR{i}}}", instr )
-    f.write( t + "\n" )
+def writeAsmPrxHookTrampoline( f, hook ):
+    if hook.emitTrampoline:   
+        t = fillTemplate( ASM_PRX_HOOK_TRAMPOLINE_TEMPLATE, HOOK=hook.name, TOC=hex( hook.toc ) )
+        for i, instr in enumerate( hook.replacedInstr ):
+            t = setTemplateVar( t, f"{{INSTR{i}}}", instr )
+        f.write( t + "\n" )
+    else:
+        t = fillTemplate( ASM_PRX_HOOK_TRAMPOLINE_EMPTY_TEMPLATE, HOOK=hook.name )
+        f.write( t + "\n" )   
     
 def writeAsmInjectHookSharedText( f ):
     f.write( ASM_INJECT_HOOK_SHARED_TEMPLATE + "\n" )
@@ -180,10 +204,22 @@ def writeAsmInjectHookThunk( f, hook ):
     
 def writeAsmMacroSet( f, name, val ):
     f.write( f".set {name}, {val}" )
+    
+def writeLdComment( f, val ):
+    f.write( f'/* {val} */\n' )
+    
+def writeLdSectionsBegin( f ):
+    f.write( "SECTIONS {\n")
+    
+def writeLdSectionsEnd( f ):
+    f.write( "}\n")
 
 def writeLdSection( f, name, addr ):
     f.write( f"    . = {hex(addr)};\n" )
     f.write( f"    {name} : {{ *({name}) }}\n")
+    
+def writeLdSymbol( f, name, addr ):
+    f.write( f"{name} = {addr};\n" )
     
 def writeLdDefSym( f, name, val ):
     f.write( f"-Wl,--defsym,{name}={val} " )
@@ -194,10 +230,13 @@ class LinkerSectionInfo:
         self.name = name
     
 class HookInfo:
-    def __init__( self, name: str, addr: int, replacedInstr: list ):
+    def __init__( self, name: str, addr: int, replacedInstr: list, emitTrampoline: bool, toc: int ):
         self.name = name
         self.addr = addr
         self.replacedInstr = replacedInstr
+        self.emitTrampoline = emitTrampoline
+        self.toc = toc
+        
         # procedural data
         self.index = None
         self.ptrOffset = None
@@ -205,31 +244,103 @@ class HookInfo:
 def hexInt( s ):
     return int( s, 0 )
 
+def isNoneOrEmptyStr( s ):
+    if s == None: return True
+    if isinstance( s, str ) and s == "": return True
+    return False
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument( '--tools_dir', type=str, required=True, help='path to ckit tools directory' )
-    parser.add_argument( '--out_dir', type=str, required=True, help='output directory for generated files' )
-    parser.add_argument( '--build_in_dir', type=str, required=True, help='input directory used for building' )
-    parser.add_argument( '--build_tmp_dir', type=str, required=True, help='temporary output directory for generated files during building' )
-    parser.add_argument( '--build_out_dir', type=str, required=True, help='output directory for generated files during building' )
-    parser.add_argument( '--toc', type=hexInt, required=True, help='TOC (r2) address of the functions to patch' )
+    parser.add_argument( '--elf_out_dir', type=str, required=True, help='output directory for generated ELF files' )
+    parser.add_argument( '--prx_out_dir', type=str, required=True, help='output directory for generated PRX files' )
+    parser.add_argument( '--loader_inject_addr', type=hexInt, required=True, help='address at which the loader jumped to')
+    parser.add_argument( '--loader_text_range', type=hexInt, required=True, nargs="+", help='address at which the loader code is placed')
+    parser.add_argument( '--sys_prx_load_module_addr', type=hexInt, required=True, help='address of sys_prx_load_module')
+    parser.add_argument( '--sys_prx_start_module_addr', type=hexInt, required=True, help='address of sys_prx_start_module')
+    parser.add_argument( '--toc', type=hexInt, required=True, help='default TOC (r2) address of the functions to patch' )
     parser.add_argument( '--hook_shared_text_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared code for hooking is stored when injected' )
     parser.add_argument( '--hook_shared_data_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared data for hooking is stored when injected' )
-    parser.add_argument( '--hooks', type=str, nargs='+', required=True, help='space separated list of hooks in the format of HOOKNAME,0xADDRESS,REPLACED_INSTRUCTION' )
+    parser.add_argument( '--hooks', type=str, nargs='+', required=False, help='space separated list of hooks in the format of HOOKNAME,0xADDRESS,REPLACED_INSTRUCTION' )
     parser.add_argument( '--patch_file', type=str, required=True, help='rpcs3 patch file in which the compiled patch is inserted' )
+    parser.add_argument( '--game', type=str, required=True, help='name of the game target')
+    parser.add_argument( '--hooks_file', type=str, nargs="+", required=False, help='path(s) to yaml hooks file(s)')
     args = parser.parse_args()
+    
+    # generate loader makefile
+    with open( os.path.join( args.elf_out_dir, "shk_elf_loader.gen.mk" ), "w" ) as f:
+        src = fillTemplate( MK_LOADER_TEMPLATE, 
+                     LOADER_INJECT_ADDR=hex( args.loader_inject_addr ),
+                     LOADER_ADDR=hex( args.loader_text_range[0] ))
+        f.write( src + "\n" )
+        
+    # generate loader linker script
+    loaderSections = []
+    loaderSections.append( LinkerSectionInfo( ".text.inject", args.loader_inject_addr ) )
+    loaderSections.append( LinkerSectionInfo( ".text", args.loader_text_range[0] ) )
+    # sort sections by address so the linker doesn't mess up the addresses 
+    loaderSections = sorted( loaderSections, key=lambda s: s.addr )
+    
+    with open( os.path.join( args.elf_out_dir, "shk_elf_loader.gen.ld" ), "w" ) as f:
+        writeLdComment( f, f"generated by {getScriptName()}" )
+        writeLdSymbol( f, ".sys_prx_load_module", hex( args.sys_prx_load_module_addr ) )
+        writeLdSymbol( f, ".sys_prx_start_module", hex( args.sys_prx_start_module_addr ) )
+        writeLdSectionsBegin( f )
+        for section in loaderSections:
+            writeLdSection( f, section.name, section.addr )
+        writeLdSectionsEnd( f )
     
     sections = []
     sections.append( LinkerSectionInfo( ".text.shk_elf_shared", args.hook_shared_text_range[0] ) )
     sections.append( LinkerSectionInfo( ".data.shk_elf_shared", args.hook_shared_data_range[0] ) )
     
     hooks = []
-    for hookStr in args.hooks:
-        toks = hookStr.split( "/" )
-        hook = HookInfo( toks[0], int( toks[1], 0 ), [toks[2]] ) 
-        hooks.append( hook )
-        # we add a section for every hook patch
-        sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
+    if args.hooks != None and len( args.hooks ) > 0:
+        for hookStr in args.hooks:
+            toks = hookStr.split( "/" )
+            name = toks[0]
+            addr = int( toks[1], 0 )
+            replacedInstr = [toks[2]]
+            emitTrampoline = True
+            
+            if len( replacedInstr ) == 0 or replacedInstr[0] == "":
+                emitTrampoline = False            
+            
+            hook = HookInfo( name, addr, replacedInstr, emitTrampoline, args.toc ) 
+            hooks.append( hook )
+            # we add a section for every hook patch
+            sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
+        
+    if args.hooks_file != None and len( args.hooks_file ) > 0:
+        for hooksFile in args.hooks_file:
+            with open( hooksFile ) as f:
+                yamlDict = yaml.load( f, Loader=yaml.SafeLoader )
+                for key, value in yamlDict.items():
+                    if "addr" not in value or isNoneOrEmptyStr( value["addr"] ):
+                        raise Exception( f"Hook {key}: Missing address" )
+                    
+                    addr = value["addr"]
+                    replacedInstr = None
+                    if "replacedInstr" in value and not isNoneOrEmptyStr( value["replacedInstr"] ):
+                        replacedInstr = value["replacedInstr"]
+                    
+                    emitTrampoline = True
+                    if "emitTrampoline" in value and not value["emitTrampoline"]:
+                        emitTrampoline = False
+                    
+                    # if no replaced instr, then emitTrampoline must be false
+                    if replacedInstr == None and emitTrampoline:
+                        raise Exception( f"Hook {key}: Replaced instruction must be specified when emitTrampoline: on" ) 
+                    
+                    toc = args.toc
+                    if "toc" in value and not isNoneOrEmptyStr( value["toc"] ):
+                        toc = value["toc"]
+                    
+                    hook = HookInfo( key, addr, [replacedInstr], emitTrampoline, toc )
+                    hooks.append( hook )
+                    # we add a section for every hook patch
+                    sections.append( LinkerSectionInfo( f".text.shk_elf_patch_{hook.name}", hook.addr ))
+                
        
     # sort sections by address so the linker doesn't mess up the addresses 
     sections = sorted( sections, key=lambda s: s.addr )
@@ -241,7 +352,7 @@ def main():
         hook.ptrOffset = i * 4
     
     # generate asm to inject into host
-    with open( os.path.join( args.out_dir, "shk_elf.gen.s" ), "w" ) as f:
+    with open( os.path.join( args.elf_out_dir, "shk_elf.gen.s" ), "w" ) as f:
         f.write( f'# generated by {getScriptName()}\n' )
         
         writeAsmInjectHookSharedText( f )
@@ -249,10 +360,9 @@ def main():
         for hook in hooks:
             writeAsmInjectHookPatch( f, hook )
             writeAsmInjectHookThunk( f, hook )
-
             
     # generate inject linker script
-    with open( os.path.join( args.out_dir, "shk_elf.gen.ld" ), "w" ) as f:
+    with open( os.path.join( args.elf_out_dir, "shk_elf.gen.ld" ), "w" ) as f:
         f.write( f'/* generated by {getScriptName()}*/\n' )
         
         f.write( "SECTIONS {\n" )
@@ -264,7 +374,7 @@ def main():
         f.write( "}\n" )
         
     # generate inject makefile
-    with open( os.path.join( args.out_dir, "shk_elf.gen.mk" ), "w" ) as f:
+    with open( os.path.join( args.elf_out_dir, "shk_elf.gen.mk" ), "w" ) as f:
         f.write( f'# generated by {getScriptName()}\n' )
         
         binaryHooksSrc = ""
@@ -281,20 +391,21 @@ def main():
         
         src = fillTemplate( MK_INJECT_TEMPLATE, 
             TOOLS_DIR=args.tools_dir,
-            IN_DIR=args.build_in_dir,
-            OUT_DIR=args.build_out_dir,
-            TMP_DIR=args.build_tmp_dir,               
+            IN_DIR=args.elf_out_dir,
+            OUT_DIR=args.elf_out_dir,
+            TMP_DIR=args.elf_out_dir,               
             HOOK_OUTPUTS=binaryHooksSrc, 
             HOOK_INPUTS=patchHookInputsSrc, 
             HOOK_ADDRESSES=patchHookAddressesSrc, 
             SHARED_TEXT_ADDRESS=hex( args.hook_shared_text_range[0] ), 
             SHARED_DATA_ADDRESS=hex( args.hook_shared_data_range[0] ),
-            PATCH_FILE=args.patch_file )
+            PATCH_FILE=args.patch_file,
+            GAME=args.game )
         
         f.write( src + "\n" )
             
     # generate asm to include with the module
-    with open( os.path.join( args.out_dir, "shk_prx.gen.s" ), "w" ) as f:
+    with open( os.path.join( args.prx_out_dir, "shk_prx.gen.s" ), "w" ) as f:
         f.write( f'# generated by {getScriptName()}\n' )
         
         # write hook handler ptr table
@@ -306,11 +417,13 @@ def main():
         
         # write hook trampolines
         for hook in hooks:
-            writeAsmPrxHookTrampoline( f, hook.name, hook.replacedInstr, args.toc )
-        
+            writeAsmPrxHookTrampoline( f, hook )
+                
     # define linker symbols to be included with the module
-    with open( os.path.join( args.out_dir, "shk_prx.gen.mk" ), "w" ) as f:
+    with open( os.path.join( args.prx_out_dir, "shk_prx.gen.mk" ), "w" ) as f:
         f.write( f'# generated by {getScriptName()}\n' )
+        
+        # write defsyms
         f.write( "SHK_PRX_DEFSYMS = " )
     
         # todo verify that these addresses line up
@@ -319,12 +432,17 @@ def main():
         # write symbol for eboot->prx pointer for hook handler function pointer table
         writeLdDefSym( f, f"_shk_elf_prx_ptr_table", hex( curDataAddr ) )
         
+        # write symbol for main ELF TOC
+        writeLdDefSym( f, f"_shk_elf_toc", hex( args.toc ) )
+        
         for hook in hooks:
             # write symbol for hook address (likely the function itself)
             writeLdDefSym( f, f"._shk_elf_{hook.name}", hex( hook.addr ) )
-            #writeLdDefSym( f, f"_shk_prx_ptr_{hook.name}", hex( curDataAddr ) )
-            #curDataAddr += ASM_HOOK_PTR_SIZE
-            #assert( curDataAddr < args.hook_shared_data_range[1] )
+            
+        f.write( "\n" )
+        # write defines
+        f.write( f"SHK_PRX_DEFINES = -DGAME_{args.game}" )
+        
         
     pass
 

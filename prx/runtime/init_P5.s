@@ -1,7 +1,12 @@
+.global _shk_prx_elf_substitute_impl
+_shk_prx_elf_substitute_impl:
+.int ._shk_prx_elf_substitute_impl
+.int _shk_elf_toc
+
 # function extracted from the game to make extra room for code
 # __int64 __fastcall sub_A3BE6C(unsigned int *a1, unsigned int a2, __int64 a3)
-.global ._runtimeSubstitute1Impl
-._runtimeSubstitute1Impl:
+.global ._shk_prx_elf_substitute_impl
+._shk_prx_elf_substitute_impl:
 li        r6, 0         # Load Immediate
 cmpwi     cr6, r4, 0x17 # Compare Word Immediate
 cmpwi     cr1, r4, 0x3F # '?' # Compare Word Immediate
@@ -888,8 +893,3 @@ li        r3, 1         # Load Immediate
 stb       r4, 0(r5)     # Store Byte
 blr                     # Branch unconditionally
 # End of function .sub_A3BE6C
-
-.global _runtimeSubstitute1Impl
-_runtimeSubstitute1Impl:
-.int ._runtimeSubstitute1Impl
-.int 0xd01288

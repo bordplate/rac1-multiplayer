@@ -23,4 +23,10 @@ typedef double f64;
     #define false ((bool)0)
 #endif
 
+// ghidra types
+typedef u8 undefined;
+typedef u16 undefined2;
+typedef u32 undefined4;
+typedef u64 undefined8;
+
 #endif

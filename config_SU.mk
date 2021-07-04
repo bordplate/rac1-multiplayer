@@ -1,0 +1,64 @@
+# NOTE: this game has multiple TOCs due to a very large executable size (40mb+)
+
+# substitute function pattern:
+# seg003 length 0x1258 locals 0x28 arguments: 0
+
+# shared data addr pattern:
+# seg025 length 0x4
+
+# US PSN ver
+ifeq ($(GAME_ID), NPUB31204)
+
+ifeq ($(GAME_VER), 1.00)
+# TODO
+TOC									= 0x29c1520
+LOADER_INJECT_ADDR 					= 0x15708
+LOADER_START_ADDR 					= 0x1D3B2CC # 0x1D3B2C8 + 4
+LOADER_END_ADDR 					= 0x1D3B34C # LOADER_START_ADDR + 0x80
+LOADER_SYS_PRX_MODULE_LOAD_ADDR 	= 
+LOADER_SYS_PRX_MODULE_START_ADDR 	= 
+
+HOOK_SHARED_TEXT_BEGIN_ADDR = 0x1D3B34C
+HOOK_SHARED_TEXT_END_ADDR 	= 0x1D3C520
+
+HOOK_SHARED_DATA_BEGIN_ADDR = 
+HOOK_SHARED_DATA_END_ADDR 	= 
+endif
+
+endif
+
+# US BD ver
+ifeq ($(GAME_ID), BLUS30244)
+
+ifeq ($(GAME_VER), 1.00)
+# TODO
+TOC									= 0x274EF50
+LOADER_INJECT_ADDR 					= 0x18C58
+LOADER_START_ADDR 					= 0x1C4EB30 # 0x1C4EB28 + 4 + align
+LOADER_END_ADDR 					= 0x1C4EBB0 # LOADER_START_ADDR + 0x80
+LOADER_SYS_PRX_MODULE_LOAD_ADDR 	= 
+LOADER_SYS_PRX_MODULE_START_ADDR 	= 
+
+HOOK_SHARED_TEXT_BEGIN_ADDR = $(LOADER_END_ADDR)
+HOOK_SHARED_TEXT_END_ADDR 	= 0x1C4FD80
+
+HOOK_SHARED_DATA_BEGIN_ADDR = 
+HOOK_SHARED_DATA_END_ADDR 	= 
+endif
+
+ifeq ($(GAME_VER), 1.02)
+TOC									= 0x279f040 # TOC of substitute, actual TOC varies throughout
+LOADER_INJECT_ADDR 					= 0x1C8A384 # nop near main function
+LOADER_START_ADDR 					= 0x1C61090 # 0x1C61088 + 4 + align
+LOADER_END_ADDR 					= 0x1C61110 # LOADER_START_ADDR + 0x80
+LOADER_SYS_PRX_MODULE_LOAD_ADDR 	= 0x1cad614 # 0xdd3b27ac sysPrxForUser _sys_spu_printf_finalize
+LOADER_SYS_PRX_MODULE_START_ADDR 	= 0x1CAD414 # 0x67f9fedb sysPrxForUser sys_game_process_exitspawn2
+
+HOOK_SHARED_TEXT_BEGIN_ADDR = $(LOADER_END_ADDR)
+HOOK_SHARED_TEXT_END_ADDR 	= 0x1C622E0
+
+HOOK_SHARED_DATA_BEGIN_ADDR = 0x25913C0
+HOOK_SHARED_DATA_END_ADDR 	= 0x25913C4
+endif
+
+endif

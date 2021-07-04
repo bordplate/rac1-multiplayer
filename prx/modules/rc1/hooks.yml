@@ -1,0 +1,5 @@
+# ASM function ported to PRX to make room for the loader
+# Don't remove this
+_shk_prx_elf_substitute:
+    addr: 0x5F7140
+    emitTrampoline: no
