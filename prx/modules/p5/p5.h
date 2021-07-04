@@ -9,11 +9,33 @@
 
 // Globals
 u16 EncounterIDGlobal;
+u16 LastUsedEncounterID;
 u16 sequenceIDGlobal;
 u32 EnemyPersona;
 u32 GlobalEnemyID;
 u32 GlobalCounts[256];
-void* GlobalBtlUnitEnemyAddress;
+bool isAmbush;
+bool wasBGMReplaced;
+
+typedef struct
+{
+  u32 modelID;
+  u32 bgmId;
+} btlEquipBgmTableEntry;
+
+btlEquipBgmTableEntry btlEquipBgmTable[20];
+
+typedef struct
+{
+  u32 flags;
+  u16 Field04;
+  u16 Field06;
+  u16 BattleUnitID[5];
+  u16 FieldID;
+  u16 RoomID;
+  u16 BGMID;
+} encounterIDTBL;
+
 
 typedef struct
 {
@@ -1075,6 +1097,137 @@ typedef struct ResourceHandleStruct
   struct ResourceHandleStruct* next;
 } ResourceHandleStruct;
 
+typedef struct NaviSoundSubStruct
+{
+  u32 field00;
+  u32 field04;
+  u32 field08;
+  u32 field0c;
+  u32 field10;
+  u32 field14;
+  u32 field18;
+  u32 field1c;
+  u32 field20;
+  u32 naviID;
+  u32 field28;
+} NaviSoundSubStruct;
+
+typedef struct NaviSoundStructIDK
+{
+  u32 field00;
+  u32 field04;
+  u32 field08;
+  u32 field0c;
+  u32 field10;
+  u32 field14;
+  u32 field18;
+  u32 field1c;
+  u32 field20;
+  u32 field24;
+  u32 field28;
+  u32 field2c;
+  u32 field30;
+  u32 field34;
+  u32 field38;
+  u32 field3c;
+  u32 field40;
+  u32 field44;
+  u32 field48;
+  u32 field4c;
+  u32 field50;
+  u32 field54;
+  u32 field58;
+  u32 field5c;
+  u32 field60;
+  u32 field64;
+  u32 field68;
+  u32 field6c;
+  u32 field70;
+  u32 field74;
+  u32 field78;
+  u32 field7c;
+  u32 field80;
+  u32 field84;
+  u32 field88;
+  u32 field8c;
+  u32 field90;
+  u32 field94;
+  u32 field98;
+  u32 field9c;
+  u32 fielda0;
+  u32 fielda4;
+  u32 fielda8;
+  u32 fieldac;
+  u32 fieldb0;
+  u32 fieldb4;
+  u32 fieldb8;
+  u32 fieldbc;
+  u32 fieldc0;
+  u32 fieldc4;
+  u32 fieldc8;
+  u32 fieldcc;
+  u32 fieldd0;
+  u32 fieldd4;
+  u32 fieldd8;
+  u32 fielddc;
+  u32 fielde0;
+  u32 fielde4;
+  u32 fielde8;
+  u32 fieldec;
+  u32 fieldf0;
+  u32 fieldf4;
+  u32 fieldf8;
+  u32 fieldfc;
+  u32 field100;
+  u32 field104;
+  u32 field108;
+  u32 field10c;
+  u32 field110;
+  u32 field114;
+  u32 field118;
+  u32 field11c;
+  u32 field120;
+  u32 field124;
+  u32 field128;
+  u32 field12c;
+  u32 field130;
+  u32 field134;
+  u32 field138;
+  u32 field13c;
+  u32 field140;
+  u32 field144;
+  u32 field148;
+  u32 field14c;
+  u32 field150;
+  u32 field154;
+  u32 field158;
+  u32 field15c;
+  u32 field160;
+  u32 field164;
+  u32 field168;
+  u32 field16c;
+  u32 field170;
+  u32 field174;
+  u32 field178;
+  u32 field17c;
+  u32 field180;
+  u32 field184;
+  u32 field188;
+  u32 field18c;
+  u32 field190;
+  u32 field194;
+  u32 field198;
+  u32 field19c;
+  u32 field1a0;
+  u32 field1a4;
+  u32 field1a8;
+  u32 field1ac;
+  NaviSoundSubStruct* navisubstruct;
+  u32 field1b4;
+  u32 field1b8;
+  u32 field1bc;
+} NaviSoundStructIDK;
+
 
 fileHandleStruct* NaviTestFile;
 
@@ -1086,6 +1239,12 @@ unitTBLVisualIndex NewVisualIndexTBL;
 ELSAI_Segment2TBL NewSegment2TBL;
 
 btlUnit_Unit* enemyBtlUnit;
+
+struct
+{
+  short modelID[255];
+}MeleeWeaponModels;
+
 
 
 // Game functions are declared like this
@@ -1296,6 +1455,25 @@ undefined8 FUN_002d08b4(int* param_1);
 void FUN_0003b4b8(int param_1, char param_2);
 void FUN_0003b510(int param_1, char param_2);
 void FUN_002d9d00(undefined4* param_1);
+char* FUN_00968be8( void );
+char* FUN_00968bf4( void );
+char* FUN_001a5834( void );
+/*int criFsBinder_BindCpk( char* a1 );*/
+int FUN_00ab563c( int* a1 );
+int FUN_001a52f8( int a1 );
+int FUN_2604C4( int arg );
+void LoadEncounterEventSoundbank( int encounterID );
+
+/**
+ * @brief Set priority of target CPK
+ * 
+ * @param cpkBind result ID of bindCPK for desired CPK
+ * @param priority target load priority of CPK
+ * @return int 
+ */
+int criFsBinder_SetPriority(int cpkBind, int priority);
+
+encounterIDTBL* GetEncounterEntryFromTBL( int encounterID);
 
 #pragma pop
 #endif

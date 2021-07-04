@@ -5,6 +5,30 @@
 #include "lib/shk.h"
 #include "p5.h"
 
+btlEquipBgmTableEntry btlEquipBgmTable[] =
+{
+  { 159, 2000 }, // DLC_001
+  { 158, 2002 }, // DLC_002
+  { 161, 2004 }, // DLC_003
+  { 160, 2006 }, // DLC_004
+  { 163, 2008 }, // DLC_005
+  { 166, 2102 }, // DLC_006
+  { 167, 2201 }, // DLC_007
+  { 168, 2203 }, // DLC_008
+  { 169, 2205 }, // DLC_009
+  { 162, 2207 }, // DLC_010
+  { 170, 2209 }, // DLC_011
+  { 171, 2211 }, // DLC_012
+  { 172, 2213 }, // DLC_013
+  { 173, 2215 }, // DLC_014
+  { 174, 2217 }, // DLC_015
+  { 175, 2310 }, // DLC_016
+  { 176, 2330 }, // DLC_017
+  { 177, 2332 }, // DLC_018
+  { 178, 2334 }, // DLC_019
+  { 179, 2336 }, // DLC_020
+};
+
 int RECOVERY_ALL( void )
 {
     SHK_FUNCTION_CALL_0( 0x1edf9c, int );
@@ -293,6 +317,56 @@ void FUN_0003b510(int param_1, char param_2)
 void FUN_002d9d00(undefined4* param_1)
 {
     SHK_FUNCTION_CALL_1( 0x2d9d00, void, undefined4*, param_1 );
+}
+
+char* FUN_00968be8( void )
+{
+    SHK_FUNCTION_CALL_0( 0x968be8, char* );
+}
+
+char* FUN_00968bf4( void )
+{
+    SHK_FUNCTION_CALL_0( 0x968bf4, char* );
+}
+
+char* FUN_001a5834( void )
+{
+    SHK_FUNCTION_CALL_0( 0x1a5834, char* );
+}
+
+/*int criFsBinder_BindCpk( char* arg )
+{
+    SHK_FUNCTION_CALL_1( 0x114b74, int, char*, arg );
+}*/
+
+int criFsBinder_SetPriority ( int cpkBinder, int priority )
+{
+   SHK_FUNCTION_CALL_2( 0xAB8ED4, int, int, cpkBinder, int, priority );
+}
+
+int FUN_00ab563c( int* arg )
+{
+    SHK_FUNCTION_CALL_1( 0xab563c, int, int*, arg );
+}
+
+int FUN_001a52f8( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x1a52f8, int, int, arg );
+}
+
+int FUN_2604C4( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x2604C4, int, int, arg );
+}
+
+void LoadEncounterEventSoundbank( int encounterID )
+{
+    SHK_FUNCTION_CALL_1( 0x745b9c, void, int, encounterID );
+}
+
+encounterIDTBL* GetEncounterEntryFromTBL( int encounterID)
+{
+    SHK_FUNCTION_CALL_1(0x263b94, encounterIDTBL*, int, encounterID);
 }
 
 #endif
