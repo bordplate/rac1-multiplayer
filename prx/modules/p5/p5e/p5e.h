@@ -20,6 +20,8 @@ typedef struct
   char* fileNamePtr;
 } fileAccessStruct;
 
+void RandomizeTitleScreenBGM();
+
 
 CharModelReplacementTable charModelReplacementTable[10];
 

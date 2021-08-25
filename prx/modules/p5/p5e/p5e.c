@@ -23,13 +23,19 @@
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( void, setBgm, int id );
+SHK_HOOK( void, FUN_0062b08c, int id );
+SHK_HOOK( void, FUN_0062b080, int id );
+SHK_HOOK( void, FUN_00af4434, int a1, int a2 );
+SHK_HOOK( void, FUN_0063acc8, int a1, int a2 );
 SHK_HOOK( int, FUN_0072360c, int id );
+SHK_HOOK( int, FUN_001cf704, u64 unk, int a1, int a2, int a3 );
 SHK_HOOK( void*, LoadEPL, char* EPL, u8 a2 );
 SHK_HOOK( int, criFs_Initialize );
 SHK_HOOK( u16, LoadMeleeWeaponModelTable, int a1 );
 SHK_HOOK( u16, LoadGunWeaponModelTable, int a1 );
 SHK_HOOK( u16, FUN_0003a658, int a1 );
 SHK_HOOK( u16, FUN_0003a698, int a1 );
+SHK_HOOK( int, FUN_000bee20, int a1, int a2, int a3 );
 SHK_HOOK( int, criFsBinder_BindCpk, char* arg );
 SHK_HOOK( u64, criFsBinder_SetPriority, u32 a1, u32 a2 );
 SHK_HOOK( int, crifsloader_load_registered_file, fileAccessStruct* a1, int a2, int a3, int a4, int a5 );
@@ -37,38 +43,66 @@ SHK_HOOK( int, GenericCharacterModelLoader, char* result, u64 modelType, u64 cha
 
 static void setBgmHook( int id )
 {
-  u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
-  u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
-  // Fix bgm if it was previously set to a different DLC
-  encounterIDTBL* result = GetEncounterEntryFromTBL( LastUsedEncounterID );
-  for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
+  if ( CONFIG_ENABLED( enableExpandedBGM ) )
   {
-    btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
-    if ( result->BGMID == pEntry->bgmId && wasBGMReplaced )
+    u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
+    u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
+    if ( id == 340 && wasBGMReplaced ) // fix replaced music
     {
+      encounterIDTBL* result = GetEncounterEntryFromTBL( EncounterIDBGM );
       result->BGMID = 0;
       wasBGMReplaced = false;
     }
-  }
-  if ( result->BGMID == 907 && wasBGMReplaced )
-  {
-    result->BGMID = 0;
-    wasBGMReplaced = false;
-  }
-
-  if ( id == 340 && CONFIG_ENABLED( enableExpandedBGM ) ) // Victory theme
-  { 
-    isAmbush = false;
-    for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
-    {
-      btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
-      if ( pEntry->modelID == playerOutfitModel )
+    if ( id == 340 && CONFIG_ENABLED( randomDLCBGM )) // Victory theme
+    { 
+      isAmbush = false;
+      isAmbushed = false;
+      btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[rngBGM];
+      id = pEntry->bgmId + 1;
+      wasBGMRandom = false;
+    }
+    else if ( id == 340 && !CONFIG_ENABLED( randomDLCBGM ) ) // Victory theme
+    { 
+      isAmbush = false;
+      isAmbushed = false;
+      for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
       {
-        id = pEntry->bgmId + 1;
-        break;
+        btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
+        if ( pEntry->modelID == playerOutfitModel )
+        {
+          id = pEntry->bgmId + 1;
+          break;
+        }
+      }  
+    }
+    /*if ( id == 471 ) // Life Will Change
+    {
+      if ( GetTotalDays() == 267 ) // ingame date for Qlipoth, 12/24
+      {
+        id = 904;
       }
-    }  
+    }*/
+    if ( id == 101 && sequenceIDGlobal == 1 && CONFIG_ENABLED( enableExpandedBGM ) && CONFIG_ENABLED( P5RTitleBGM ) )
+    {
+      if ( titleScreenBGM == 0 ) // P5
+      {
+        RandomizeTitleScreenBGM();
+      }
+      else if ( titleScreenBGM == 1 ) // P5R
+      {
+        id = 901;
+        RandomizeTitleScreenBGM();
+      }
+      else if ( titleScreenBGM == 2 ) // P5S
+      {
+        id = 996;
+        RandomizeTitleScreenBGM();
+      }
+    }
   }
+  else wasBGMReplaced = false;
+
+  printf("SetBGM Called with BGM ID -> %d\n", id);
   SHK_CALL_HOOK( setBgm, id );
 }
 
@@ -88,40 +122,78 @@ static CharModelReplacementTable charModelReplacementTableEntry[] =
 
 static int GenericCharacterModelLoaderHook( char* result, u64 modelType, u64 characterID, u64 modelID, u64 modelSubID )
 {
-  if ( ( modelType == 2 || modelType == 5 ) && characterID <= 10 )
+  //printf( "Model Type %d loading for character ID %d\n", modelType, characterID );
+  if ( modelType == 2 || modelType == 5 ) // human character models
   {
+    //printf("Character ID %d loading model ID %d\n", characterID, modelID);
     if ( characterID == 9 && modelID == 51 && GetEquippedPersonaFunction(9) != Persona_RobinHood ) // Darkechi model
     {
       modelID = 52;
     }
-    CharModelReplacementTable* pEntry = &charModelReplacementTableEntry[characterID];
-    for ( int j = 0; j <= 4; j++ )
+    if ( characterID >= 1 && characterID <= 10 ) // check PT models in cutscenes
     {
-      u32 playerOutfitModel = PlayerUnitGetModelMinorID( characterID, 50, 0 );
-      if ( modelID == pEntry->modelId[j] && playerOutfitModel != 51 && CONFIG_ENABLED( enableCutsceneOutfits ) )
+      CharModelReplacementTable* pEntry = &charModelReplacementTableEntry[characterID];
+      for ( int j = 0; j <= 4; j++ )
       {
-        modelID = playerOutfitModel;
+        u32 playerOutfitModel = PlayerUnitGetModelMinorID( characterID, 50, 0 );
+        if ( modelID == pEntry->modelId[j] && playerOutfitModel != 51 && CONFIG_ENABLED( enableCutsceneOutfits ) )
+        {
+          modelID = playerOutfitModel;
+        }
       }
+      if ( modelID == 49 && CONFIG_ENABLED( enableExpandedBGM ) && CONFIG_ENABLED( P5RTitleBGM ) )
+      {
+        modelSubID = titleScreenBGM;
+      }
+    }
+    if ( characterID == 1 )
+    {
+      JokerModel = modelID;
     }
     if ( characterID == 10 && modelID == 50 ) //for now copy Joker outfit to Kasumi
     {
-      modelID = PlayerUnitGetModelMinorID( 1, 50, 0 );
+      modelID = JokerModel;
       if ( CONFIG_ENABLED( enableSumire ) )
       {
         modelSubID = 1;
       }
     }
+    if ( characterID >= 1 && characterID <= 10 || characterID == 1011 || characterID == 1003 )
+    {
+      if ( modelID == 2 && isMidWinterValid() )
+      {
+        modelID = 5;
+      }
+      else if ( modelID == 4 && isMidWinterValid() )
+      {
+        modelID = 6;
+      }
+    }
+    else if ( characterID == 2104 && modelID == 0 && isMidWinterValid() ) //Wakaba loads model 0 for some reason
+    {
+      modelID = 6;
+    }
+    //printf("Character ID %d loading model ID %d\n", characterID, modelID);
   }
   else if ( modelType == 4 && characterID > 200 ) // force load regular Persona models instead of using PSZ/Enemy model
   {
-    modelType = 3;
+    if ( characterID >= 221 && characterID <= 0251 ) // party member reserve personas
+    {
+      modelType = 3;
+    }
+    else if ( characterID >= 0322 ) // only force this on reserve personas
+    {
+      modelType = 3;
+    }
   }
   return SHK_CALL_HOOK( GenericCharacterModelLoader, result, modelType, characterID, modelID, modelSubID );
 }
 
 static void* LoadEPLHook( char* EPL, u8 a2 )
 {
-  if ( strcmp( EPL, "battle/gui/bes_ui_p_advantage.EPL" ) == 0 )
+  if ( strcmp( EPL, "battle/gui/bes_ui_p_advantage.EPL" ) == 0 ||
+   strcmp( EPL, "battle/event/BCD/chance/bes_chance_solo.EPL" ) == 0 ||
+   strcmp( EPL, "battle/event/BCD/chance/bes_ui_randam.EPL" ) == 0 )
   {
     isAmbush = true;
   }
@@ -181,6 +253,7 @@ static int criFs_InitializeHook( void )
   {
     iVar1 = sprintf(acStack288,"%s%s/%s.cpk",pcVar2,pcVar3, CONFIG_STRING(modCPKName));
     iVar1 = criFsBinder_BindCpkHook(acStack288);
+    if (iVar1 > 0) criFsBinder_SetPriority(iVar1, 20 + CONFIG_INT( extraModCPK ) + 1);
   }
 
   u32 extraCPK = CONFIG_INT( extraModCPK );
@@ -190,11 +263,13 @@ static int criFs_InitializeHook( void )
     {
       iVar1 = sprintf(acStack288,"%s%s/%s_%02d.cpk", pcVar2, pcVar3, CONFIG_STRING_ARRAY(extraModCPKName)[i], i + 1);
       iVar1 = criFsBinder_BindCpkHook(acStack288);
+      if (iVar1 > 0) criFsBinder_SetPriority(iVar1, 20 + i);
     }
   }
 
   iVar1 = sprintf(acStack288,"%s%s/ps3.cpk",pcVar2,pcVar3);
   iVar1 = criFsBinder_BindCpkHook(acStack288);
+  
   iVar1 = sprintf(acStack288,"%s%s/data.cpk",pcVar2,pcVar3);
   iVar1 = criFsBinder_BindCpkHook(acStack288);
 
@@ -215,51 +290,20 @@ static int crifsloader_load_registered_fileHook( fileAccessStruct* a1, int a2, i
 
 static u16 LoadMeleeWeaponModelTableHook( int a1 )
 {
-  DEBUG_LOG("Gun model load; a1 -> %d, a1 result -> %d\n", a1, FUN_2604C4(a1));
-  a1 = FUN_2604C4(a1);
-  u16 result = 1;
-  if ( a1 >= 0 && a1 <= 99 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( MeleeWeaponModelIDTable1 )[a1];
-  }
-  else if ( a1 >= 100 && a1 <= 199 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( MeleeWeaponModelIDTable2 )[a1-100];
-  }
-  else if ( a1 >= 200 && a1 <= 299 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( MeleeWeaponModelIDTable3 )[a1-200];
-  }
-  else if ( a1 >= 300 && a1 <= 399 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( MeleeWeaponModelIDTable4 )[a1-300];
-  }
-  DEBUG_LOG("Weapon Model ID result -> %d\n", result);
+  a1 = FUN_2604C4(a1); // weird thing they do to flip negative values
+  u16 result = GetMeleeWeaponTBLEntry(a1)->field_0xe;
+
+  /*printf("Melee weapon model load; a1 -> %d\n", a1);
+  printf("Weapon Model ID result -> %d\n", result);*/
   return result;
 }
 
 static u16 LoadGunWeaponModelTableHook( int a1 )
 {
-  DEBUG_LOG("Gun model load; a1 -> %d, a1 result -> %d\n", a1, FUN_2604C4(a1));
-  a1 = FUN_2604C4(a1);
-  u16 result = 1;
-  if ( a1 >= 0 && a1 <= 99 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( GunWeaponModelTable1 )[a1];
-  }
-  else if ( a1 >= 100 && a1 <= 199 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( GunWeaponModelTable2 )[a1-100];
-  }
-  else if ( a1 >= 200 && a1 <= 299 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( GunWeaponModelTable3 )[a1-200];
-  }
-  else if ( a1 >= 300 && a1 <= 399 )
-  {
-    result = (u16)CONFIG_INT_ARRAY( GunWeaponModelTable4 )[a1-300];
-  }
-  DEBUG_LOG("Gun Model ID result -> %d\n", result);
+  a1 = FUN_2604C4(a1); // weird thing they do to flip negative values
+  u16 result = GetRangedWeaponTBLEntry(a1)->RESERVE;
+  /*printf("Gun model load; a1 -> %d\n", a1);
+  printf("Gun Model ID result -> %d\n", result);*/
   return result;
 }
 
@@ -283,14 +327,74 @@ static u16 FUN_0003a698Hook( int a1 )
   else return SHK_CALL_HOOK( FUN_0003a698, a1 );
 }
 
+static int FUN_001cf704Hook( u64 unk, int charID, int expressionID, int outfitID ) // Bustups function
+{
+  //printf("Bustup file loaded\ncharacter ID -> %d\nExpression ID -> %d\nOutfit ID -> %d\n", charID, expressionID, outfitID);
+  if ( charID == 9 && GetEquippedPersonaFunction(9) != Persona_RobinHood && expressionID >= 100 && expressionID < 120 )
+  {
+    expressionID += 700;
+  }
+
+  if ( charID > 0 && charID <= 11 || charID == 111 || charID == 208 || charID == 103 )
+  {
+    if ( outfitID == 2 && isMidWinterValid() )
+    {
+      outfitID = 5;
+    }
+    else if ( outfitID == 4 && isMidWinterValid() )
+    {
+      outfitID = 6;
+    }
+  }
+  return SHK_CALL_HOOK( FUN_001cf704, unk, charID, expressionID, outfitID );
+}
+
+static int FUN_000bee20Hook( int a1, int a2, int a3 )
+{
+  //printf("Field Pac Loaded -> %03d_%03d\n", a2 % 1000, a3 % 1000 );
+  lastUsedFieldMajorID = a2 % 1000;
+  lastUsedFieldMinorID = a3 % 1000;
+  return SHK_CALL_HOOK( FUN_000bee20, a1, a2, a3 );
+}
+
+static void FUN_0062b08c_Hook( int a1 )
+{
+  //a1 = 0;
+  return SHK_CALL_HOOK( FUN_0062b08c, a1 );
+}
+
+static void FUN_0062b080_Hook( int a1 )
+{
+  //a1 = 1;
+  return SHK_CALL_HOOK( FUN_0062b080, a1 );
+}
+
+static void FUN_00af4434Hook( int a1, int a2 )
+{
+  hexDump( "FUN_00af4434", a1, 0x5E0 );
+  return SHK_CALL_HOOK( FUN_00af4434, a1, a2 );
+}
+
+static void BtlPlayBGM( int a1, int a2 )
+{
+  /*char hexdumpString[64];
+  sprintf( hexdumpString, "BtlPlayBGM; struct at 0x%x", a1);
+  hexDump( hexdumpString, a1, 0x5E0 );*/
+  printf("BtlPlayBGM called with BGM ID %d\n", a2);
+  return SHK_CALL_HOOK( FUN_0063acc8, a1, a2 );
+}
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
 void p5eInit( void )
 {
+  randomSetSeed( getTicks() );
   // Hooks must be 'bound' to a handler like this in the start function.
   // If you don't do this, the game will crash.
   SHK_BIND_HOOK( FUN_0072360c, forceSingleGAP );
+  SHK_BIND_HOOK( FUN_0062b08c, FUN_0062b08c_Hook );
+  SHK_BIND_HOOK( FUN_0062b080, FUN_0062b080_Hook );
   SHK_BIND_HOOK( setBgm, setBgmHook );
   SHK_BIND_HOOK( LoadEPL, LoadEPLHook );
   SHK_BIND_HOOK( GenericCharacterModelLoader, GenericCharacterModelLoaderHook );
@@ -302,10 +406,25 @@ void p5eInit( void )
   SHK_BIND_HOOK( LoadGunWeaponModelTable, LoadGunWeaponModelTableHook );
   SHK_BIND_HOOK( FUN_0003a658, FUN_0003a658Hook );
   SHK_BIND_HOOK( FUN_0003a698, FUN_0003a698Hook );
+  SHK_BIND_HOOK( FUN_001cf704, FUN_001cf704Hook );
+  SHK_BIND_HOOK( FUN_000bee20, FUN_000bee20Hook );
+  SHK_BIND_HOOK( FUN_00af4434, FUN_00af4434Hook );
+  SHK_BIND_HOOK( FUN_0063acc8, BtlPlayBGM );
+  titleScreenBGM = 99;
+  RandomizeTitleScreenBGM();
 }
 
 void p5eShutdown( void )
 {
   // Executed when the PRX module is unloaded.    
+}
+
+void RandomizeTitleScreenBGM()
+{
+  int lastBGM = titleScreenBGM;
+  while ( lastBGM == titleScreenBGM )
+  {
+    titleScreenBGM = randomIntBetween( 0, 2 );
+  }
 }
 #endif

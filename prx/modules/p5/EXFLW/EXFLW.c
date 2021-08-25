@@ -25,12 +25,14 @@
 
 // You need to declare hooks with SHK_HOOK before you can use them.
 SHK_HOOK( int, EX_FLW_setHumanLv );
+SHK_HOOK( int, SET_PERSONA_LV );
 SHK_HOOK( int, PUT_Function );
 SHK_HOOK( int, PUTF_Function );
 SHK_HOOK( int, PUTS_Function );
 SHK_HOOK( int, FLW_AI_ACT_ATTACK );
 SHK_HOOK( int, FLW_AI_ACT_SKILL );
 SHK_HOOK( int, PERSONA_EVOLUTION );
+SHK_HOOK( u64, FUN_00263634, int a1 );
 SHK_HOOK( int, FUN_3b9644, int charID, int expressionID);
 SHK_HOOK( s32, setSeq, s32 seqId, void* params, s32 paramsSize, s32 r6 );
 SHK_HOOK( void, SetCountFunction, u32 a1, u32 a2 );
@@ -45,9 +47,8 @@ SHK_HOOK( char*, scrGetCommandName, u32 a1 );
 SHK_HOOK( scrCommandTableEntry*, scrGetCommandFunc, u32 id );
 SHK_HOOK( undefined4*, LoadFutabaNaviBMD, void );
 SHK_HOOK( undefined4*, LoadMonaNaviBMD, void );
-SHK_HOOK( void, SomethingAboutSelectingNaviSoundToLoad );
 SHK_HOOK( u64, LoadNaviSoundFile, u64 a1, u64 a2, char* acb_path, char* awb_path, u64 a5 );
-SHK_HOOK( u64, FUN_00748d78, u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9);
+SHK_HOOK( u64, FUN_00748d78, int* param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char param_7, short param_7_00, double param_9);
 
 static bool BIT_CHK_FUNCHook( u64 a1 )
 {
@@ -100,6 +101,7 @@ static bool BIT_CHK_FUNC_ALTHook( u64 a1 )
 static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
 {
   sequenceIDGlobal = seqId;
+  //printf( "Changing Sequence ID to %d\n", seqId );
   if ( seqId == 4 )
   {
     if ( paramsSize == 40 )
@@ -110,7 +112,7 @@ static s32 setSeqHook( s32 seqId, void* params, s32 paramsSize, s32 r6 )
       {
         EncounterIDGlobal = 0;
       }
-      printf("Encounter ID Obtained -> %03d\n", EncounterIDGlobal);
+      //printf("Encounter ID Obtained -> %03d\n", EncounterIDGlobal);
     }
     else DEBUG_LOG("Unknown Params size in seqID 4 -> %d\n", paramsSize);
   }
@@ -370,7 +372,7 @@ static int FLW_AI_ACT_ATTACKHook( void )
   return SHK_CALL_HOOK(FLW_AI_ACT_ATTACK);
 }
 
-static int EX_FLD_MODEL_ANIM(void)
+/*static int EX_FLD_MODEL_ANIM(void)
 {
   u32 uVar1;
   int reshnd;
@@ -468,7 +470,7 @@ static int EX_FLD_MODEL_ANIM(void)
     }
   }
   return 1;
-}
+}*/
 
 inline void scrPushInt( int val ) 
 {
@@ -627,7 +629,7 @@ static TtyCmdStatus ttyGetBITCmd( TtyCmd* cmd, const char** args, u32 argc, char
     *error = "Bit ID should not exceed 8959";
     return TTY_CMD_STATUS_INVALID_ARG;
   }
-  BIT_CHK_FUNCHook( bit );
+  printf( "BIT_CHK status %d\n", BIT_CHK_FUNCHook( bit ) );
   return TTY_CMD_STATUS_OK;
 }
 
@@ -719,6 +721,12 @@ static TtyCmdStatus ttyGetEnemyBtlUnitCmd( TtyCmd* cmd, const char** args, u32 a
   return TTY_CMD_STATUS_OK;
 }
 
+static TtyCmdStatus ttyGetDays( TtyCmd* cmd, const char** args, u32 argc, char** error )
+{
+  printf( "Current amount of ingame days passed %d\n", GetTotalDays() );
+  return TTY_CMD_STATUS_OK;
+}
+
 fileHandleStruct* FutabaNavi = 0;
 static undefined4* LoadFutabaNaviBMDHook(void)
 {
@@ -731,7 +739,7 @@ static undefined4* LoadFutabaNaviBMDHook(void)
   DEBUG_LOG("Checking if Navi File is loaded\n");
   
   int customNaviID = GetCountFunctionHook( 9 );
-  if ( customNaviID <= 1 || customNaviID == 3 || customNaviID > 10 )
+  if ( customNaviID != 9 )
   {
     customNaviID = 8;
     SetCountFunctionHook( 9, customNaviID );
@@ -772,6 +780,7 @@ static undefined4* LoadMonaNaviBMDHook(void)
   if (pmVar1 != (idkman*)0x0) {
     NaviTestFile = open_file( "battle/message/navi_03.bmd", 0 );
     u64 fsResult = fsSync((int)NaviTestFile);
+    SetCountFunctionHook( 9, 3 );
     if ( fsResult == 1 && CONFIG_ENABLED( enableExternalNavi ) )
     {
       FUN_00747f48((undefined4 *)pmVar1, NaviTestFile->pointerToFile, 3);
@@ -800,28 +809,24 @@ static u64 LoadNaviSoundFileHook( u64 a1, u64 a2, char* acb_path, char* awb_path
 
   int naviID = GetCountFunctionHook(9);
 
-  if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) && naviID != 8 )
+  if ( strcmp( acb_path, "sound/battle/spt02.acb" ) == 0 && naviID != 8 )
   {
     sprintf( new_acb_path, "sound/battle/spt%02d.acb", naviID );
     sprintf( new_awb_path, "sound/battle/spt%02d.awb", naviID );
     return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, new_acb_path, new_awb_path, a5);
   }
-  else if ( strcmp( acb_path, "sound_JP/battle/spt02.acb" ) == 0 && CONFIG_ENABLED( enableCustomNaviSoundPack ) && naviID != 8 )
+  else if ( strcmp( acb_path, "sound_JP/battle/spt02.acb" ) == 0 && naviID != 8 )
   {
-    sprintf( new_acb_path, "sound_JP/battle/spt%02d.acb", naviID );
-    sprintf( new_awb_path, "sound_JP/battle/spt%02d.awb", naviID );
+    sprintf( new_acb_path, "sound_jp/battle/spt%02d.acb", naviID );
+    sprintf( new_awb_path, "sound_jp/battle/spt%02d.awb", naviID );
     return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, new_acb_path, new_awb_path, a5);
   }
   return SHK_CALL_HOOK(LoadNaviSoundFile, a1, a2, acb_path, awb_path, a5);
 }
 
-static u64 FUN_00748d78Hook(u64 param_1, u64 param_2, u64 param_3, u64 param_4, u64 param_5, u64 param_6, u64 param_7, u64 param_7_00, u64 param_9)
+static u64 FUN_00748d78Hook(int* param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char param_7, short param_7_00, double param_9)
 {
-  if ( GetCountFunctionHook(9) == 9 && CONFIG_ENABLED( enableExternalNavi ) && GetEquippedPersonaFunction(9) != Persona_RobinHood )
-  {
-    param_3 += 100;
-  }
-  /*DEBUG_LOG("Navi dialogue function called\na1 -> %x\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> %x\na7 -> %d\na8 -> %d\na9 -> %d\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);*/
+  //printf("Navi dialogue function called\na1 -> 0x%x\na2 -> %d\na3 -> %d\na4 -> %d\na5 -> %d\na6 -> 0x%x\na7 -> %d\na8 -> %d\na9 -> %f\n", param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
   return SHK_CALL_HOOK(FUN_00748d78, param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_7_00, param_9);
 }
 // List of commands that can be handled by the command listener
@@ -852,6 +857,9 @@ static TtyCmd ttyCommands[] =
   TTY_CMD( ttyGetBITCmd, "bitget", "Returns the current state of the specified BIT", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "bit", "BIT to get status from", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
 
+  TTY_CMD( ttyGetBITCmd, "bitchk", "Returns the current state of the specified BIT", TTY_CMD_FLAG_NONE,
+    TTY_CMD_PARAM( "bit", "BIT to get status from", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
+
   TTY_CMD( ttyPartyInCmd, "partyin", "Adds a party member to current active party", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "playerID", "ID of party member to add", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
 
@@ -860,6 +868,8 @@ static TtyCmd ttyCommands[] =
 
   TTY_CMD( ttyTestModelResHndCmd, "testmodel", "Test Resource handle function", TTY_CMD_FLAG_NONE,
     TTY_CMD_PARAM( "int", "resource handle id", TTY_CMD_PARAM_FLAG_REQUIRED, TTY_CMD_PARAM_TYPE_INT )),
+    
+  TTY_CMD( ttyGetDays, "getdays", "Get current amount of days passed", TTY_CMD_FLAG_NONE),
 
   TTY_CMD( ttyGetEnemyBtlUnitCmd, "getenemy", "Prints address and contents of currently saved enemy battle struct", TTY_CMD_FLAG_NONE ),
 
@@ -872,8 +882,13 @@ SHK_HOOK( u64, mainUpdate, f32 deltaTime );
 fileHandleStruct* testBF = 0;
 static u64 mainUpdateHook( f32 deltaTime )
 {
-  // Process TTY commands
-  ttyCmdProcess( ttyCommands );
+  if ( CONFIG_ENABLED (enableTTYCommands))
+  {
+    // Process TTY commands
+    ttyCmdProcess( ttyCommands );
+  }
+
+  u64 result = SHK_CALL_HOOK( mainUpdate, deltaTime );
 
   if ( CONFIG_ENABLED (enableGlobalBF))
   {
@@ -885,10 +900,142 @@ static u64 mainUpdateHook( f32 deltaTime )
     scrRunScript(0, testBF->pointerToFile, testBF->bufferSize, 0);
   }
 
-  return SHK_CALL_HOOK( mainUpdate, deltaTime );
+  randomIntBetween(0,1);
+
+  return result;
 }
 
 #endif
+
+static int EX_GET_LEARNABLE_SKILL( void )
+{
+  int partyMemberID = FLW_GetIntArg( 0 );
+  if ( partyMemberID <= 1 || 11 <= partyMemberID ) // do not execute on Joker or IDs higher than 10
+  {
+    return 1;
+  }
+
+  PartyMemberPersonaBlock* playerPersona = GetPartyMemberPersonaBlock( GetEquippedPersonaFunction( partyMemberID ) );
+
+  int returnValue = 0;
+  int targetSkillEntry = FLW_GetIntArg( 1 );
+  int previousLv = FLW_GetIntArg( 2 );
+  printf("EX_GET_LEARNABLE_SKILL: Attempting to learn skills starting from Lv %d\n", previousLv);
+  btlUnit_Unit* Player = GetBtlPlayerUnitFromID( partyMemberID );
+
+  if ( playerPersona->skills->canLearn && playerPersona->skills[targetSkillEntry].LvReq != 0 && targetSkillEntry <= 31 )
+  {
+    if ( playerPersona->skills[targetSkillEntry].LvReq >= previousLv && Player->context.player.StockPersona[0].personaLv >= playerPersona->skills[targetSkillEntry].LvReq )
+    {
+      returnValue = playerPersona->skills[targetSkillEntry].skillID;
+      printf("EX_GET_LEARNABLE_SKILL: Returning Skill ID %d\n", returnValue);
+    }
+  }
+  FLW_SetIntReturn( returnValue );
+  return 1;
+}
+
+static int EX_GET_PLAYER_LV( void )
+{
+  int partyMemberID = FLW_GetIntArg( 0 );
+  if ( partyMemberID == 0 || 11 <= partyMemberID ) // do not execute on Joker or IDs higher than 10
+  {
+    return 1;
+  }
+  int returnValue = 0;
+  btlUnit_Unit* Player = GetBtlPlayerUnitFromID( partyMemberID );
+  if ( partyMemberID == 1)
+  {
+    returnValue = Player->Lv;
+  }
+  else returnValue = Player->context.player.StockPersona[0].personaLv;
+
+  printf("GET_PLAYER_LV: Unit ID %d is lv %d\n", partyMemberID, returnValue);
+  FLW_SetIntReturn( returnValue );
+
+  return 1;
+}
+
+static int EX_SET_TACTICS_STATE( void )
+{
+  int partyMemberID = FLW_GetIntArg( 0 );
+  if ( partyMemberID == 0 || 11 <= partyMemberID ) // do not execute on ID 0 or IDs higher than 10
+  {
+    return 1;
+  }
+  int tacticsID = FLW_GetIntArg( 1 );
+  btlUnit_Unit* Player = GetBtlPlayerUnitFromID( partyMemberID );
+  if ( partyMemberID == 1)
+  {
+    printf("EX_SET_TACTICS_STATE: Warning, Joker tactics have been changed!");
+  }
+
+  Player->context.player.TacticsState = tacticsID;
+  printf("EX_SET_TACTICS_STATE: Unit ID %d tactics set to %d\n", partyMemberID, tacticsID);
+
+  return 1;
+}
+
+static int EX_CALL_NAVI_DIALOGUE( void )
+{
+  int charID = FLW_GetIntArg(0);
+  int expressionID = FLW_GetIntArg(1);
+  int msgID = FLW_GetIntArg(2);
+  int dialogueBoxType = FLW_GetIntArg(3);
+  if ( FUN_0031f9cc() && (charID = isCharacterAssistExpressonValid( (short)charID, (short)expressionID ), -1 < charID))
+  {
+    FUN_003b9110( charID, msgID, dialogueBoxType, 0, 0 );
+  }
+  return 1;
+}
+
+/*int sVanillaBits = { 0, 2048, 4096, 8192, 8448, 8704, 8960 };
+int[] sRoyalBits = { 0, 3072, 6144, 11264, 11776, 12288, 12800 };
+
+static int ConvBit(int flag, int[] source, int[] target) 
+{
+    var section = -1;
+    var section_flag = 0;
+
+    // convert
+    for (var i = 1; i < source.Length; i++)
+    {
+        if (flag < source[i])
+        {
+            section = i - 1;
+            section_flag = flag - source[i - 1];
+            break;
+        }
+    }
+
+    var result = target[section] + section_flag;
+
+    // flag val exceeded max val in source array
+    if (section < 0) return -1;
+
+    // overflowed to next section after conversion
+    if (result > target[section + 1]) return -1;
+
+    return result;
+}
+
+int ConvBitV2R(int flag) => ConvBit(flag, sVanillaBits, sRoyalBits);
+
+int ConvBitR2V(int flag) => ConvBit(flag, sRoyalBits, sVanillaBits);
+
+static int EX_CMM_FLAG_CONVERT( void )
+{
+  int flag = FLW_GetIntArg( 0 );
+  if ( flag >= 0x10000000 )
+  {
+    flag = sRoyalBits[ flag >> 28 ] + flag & 0x0fffffff; // convert giant p5r flag to readable p5r flag
+  }
+
+  int unkVar = FLW_GetIntArg( 1 );
+
+  FLW_SetIntReturn( flag + unkVar );
+  return 1;
+}*/
 
 scrCommandTableEntry exCommandTable[] =
 {
@@ -898,7 +1045,10 @@ scrCommandTableEntry exCommandTable[] =
   { EX_FLW_GetEquippedPersona, 1, "GET_EQUIPPED_PERSONA" },
   { EX_FLW_PersonaEvolution, 2, "PERSONA_EVOLUTION2" },
   { EX_FLW_GET_SEQ_ID, 0, "GET_SEQ_ID" },
-  { EX_FLD_MODEL_ANIM, 5, "EX_FLD_MODEL_ANIM" },
+  { EX_GET_LEARNABLE_SKILL, 3, "GET_LEARNABLE_SKILL" },
+  { EX_GET_PLAYER_LV, 1, "GET_PLAYER_LV" },
+  { EX_SET_TACTICS_STATE, 2, "SET_TACTICS_STATE" },
+  { EX_CALL_NAVI_DIALOGUE, 4, "CALL_NAVI_DIALOGUE" },
 };
 
 static scrCommandTableEntry* scrGetCommandFuncHook( u32 id )
@@ -956,23 +1106,6 @@ static u32 scrGetCommandArgCountHook( u32 functionID )
   }
 }
 
-static void SomethingAboutSelectingNaviSoundToLoadHook ( NaviSoundStructIDK* a1 )
-{
-  int fakeNaviID = 0;
-  if (a1->navisubstruct->naviID == 9 && GetCountFunctionHook(9) == 9) 
-  {
-    a1->navisubstruct->naviID = 8;
-    fakeNaviID = 9;
-  }
-  else if ( GetCountFunctionHook(9) == 8 )
-  {
-    fakeNaviID = 8;
-  }
-  else fakeNaviID = 3;
-  SHK_CALL_HOOK(SomethingAboutSelectingNaviSoundToLoad, a1);
-  a1->navisubstruct->naviID = fakeNaviID;
-}
-
 static int FUN_3b9644Hook(int charID, int expressionID)
 {
   if ( charID == 9 && GetEquippedPersonaFunction(9) != Persona_RobinHood && CONFIG_ENABLED( enableAkechiMod ) )
@@ -988,15 +1121,89 @@ static void LoadSoundByCueIDCombatVoiceFunctionHook( CueIDThingy* a1, u32* a2, u
   return SHK_CALL_HOOK( LoadSoundByCueIDCombatVoiceFunction, a1, a2, cueID, idk );
 }
 
+static u64 FUN_00263634Hook( int a1 )
+{
+  u64 result = SHK_CALL_HOOK(FUN_00263634, a1);
+  //printf("FUN_00263634 called; a1 -> %d, result -> 0x%x\n", a1, result);
+  return result;
+}
+
+static int EX_SET_PERSONA_LV ( void )
+{
+  int partyMemberID = FLW_GetIntArg( 0 );
+  //printf("EX_SET_PERSONA_LV called on unitID %d\n", partyMemberID);
+  if ( partyMemberID <= 1 || 11 <= partyMemberID ) // do not execute on Joker or IDs higher than 10
+  {
+    return 1;
+  }
+
+  int targetLv = FLW_GetIntArg( 1 );
+  //printf("EX_SET_PERSONA_LV called, target lv %d\n", targetLv);
+  if ( targetLv <= 0 || 100 <= targetLv ) // do not execute if target lv is 0 or higher than 100
+  {
+    return 1;
+  }
+
+  int ExpNeeded = 0;
+
+  PartyMemberLvUpThresholdExp* ExpThreshold = GetPartyMemberLvUpThreshold( partyMemberID );
+
+  if ( targetLv > 1 )
+  {
+    ExpNeeded = ExpThreshold->ExpRequired[targetLv-2];
+  }
+  //printf("EX_SET_PERSONA_LV called, target exp -> %d\n", ExpNeeded);
+
+  btlUnit_Unit* playerUnit = GetBtlPlayerUnitFromID( partyMemberID );
+  int unitLv = playerUnit->context.player.StockPersona[0].personaLv;
+
+  if ( unitLv >= targetLv )
+  {
+    printf("EX_SET_PERSONA_LV: Unit is already at target level or higher!\n");
+    return 1;
+  }
+  playerUnit->context.player.StockPersona[0].personaLv = targetLv;
+  playerUnit->context.player.StockPersona[0].personaExp = ExpNeeded;
+  PartyMemberPersonaBlock* playerPersona = GetPartyMemberPersonaBlock( GetEquippedPersonaFunction( partyMemberID ) );
+
+  int targetStr = playerUnit->context.player.StockPersona[0].St;
+  int targetMa = playerUnit->context.player.StockPersona[0].Ma;
+  int targetEn = playerUnit->context.player.StockPersona[0].En;
+  int targetAg = playerUnit->context.player.StockPersona[0].Ag; 
+  int targetLck = playerUnit->context.player.StockPersona[0].Lu;
+  int i;
+
+  for ( i = ( unitLv - 1 ); i < targetLv - 1; i++ )
+  {
+    targetStr += playerPersona->stats[i].str;
+    targetMa += playerPersona->stats[i].mag;
+    targetEn += playerPersona->stats[i].en;
+    targetAg += playerPersona->stats[i].ag;
+    targetLck += playerPersona->stats[i].lck;
+  }
+  
+  playerUnit->context.player.StockPersona[0].St = targetStr;
+  playerUnit->context.player.StockPersona[0].Ma = targetMa;
+  playerUnit->context.player.StockPersona[0].En = targetEn;
+  playerUnit->context.player.StockPersona[0].Ag = targetAg;
+  playerUnit->context.player.StockPersona[0].Lu = targetLck;
+
+  //printf("Calculated stats for lv %d\nstr -> %d\nma -> %d\nen -> %d\nag -> %d\nlck -> %d\n", i + 1, targetStr, targetMa, targetEn, targetAg, targetLck);
+  
+  return 1;
+}
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
 void EXFLWInit( void )
 {
+  randomSetSeed( getTicks() );
   printf("Expanded Flowscript Module loaded.\n");
   // Hooks must be 'bound' to a handler like this in the start function.
   // If you don't do this, the game will crash.
   SHK_BIND_HOOK( EX_FLW_setHumanLv, EX_FLW_setHumanLvHook );
+  SHK_BIND_HOOK( SET_PERSONA_LV, EX_SET_PERSONA_LV );
   SHK_BIND_HOOK( PUT_Function, PUT_FunctionHook );
   SHK_BIND_HOOK( PUTF_Function, PUTF_FunctionHook );
   SHK_BIND_HOOK( PUTS_Function, PUTS_FunctionHook );
@@ -1022,7 +1229,7 @@ void EXFLWInit( void )
   SHK_BIND_HOOK( LoadMonaNaviBMD, LoadMonaNaviBMDHook );
   SHK_BIND_HOOK( LoadNaviSoundFile, LoadNaviSoundFileHook );
   SHK_BIND_HOOK( FUN_00748d78, FUN_00748d78Hook );
-  SHK_BIND_HOOK( SomethingAboutSelectingNaviSoundToLoad, SomethingAboutSelectingNaviSoundToLoadHook );
+  SHK_BIND_HOOK( FUN_00263634, FUN_00263634Hook );
 }
 
 void EXFLWShutdown( void )

@@ -15,7 +15,19 @@ u32 EnemyPersona;
 u32 GlobalEnemyID;
 u32 GlobalCounts[256];
 bool isAmbush;
+bool isAmbushed;
 bool wasBGMReplaced;
+bool needsReplace;
+bool wasBGMRandom;
+bool isMidwinter;
+int rngBGM;
+int lastAccessedUnitType;
+int EncounterIDBGM;
+int lastUsedFieldMajorID;
+int lastUsedFieldMinorID;
+int JokerModel;
+u32 titleScreenBGM;
+u16 ActiveGlobalSkillSlot;
 
 typedef struct
 {
@@ -24,6 +36,9 @@ typedef struct
 } btlEquipBgmTableEntry;
 
 btlEquipBgmTableEntry btlEquipBgmTable[20];
+
+int sVanillaBits[6];
+int sRoyalBits[6];
 
 typedef struct
 {
@@ -39,10 +54,10 @@ typedef struct
 
 typedef struct
 {
-    u16 Field00;
-    u16 Field02;
-    u16 Field04;
-    u16 encounterID;
+  u16 Field00;
+  u16 Field02;
+  u16 Field04;
+  u16 encounterID;
 } setSeqEnc;
 
 typedef enum {
@@ -512,6 +527,51 @@ typedef enum {
     Persona_RESERVE89,
 } PersonaNames;
 
+typedef struct
+{
+  u32 Icons;
+  u32 field_0x4;
+  u32 Equippable_Users;
+  u16 field_0xc;
+  u16 field_0xe;
+  u16 Attack;
+  u16 Accuracy;
+  u8 stats[6];
+  u16 gear_effect[2];
+  u16 field_0x1e;
+  u16 field_0x20;
+  u16 RESERVE;
+  int buy_price;
+  int sell_price;
+  u8 purchase_month;
+  u8 purchase_day;
+  u16 field_0x2e;
+} ItemTBL_MeleeWeapon;
+
+typedef struct
+{
+  int Icons;
+  u32 field_04;
+  u32 Equippable_Users;
+  u16 field_0c;
+  u16 field_0e;
+  u16 Attack;
+  u16 Accuracy;
+  u16 Mag_Size;
+  u8 bonusStats[6];
+  u16 GearEffect[3];
+  u16 field_22;
+  u16 field_24;
+  u16 RESERVE;
+  int buy_price;
+  int sell_price;
+  u8 purchase_month;
+  u8 purchase_day;
+  u16 field_32;
+} ItemTBL_RangedWeapon;
+
+
+
 typedef enum
 {
   MeleeWeapon,
@@ -520,6 +580,29 @@ typedef enum
   Outfit,
   Gun
 } EquipSlot;
+
+typedef struct
+{
+	u16 Field00;
+	u8 Field01;
+	u8 Field02;
+	u16 ModelMajorID;
+	u8 ModelMinorID;
+	u8 Field07;
+	u16 Field08;
+	u8 Field0A;
+	u8 Field0B;
+	u16 Field0C;
+	u8 Field0E;
+	u8 Field0F;
+	u16 Field10;
+	u8 Field12;
+	u8 Field13;
+	u16 Field14;
+	u16 Field16;
+	u16 Field18;
+	u16 Field1A;
+} resrcNPCTblEntry;
 
 typedef struct
 {
@@ -537,6 +620,123 @@ typedef struct
   u8 Lu; // 20
   u8 unk[15];
 } btlUnit_Persona; // total size should be 0x30
+
+typedef struct
+{
+  u32 AilmentStatus_00_Burn : 1;
+  u32 AilmentStatus_01_Freeze : 1;
+  u32 AilmentStatus_02_Shock : 1;
+  u32 AilmentStatus_03_Dizzy : 1;
+  u32 AilmentStatus_04_Confuse : 1;
+  u32 AilmentStatus_05_Fear : 1;
+  u32 AilmentStatus_06_Forget : 1;
+  u32 AilmentStatus_07_Hunger : 1;
+  u32 AilmentStatus_08_Sleep : 1;
+  u32 AilmentStatus_09_Rage : 1;
+  u32 AilmentStatus_10_Despair : 1;
+  u32 AilmentStatus_11_Brainwash : 1;
+  u32 AilmentStatus_12_Desperation : 1;
+  u32 AilmentStatus_13_ : 1;
+  u32 AilmentStatus_14_Panic : 1;
+  u32 AilmentStatus_15_Lust : 1;
+  u32 AilmentStatus_16_Wrath : 1;
+  u32 AilmentStatus_17_Envy : 1;
+  u32 AilmentStatus_18_Susceptible : 1;
+  u32 AilmentStatus_19_Dead : 1;
+  u32 AilmentStatus_20_Down : 1;
+  u32 AilmentStatus_21_ : 1;
+  u32 AilmentStatus_22_Rattled : 1;
+  u32 AilmentStatus_23_ : 1;
+  u32 AilmentStatus_24_ : 1;
+  u32 AilmentStatus_25_ : 1;
+  u32 AilmentStatus_26_ : 1;
+  u32 AilmentStatus_27_ : 1;
+  u32 AilmentStatus_28_ : 1;
+  u32 AilmentStatus_29_ : 1;
+  u32 AilmentStatus_30_ : 1;
+  u32 AilmentStatus_31_ : 1;
+} S_AilmentStatus;
+
+typedef struct
+{
+  u32 BuffStatus_31 : 1;
+  u32 BuffStatus_30 : 1;
+  u32 BuffStatus_29 : 1;
+  u32 BuffStatus_28 : 1;
+  u32 BuffStatus_27 : 1;
+  u32 BuffStatus_ResistInstaKill : 1;
+  u32 BuffStatus_25 : 1;
+  u32 BuffStatus_24 : 1;
+  u32 BuffStatus_Concentrate : 1;
+  u32 BuffStatus_Charge : 1;
+  u32 BuffStatus_ResistMagic : 1;
+  u32 BuffStatus_ResistPhys : 1;
+  u32 BuffStatus_19 : 1;
+  u32 BuffStatus_ResistPsy : 1;
+  u32 BuffStatus_ResistNuke : 1;
+  u32 BuffStatus_ResistWind : 1;
+  u32 BuffStatus_ResistElec : 1;
+  u32 BuffStatus_ResistIce : 1;
+  u32 BuffStatus_ResistFire : 1;
+  u32 BuffStatus_AffPsy : 1;
+  u32 BuffStatus_AffNuke : 1;
+  u32 BuffStatus_AffElec : 1;
+  u32 BuffStatus_AffWind : 1;
+  u32 BuffStatus_AffIce : 1;
+  u32 BuffStatus_AffFire : 1;
+  u32 BuffStatus_Susceptibility : 1;
+  u32 BuffStatus_Critical2 : 1;
+  u32 BuffStatus_Critical : 1;
+  u32 BuffStatus_EVA : 1;
+  u32 BuffStatus_DEF : 1;
+  u32 BuffStatus_ACC : 1;
+  u32 BuffStatus_ATK : 1;
+} BuffStatus;
+
+typedef struct
+{
+  u32 BuffDir_ACC : 4;
+  u32 BuffDir_ATK : 4;
+  u32 BuffDir_EVA : 4;
+  u32 BuffDir_DEF : 4;
+  u32 BuffDir_Crit : 4;
+  u32 BuffDir_Crit2 : 4;
+  u32 BuffDir_Sucep : 4;
+  u32 BuffDir_AffFire : 4;
+  u32 BuffDir_AffIce : 4;
+  u32 BuffDir_AffWind : 4;
+  u32 BuffDir_AffElec : 4;
+  u32 BuffDir_AffNuke : 4;
+  u32 BuffDir_AffPsy : 4;
+  u32 BuffDir_ResistFire : 4;
+  u32 BuffDir_ResistIce : 4;
+  u32 BuffDir_ResistElec : 4;
+  u32 BuffDir_ResistWind : 4;
+  u32 BuffDir_ResistNuke : 4;
+  u32 BuffDir_ResistPsy : 4;
+  u32 BuffDir_ : 4;
+  u32 BuffDur_ACC : 4;
+  u32 BuffDur_ATK : 4;
+  u32 BuffDur_EVA : 4;
+  u32 BuffDur_DEF : 4;
+  u32 BuffDur_Crit : 4;
+  u32 BuffDur_Crit2 : 4;
+  u32 BuffDur_Sucep : 4;
+  u32 BuffDur_AffFire : 4;
+  u32 BuffDur_AffIce : 4;
+  u32 BuffDur_AffWind : 4;
+  u32 BuffDur_AffElec : 4;
+  u32 BuffDur_AffNuke : 4;
+  u32 BuffDur_AffPsy : 4;
+  u32 BuffDur_ResistFire : 4;
+  u32 BuffDur_ResistIce : 4;
+  u32 BuffDur_ResistElec : 4;
+  u32 BuffDur_ResistWind : 4;
+  u32 BuffDur_ResistNuke : 4;
+  u32 BuffDur_ResistPsy : 4;
+  u32 BuffDur_ : 4;
+} BuffMeta;
+
 
 typedef struct
 {
@@ -568,18 +768,14 @@ typedef struct
 
 typedef struct
 {
-  u32 Exp; // 1C
-  u32 useGun; // 20
-  u32 BuffStatus1; // 24
+  u32 Joker_EXP; // 1C
+  u32 PhaseID; // 20
+  BuffStatus Buffs; // 24
   u32 BuffStatus2; // 28
-  u32 BuffDirection; // 2C
-  u32 Field30;
-  u32 ActSkillID; // 34
-  u32 Field38;
-  u32 Field3C;
+  BuffMeta BuffsDirDur; // 2C
   u16 EquippedPersonaIndex; // 40
   u16 Field42;
-  btlUnit_Persona Persona[12];
+  btlUnit_Persona StockPersona[12];
   u16 meleeID; // 284
   u16 protectorID; // 286
   u16 accessoryID; // 288
@@ -758,6 +954,25 @@ typedef struct
 
 typedef struct
 {
+  u32 IconBitfield;
+  u32 Field04;
+  u32 EquippableUsersBitfield;
+  u16 Field0C;
+  u8 StatBoosts[6];
+  u16 AccessoryEffects[3];
+  u16 Field1A;
+  u16 Field1C;
+  u16 RESERVE;
+  u32 PurchasePrice;
+  u32 SellPrice;
+  u8 PurchaseMonth;
+  u8 PurchaseDay;
+  u32 Field2A[5];
+  u16 Field3E;
+}itemTBLAccessoryEntry;
+
+typedef struct
+{
   u8 idk[0x300];
 }FieldGetIDStruct;
 
@@ -844,7 +1059,8 @@ typedef struct
   u32 field138;
   u32 field13c;
   u32 field140;
-  u32 field144;
+  u16 FieldID_Major;
+  u16 FieldID_Minor;
   u32 field148;
   u32 field14c;
   u32 field150;
@@ -1228,6 +1444,64 @@ typedef struct NaviSoundStructIDK
   u32 field1bc;
 } NaviSoundStructIDK;
 
+typedef struct
+{
+  int pointer_1;
+  int pointer_2;
+  structB* pointer_3;
+} btlUnitasThirdPointer;
+
+typedef struct
+{
+  int pointer_1;
+  btlUnitasThirdPointer* pointer_2;
+} btlUnitasThirdPointerExtra;
+
+typedef struct
+{
+  int pointer_1;
+  btlUnit_Unit* pointer_2;
+  int field08;
+  int field0c;
+  int field10;
+  btlUnitasThirdPointerExtra* field14;
+  btlUnitasThirdPointer* field18;
+  int field1c;
+  int field20;
+  int field24;
+  int field28;
+  int field2c;
+} struct_2_pointers;
+
+typedef struct
+{
+  u32 ExpRequired[98];
+}PartyMemberLvUpThresholdExp;
+
+typedef struct
+{
+  u8 LvReq;
+  u8 canLearn;
+  u16 skillID;
+}LearnableSkill;
+
+typedef struct
+{
+  u8 str;
+  u8 mag;
+  u8 en;
+  u8 ag;
+  u8 lck;
+}PersonaStats;
+
+typedef struct 
+{
+  u16 charID;
+  u8 lv;
+  u8 unk;
+  LearnableSkill skills[32];
+  PersonaStats stats[98];
+}PartyMemberPersonaBlock;
 
 fileHandleStruct* NaviTestFile;
 
@@ -1239,12 +1513,18 @@ unitTBLVisualIndex NewVisualIndexTBL;
 ELSAI_Segment2TBL NewSegment2TBL;
 
 btlUnit_Unit* enemyBtlUnit;
+btlUnit_Unit* lastAccessedBtlUnit;
 
 struct
 {
   short modelID[255];
 }MeleeWeaponModels;
 
+bool hasUzukiAilmentAnnounce[12];
+bool UzukiLowHPWarn;
+bool UzukiDebuffAttackWarn;
+bool UzukiDebuffDeffenseWarn;
+bool UzukiDebuffSpeedWarn;
 
 
 // Game functions are declared like this
@@ -1257,6 +1537,11 @@ struct
  * @return int 
  */
 int RECOVERY_ALL( void );
+
+
+PartyMemberLvUpThresholdExp* GetPartyMemberLvUpThreshold( int unitID );
+PartyMemberPersonaBlock* GetPartyMemberPersonaBlock( int personaID );
+
 
 /**
  * @brief Flowscript Function that restores all player character's bullets
@@ -1462,7 +1747,24 @@ char* FUN_001a5834( void );
 int FUN_00ab563c( int* a1 );
 int FUN_001a52f8( int a1 );
 int FUN_2604C4( int arg );
+int FUN_748ff0( int arg );
+int FUN_0024b28c( int arg );
 void LoadEncounterEventSoundbank( int encounterID );
+bool GetBitflagState( int bitFlagID );
+int FUN_007489a8( int a1, int a2 );
+int FUN_0074805c( int a1, int a2 );
+bool FUN_002588b4( btlUnit_Unit* a1 );
+bool FUN_0031f9cc( void );
+int FUN_0091da04( void );
+int GetCurrentBGMCueID( void );
+static s32 sys_time_get_current_time( u64* secs, u64* nsecs );
+u64 getTicks(void);
+void CallNaviDialogue (struct_2_pointers * param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char param_7, short param_8, double param_9);
+bool FUN_007490a4( struct_2_pointers* a1, int a2 );
+fieldworkdataStruct* GetFieldWorkData( void );
+u16 GetTotalDays( void );
+int isCharacterAssistExpressonValid( short a1, short a2 );
+int FUN_003b9110( int a1, int a2, int a3, int a4, int a5 );
 
 /**
  * @brief Set priority of target CPK
@@ -1473,7 +1775,21 @@ void LoadEncounterEventSoundbank( int encounterID );
  */
 int criFsBinder_SetPriority(int cpkBind, int priority);
 
+/**
+ * @brief Returns the Max HP of a Player btlUnit
+ * 
+ * @param param_1 btlUnit Struct
+ * @return MaxHP of player unit 
+ */
+int GetBtlUnitMaxHP(btlUnit_Unit* param_1);
+
 encounterIDTBL* GetEncounterEntryFromTBL( int encounterID);
+
+int GetRandom ( int MaxValue );
+bool isMidWinterValid( void );
+itemTBLAccessoryEntry* GetAccessoryTBLEntry( u16 accessoryID );
+ItemTBL_MeleeWeapon* GetMeleeWeaponTBLEntry( u16 WeaponID );
+ItemTBL_RangedWeapon* GetRangedWeaponTBLEntry( u16 WeaponID );
 
 #pragma pop
 #endif
