@@ -4,6 +4,7 @@ Debugging features: off
 Enable Flowscripts module: yes
 Enable dc module: true
 Enable P5 Enhanced module: on
+Enable Scarltz module: on
 
 # Other settings
 Enable Sumire models: yes

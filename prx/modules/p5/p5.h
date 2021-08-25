@@ -1765,6 +1765,11 @@ fieldworkdataStruct* GetFieldWorkData( void );
 u16 GetTotalDays( void );
 int isCharacterAssistExpressonValid( short a1, short a2 );
 int FUN_003b9110( int a1, int a2, int a3, int a4, int a5 );
+void FUN_00263728 ( btlUnitContextInfo context, short ElementID );
+u64 FUN_002595c4(int param_1,uint param_2);
+u64 FUN_00250000();
+u64 FUN_0025d0c4( u32 UnitId, short ElementID);
+
 
 /**
  * @brief Set priority of target CPK
