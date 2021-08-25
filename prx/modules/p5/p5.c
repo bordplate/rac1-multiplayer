@@ -254,6 +254,11 @@ void FUN_00324b70(u64* param_1, u64* param_2, u64 param_3)
     SHK_FUNCTION_CALL_3( 0x324b70, void, u64*, param_1, u64*, param_2, u64, param_3 );
 }
 
+int FUN_003b9110( int a1, int a2, int a3, int a4, int a5 )
+{
+    SHK_FUNCTION_CALL_5( 0x3b9110, int, int, a1, int, a2, int, a3, int, a4, int, a5 );
+}
+
 u64 FUN_0032c3d4( int arg )
 {
     SHK_FUNCTION_CALL_1( 0x32c3d4, u64, int, arg );
@@ -359,6 +364,51 @@ int FUN_2604C4( int arg )
     SHK_FUNCTION_CALL_1( 0x2604C4, int, int, arg );
 }
 
+int FUN_748ff0( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x748ff0, int, int, arg );
+}
+
+int FUN_0024b28c( int arg )
+{
+    SHK_FUNCTION_CALL_1( 0x24b28c, int, int, arg );
+}
+
+int FUN_0091da04( void )
+{
+    SHK_FUNCTION_CALL_0( 0x91da04, int );
+}
+
+int GetCurrentBGMCueID( void )
+{
+    SHK_FUNCTION_CALL_0( 0x6ccb8, int );
+}
+
+int FUN_007489a8( int a1, int a2 )
+{
+    SHK_FUNCTION_CALL_2( 0x7489a8, int, int, a1, int, a2 );
+}
+
+bool FUN_002588b4( btlUnit_Unit* a1 )
+{
+    SHK_FUNCTION_CALL_1( 0x2588b4, bool, btlUnit_Unit*, a1 );
+}
+
+int FUN_0074805c( int a1, int a2 )
+{
+    SHK_FUNCTION_CALL_2( 0x74805c, int, int, a1, int, a2 );
+}
+
+int isCharacterAssistExpressonValid( short a1, short a2 )
+{
+    SHK_FUNCTION_CALL_2( 0x3b9644, int, short, a1, short, a2 );
+}
+
+bool FUN_007490a4( struct_2_pointers* a1, int a2 )
+{
+    SHK_FUNCTION_CALL_2( 0x7490a4, bool, struct_2_pointers*, a1, int, a2 );
+}
+
 void LoadEncounterEventSoundbank( int encounterID )
 {
     SHK_FUNCTION_CALL_1( 0x745b9c, void, int, encounterID );
@@ -367,6 +417,115 @@ void LoadEncounterEventSoundbank( int encounterID )
 encounterIDTBL* GetEncounterEntryFromTBL( int encounterID)
 {
     SHK_FUNCTION_CALL_1(0x263b94, encounterIDTBL*, int, encounterID);
+}
+
+bool GetBitflagState ( int bitFlagID )
+{
+    SHK_FUNCTION_CALL_1(0x263b94, bool, int, bitFlagID);
+}
+
+int GetBtlUnitMaxHP(btlUnit_Unit* param_1)
+{
+    SHK_FUNCTION_CALL_1(0x258d1c, int, btlUnit_Unit*, param_1);
+}
+
+void CallNaviDialogue (struct_2_pointers* param_1, int param_2, int param_3, int param_4, int param_5, int param_6, char param_7, short param_8, double param_9)
+{
+    SHK_FUNCTION_CALL_9(0x748d78, void, struct_2_pointers*, param_1, int, param_2, int, param_3, int, param_4, int, param_5, int, param_6, char, param_7, short, param_8, double, param_9);
+}
+
+PartyMemberLvUpThresholdExp* GetPartyMemberLvUpThreshold( int unitID )
+{
+    SHK_FUNCTION_CALL_1(0x263634, PartyMemberLvUpThresholdExp*, int, unitID);
+}
+
+PartyMemberPersonaBlock* GetPartyMemberPersonaBlock( int personaID )
+{
+    SHK_FUNCTION_CALL_1(0x263618, PartyMemberPersonaBlock*, int, personaID);
+}
+
+fieldworkdataStruct* GetFieldWorkData( void )
+{
+    SHK_FUNCTION_CALL_0( 0x352f40, fieldworkdataStruct* );
+}
+
+u16 GetTotalDays( void )
+{
+    SHK_FUNCTION_CALL_0( 0x48e80, u16 );
+}
+
+bool FUN_0031f9cc( void )
+{
+    SHK_FUNCTION_CALL_0( 0x31f9cc, bool );
+}
+
+itemTBLAccessoryEntry* GetAccessoryTBLEntry( u16 accessoryID )
+{
+    SHK_FUNCTION_CALL_1(0x263830, itemTBLAccessoryEntry*, u16, accessoryID);
+}
+
+ItemTBL_MeleeWeapon* GetMeleeWeaponTBLEntry( u16 WeaponID )
+{
+    SHK_FUNCTION_CALL_1(0x2637d0 , ItemTBL_MeleeWeapon*, u16, WeaponID);
+}
+
+ItemTBL_RangedWeapon* GetRangedWeaponTBLEntry( u16 WeaponID )
+{
+    SHK_FUNCTION_CALL_1(0x26393c , ItemTBL_RangedWeapon*, u16, WeaponID);
+}
+
+int GetRandom( int MaxValue )
+{
+  int v0; // r31
+  u32 v1; // r3
+
+  v0 = MaxValue;
+  v1 = FUN_0091da04();
+  return (v1 - (v1 / (v0 + 1) * v0 + v1 / (v0 + 1)));
+}
+
+bool isMidWinterValid( void )
+{
+    isMidwinter = false;
+
+    return isMidwinter; // todo, remove this to restore functionality
+    
+    if ( GetTotalDays() >= 214 )
+    {
+        isMidwinter = true;
+        if ( sequenceIDGlobal == 6 )
+        {
+            if ( lastUsedFieldMajorID == 2 )
+            {
+                if ( lastUsedFieldMinorID == 1 || lastUsedFieldMinorID == 4 || lastUsedFieldMinorID == 5 || lastUsedFieldMinorID == 13 )
+                {
+                    isMidwinter = true;
+                }
+                else isMidwinter = false;
+            }
+        }
+    }
+    else isMidwinter = false;
+    
+    return isMidwinter;
+}
+
+static s32 sys_time_get_current_time( u64* secs, u64* nsecs )
+{
+  system_call_2( 145, (u64)secs, (u64)nsecs );
+  return_to_user_prog( s32 );
+} 
+
+u64 getTicks(void)
+{
+    u32 ticks_micro;
+    u64 secs;
+    u64 nsecs;
+
+    sys_time_get_current_time(&secs, &nsecs);
+    ticks_micro =  secs * 1000000UL + (nsecs / 1000);
+
+    return ticks_micro;                                                                         
 }
 
 #endif

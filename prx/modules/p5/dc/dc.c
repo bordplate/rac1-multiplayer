@@ -37,6 +37,7 @@ SHK_HOOK( void, CombatPersonaCueID, CueIDThingy* param_1, int param_2, short par
 SHK_HOOK( void, JokerPersonaNameCueID, CueIDThingy* param_1, int param_2 );
 SHK_HOOK( u64, BtlUnitGetUnitID, btlUnit_Unit* btlUnit );
 SHK_HOOK( encounterIDTBL*, FUN_00263b94, int a1 );
+SHK_HOOK( resrcNPCTblEntry*, FUN_00043fac, int a1 );
 SHK_HOOK( int, LoadShdPersonaEnemy, char* result );
 SHK_HOOK( int, SetEnemyAkechiPersona, u64 a1, u64 a2, EnemyPersonaFunctionStruct1* a3 );
 SHK_HOOK( bool, EnemyHasCombatCutin, int a1, int a2 );
@@ -53,13 +54,17 @@ SHK_HOOK( int, FUN_0026b094, u16 a1 );
 SHK_HOOK( int, FUN_0026b148, u16 a1 );
 SHK_HOOK( int, FUN_0026b1fc, u16 a1 );
 // EXIST end
+SHK_HOOK( int, FUN_00262258, u16 a1 );
 SHK_HOOK( int, ParseUNITTBL, u64 a1 );
+SHK_HOOK( int, FUN_00af3cb0, int a1 );
+SHK_HOOK( int, FUN_00829ce8, ActiveCombatUnitStruct* a1 );
 SHK_HOOK( u64*, ReturnAddressOfUNITTBL_EnemyStats, s64 a1 );
 SHK_HOOK( u16, ReturnAddressOfUNITTBL_EnemyAffinities, u32 a1, u16 a2 );
 SHK_HOOK( u16, ReturnAddressOfUNITTBL_PersonaAffinities, u32 a1, u16 a2 );
 SHK_HOOK( u64*, ReturnAddressOfUNITTBL_Segment3, s64 a1 );
 SHK_HOOK( u64*, ReturnAddressOfELSAITBL_Segment1, u32 a1 );
 SHK_HOOK( u64, CalculateShdPersonaEnemyEntry, shdHelper* a1, u32 a2 );
+SHK_HOOK( void, FUN_003735d8, fechance* a1, u64 a2, u64 a3, u64 a4, u64 a5 );
 
 static u64 BtlUnitGetUnitIDHook( btlUnit_Unit* btlUnit  )
 {
@@ -67,7 +72,8 @@ static u64 BtlUnitGetUnitIDHook( btlUnit_Unit* btlUnit  )
   u64 unitID = btlUnit->unitID;
   if ( unitType != 1 )
   {
-    //DEBUG_LOG( "BtlUnitGetUnitID called; - unit type %d - unit ID %d\n", unitType, unitID );
+    //printf( "BtlUnitGetUnitID called; - unit type %d - unit ID %d\n", unitType, unitID );
+    lastAccessedUnitType = unitType;
     if ( unitType == 2 )
     {
       GlobalEnemyID = unitID;
@@ -341,6 +347,12 @@ static void* LoadBCDFunctionHook( char* a1 , u32 a2, u32 a3, int* a4 )
     sprintf(introBCD, "battle/event/BCD/%04x/000/bes_%04x_000.BCD", EncounterIDGlobal, EncounterIDGlobal);
     return SHK_CALL_HOOK( LoadBCDFunction, introBCD, a2, a3, a4 );
   }
+  if ( strcmp( a1, "battle/event/BCD/chance/bes_randomfire_in.BCD" ) == 0 ||
+   strcmp( a1, "battle/event/BCD/chance/bes_randomfire_solo.BCD" ) == 0 ||
+   strcmp( a1, "battle/event/BCD/chance/bes_randomfire.BCD" ) == 0 )
+  {
+    isAmbush = true;
+  }
   return SHK_CALL_HOOK( LoadBCDFunction, a1, a2, a3, a4 );
 }
 
@@ -477,7 +489,7 @@ static int LoadAnimationPackHook( u64 param_1, int animationID, char* result, in
   u64 animType = (u32)(param_1 >> 0x3a);
   u64 unitID = (u32)(param_1 >> 0x14) & 0xffff;
   DEBUG_LOG("Anim type %d loaded\n", animType);
-  if ( CONFIG_ENABLED( enableAkechiMod ) && animType == 2 )
+  if ( CONFIG_ENABLED( enableAkechiMod ) && animType == 2 && animationID == 51 )
   {
     if( unitID == 6 && GetEquippedPersonaFunction(6) != Persona_Anat )
     {
@@ -755,21 +767,31 @@ static u64* ReturnAddressOfELSAITBL_Segment1Hook( u32 a1 )
 
 static u64 CalculateShdPersonaEnemyEntryHook( shdHelper* param_1, u32 param_2 )
 {
-  if ( param_2 >= 451 )
+  bool wasEnemy = false;
+  if ( lastAccessedUnitType == 2 && param_2 == GlobalEnemyID )
   {
-    param_2 = param_2 - 250;
-  }
-  else if ( param_2 >= 401 )
-  {
-    param_2 = param_2 - 200;
-  }
-  else if ( param_2 >= 351 )
-  {
-    param_2 = param_2 - 150;
+    if ( param_2 >= 451 )
+    {
+      param_2 = param_2 - 250;
+      wasEnemy = true;
+    }
+    else if ( param_2 >= 401 )
+    {
+      param_2 = param_2 - 200;
+      wasEnemy = true;
+    }
+    else if ( param_2 >= 351 )
+    {
+      param_2 = param_2 - 150;
+      wasEnemy = true;
+    }
   }
   u64 returnVal = SHK_CALL_HOOK( CalculateShdPersonaEnemyEntry, param_1, param_2);
-  printf("shdPersonaEnemy Entry %03d\n", param_2-141);
-  DEBUG_LOG("CalculateShdPersonaEnemyEntry returned address -> 0x%08x\n", returnVal);
+  if ( lastAccessedUnitType == 2 && wasEnemy )
+  {
+    printf("shdPersonaEnemy Entry %03d\n", param_2-141);
+    DEBUG_LOG("CalculateShdPersonaEnemyEntry returned address -> 0x%08x\n", returnVal);
+  }
   return returnVal;
 }
 
@@ -876,7 +898,13 @@ static int SetEnemyAkechiPersonaHook( u64 a1, u64 a2, EnemyPersonaFunctionStruct
       return 239;
     }
 
-    if ( result > 0 ) DEBUG_LOG("Akechi Enemy ID %d summoning Persona %d\n", PersonaEnemyID, result);
+    else if ( PersonaEnemyID == 217 && result == 210 ) 
+    {
+      DEBUG_LOG("Akechi %d summoning Persona %d\n", PersonaEnemyID, 240);
+      return 240;
+    }
+
+    if ( result > 0 ) DEBUG_LOG("Enemy ID %d summoning Persona %d\n", PersonaEnemyID, result);
 
     return result;
   }
@@ -896,13 +924,112 @@ static bool EnemyHasCombatCutinHook( int a1, int a2 )
 static int SetUpEncounterFlagsHook( EncounterFuncStruct* a1, EncounterStructShort* a2)
 {
   int encounterIDReal = a2->encounterIDLocal;
-  if ( encounterIDReal >= 830 )
+  EncounterIDBGM = encounterIDReal;
+  printf("Starting Encounter %d\n", encounterIDReal);
+  int previousBGM = GetCurrentBGMCueID();
+  bool isLifeWillChange = false;
+  if ( previousBGM == 471 )
+  {
+    isLifeWillChange = true;
+  }
+  if ( previousBGM == 904 )
+  {
+    isLifeWillChange = true;
+  }
+
+  if ( CONFIG_ENABLED( enableExpandedBGM ) && !isLifeWillChange )
+  {
+    encounterIDTBL* CurrentEncounter = GetEncounterEntryFromTBL(EncounterIDBGM);
+    int CurrentEncounterBGMID = CurrentEncounter->BGMID;
+    // DLC BGM Stuff
+    u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
+    u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
+    if ( CurrentEncounterBGMID == 0 && !CONFIG_ENABLED( randomDLCBGM ) && isAmbush )
+    {
+      int AmbushRNG = GetRandom( 2 );
+      //printf("Ambush RNG -> %d\n", AmbushRNG);
+      if ( AmbushRNG == 0 )
+      {
+        CurrentEncounter->BGMID = 907; // Take Over
+      }
+      else if ( AmbushRNG == 1 )
+      {
+        CurrentEncounter->BGMID = 999; // What you wish for
+      }
+      else if ( AmbushRNG == 2 )
+      {
+        CurrentEncounter->BGMID = 1000; // Axe to grind
+      }
+      wasBGMReplaced = true;
+    }
+    if ( CurrentEncounterBGMID == 0 && !CONFIG_ENABLED( randomDLCBGM ) && isAmbushed )
+    {
+      CurrentEncounter->BGMID = 1004; // Last Surprise (Strikers)
+      wasBGMReplaced = true;
+    }
+    // Apply DLC BGM directly to tbl
+    if ( CurrentEncounterBGMID == 0 && !CONFIG_ENABLED( randomDLCBGM ) ) // Last Surprise
+    {
+      for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
+      {
+        btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
+        if ( pEntry->modelID == playerOutfitModel )
+        {
+          CurrentEncounter->BGMID = pEntry->bgmId;
+          wasBGMReplaced = true;
+          break;
+        }
+      }
+    }
+    else if ( CurrentEncounterBGMID == 0 && CONFIG_ENABLED( randomDLCBGM ) ) // Last Surprise
+    {
+      btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[rngBGM];
+      CurrentEncounter->BGMID = pEntry->bgmId;
+      wasBGMReplaced = true;
+    }
+    // Allow Ambush Themes to override DLC
+    if ( CurrentEncounterBGMID == 0 && CONFIG_ENABLED( DLCAmbush ) && isAmbush )
+    {
+      int AmbushRNG = GetRandom( 2 );
+      //printf("Ambush RNG -> %d\n", AmbushRNG);
+      if ( AmbushRNG == 0 )
+      {
+        CurrentEncounter->BGMID = 907; // Take Over
+      }
+      else if ( AmbushRNG == 1 )
+      {
+        CurrentEncounter->BGMID = 999; // What you wish for
+      }
+      else if ( AmbushRNG == 2 )
+      {
+        CurrentEncounter->BGMID = 1000; // Axe to grind
+      }
+      wasBGMReplaced = true;
+    }
+    if ( CurrentEncounterBGMID == 0 && CONFIG_ENABLED( DLCAmbush ) && isAmbushed )
+    {
+      CurrentEncounter->BGMID = 1004; // Last Surprise (Strikers)
+      wasBGMReplaced = true;
+    }
+  }
+
+  if ( encounterIDReal >= 830 && encounterIDReal < 990 )
   {
     a2->encounterIDLocal = 780;
   }
   int result = SHK_CALL_HOOK( SetUpEncounterFlags, a1, a2 );
   a1->encounterIDLocal = encounterIDReal;
   a2->encounterIDLocal = (u16)encounterIDReal;
+
+  for ( int i = 0; i <= 11; i++) // navi stuff
+  {
+    hasUzukiAilmentAnnounce[i] = false;
+  }
+  UzukiLowHPWarn = false;
+  UzukiDebuffAttackWarn = false;
+  UzukiDebuffDeffenseWarn = false;
+  UzukiDebuffSpeedWarn = false;
+
   return result;
 }
 
@@ -919,41 +1046,25 @@ static encounterIDTBL* FUN_00263b94Hook( int a1 )
     result = SHK_CALL_HOOK( FUN_00263b94, a1 );
   }
 
-  if ( LastUsedEncounterID != a1 && a1 != 780 ) // prevent spam
+  if ( LastUsedEncounterID != a1 && a1 != 780 && a1 < 1000) // prevent spam
   {
     printf("Encounter Block %03d loaded\n", a1);
     hexDump("TBL Data", result, 24);
     LastUsedEncounterID = a1;
   }
-
   u32 btlEquipBgmTableEntryCount = sizeof( btlEquipBgmTable ) / sizeof( btlEquipBgmTableEntry );
-  u32 playerOutfitModel = PlayerUnitGetModelMinorID( 1, 50, 0 );
-  if ( result->BGMID == 0 && CONFIG_ENABLED( enableExpandedBGM ) ) // Last Surprise
+  if (!wasBGMRandom)
   {
-    for ( u32 i = 0; i < btlEquipBgmTableEntryCount; ++i )
-    {
-      btlEquipBgmTableEntry* pEntry = &btlEquipBgmTable[i];
-      if ( pEntry->modelID == playerOutfitModel )
-      {
-        result->BGMID = pEntry->bgmId;
-        wasBGMReplaced = true;
-        isAmbush = false;
-        break;
-      }
-    }
-    if ( isAmbush )
-    {
-      result->BGMID = 907; // Take Over
-    }
+    rngBGM = randomIntBetween(0, btlEquipBgmTableEntryCount-1);
+    wasBGMRandom = true;
   }
-
   return result;
 }
 
 static int BlackMaskEncounterIntroBCDHook( int a1, int a2, EncounterFuncStruct* a3)
 {
   int encounterIDReal = a3->encounterIDLocal;
-  if ( encounterIDReal >= 830 )
+  if ( encounterIDReal >= 830 && 990 > encounterIDReal )
   {
     a3->encounterIDLocal = 780;
   }
@@ -968,11 +1079,98 @@ static void IsEncounterEventSoundBankExistHook( EncounterFuncStruct* a1 )
   else return SHK_CALL_HOOK( IsEncounterEventSoundBankExist, a1 );
 }
 
+static int CheckIsEncounterAmbush( int a1 )
+{
+  int result = SHK_CALL_HOOK( FUN_00af3cb0, a1 );
+  if ( result == 2 )
+  {
+    isAmbush = true;
+  }
+  return result;
+}
+
+static void FUN_003735d8Hook( fechance* a1, u64 a2, u64 a3, u64 a4, u64 a5 )
+{
+  //printf("FUN_003735d8 a1->field182 -> %d\n", a1->field182 );
+  if ( a1->field182 == 2 || a1->field182 == 1 )
+  {
+    isAmbush = true;
+    isAmbushed = false;
+  }
+  else if ( a1->field182 == 6 )
+  {
+    isAmbush = false;
+    isAmbushed = true;
+  }
+  return SHK_CALL_HOOK( FUN_003735d8, a1, a2, a3, a4, a5 );
+}
+
+static int FUN_00829ce8Hook( ActiveCombatUnitStruct* a1 )
+{ 
+  int currentUnitID = a1->field30->field18->field04->unitID;
+  //printf( "FUN_00829ce8 called; a1 -> 0x%x; UnitID -> %d\n", a1, currentUnitID );
+  int accessoryID = a1->field30->field18->field04->context.player.accessoryID;
+  accessoryID = accessoryID - 0x2000;
+  //printf("Unit ID %d has accessory %d\n", currentUnitID, accessoryID);
+  int skillID = GetAccessoryTBLEntry( accessoryID )->RESERVE;
+  //printf("Skill ID %d obtained from accessory\n", skillID);
+
+  int numOfSkills = 0;
+  int result = SHK_CALL_HOOK( FUN_00829ce8, a1 );
+  if ( skillID != 0 && accessoryID >= 255 && skillID < 800 )
+  {
+    //printf("Unit holding accessory ID %d granting skill ID %d\n", accessoryID, skillID );
+    for ( int i = 0; i <= 8; i++ )
+    {
+      if ( a1->SkillID[i] == 0 )
+      {
+        a1->SkillID[i] = skillID;
+        numOfSkills = a1->amountOfSkills + 1;
+        a1->amountOfSkills += 1;
+        //printf( "Skill ID %d granted on Skill slot %d\n", skillID, i );
+        break;
+      }
+    }
+  }
+  //printf("Previous Active Skill Slot -> %d\n", ActiveGlobalSkillSlot );
+  //printf("Current Skill slot -> %d\n", a1->ActiveSkillID );
+  //printf("Amount of Skills in List -> %d\n", a1->amountOfSkills);
+  if ( ActiveGlobalSkillSlot == numOfSkills - 2 && a1->ActiveSkillID == 0 )
+  {
+    //printf("Skill slot looped from %d to %d while skipping new skill\n", ActiveGlobalSkillSlot, a1->ActiveSkillID );
+    a1->ActiveSkillID = numOfSkills - 1;
+    ActiveGlobalSkillSlot = numOfSkills - 1;
+  }
+  else if ( ActiveGlobalSkillSlot == 0 && a1->ActiveSkillID == numOfSkills - 2 )
+  {
+    //printf("Skill slot looped from %d to %d while skipping new skill\n", ActiveGlobalSkillSlot, a1->ActiveSkillID );
+    a1->ActiveSkillID = numOfSkills - 1;
+    ActiveGlobalSkillSlot = numOfSkills - 1;
+  }
+  else ActiveGlobalSkillSlot = a1->ActiveSkillID;
+  //hexDump( "Active Unit Combat Struct", a1, 0x250 );
+
+  return result;
+}
+
+static resrcNPCTblEntry* GetNPCTBLEntry( int a1 )
+{
+  printf("NPC TBL NPC ID %d loaded\n", a1 );
+  //printf("NPC TBL Entry %d loaded\n",  ( (int)SHK_CALL_HOOK( FUN_00043fac, a1 ) - (int)SHK_CALL_HOOK( FUN_00043fac, 0 ) ) / 0x1C );
+  return SHK_CALL_HOOK( FUN_00043fac, a1 );
+}
+
+static int GetItemTBLMeleeWeaponField0E( u16 a1 )
+{
+  return 0;
+}
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
 void dcInit( void )
 {
+  randomSetSeed( getTicks() );
   // Hooks must be 'bound' to a handler like this in the start function.
   // If you don't do this, the game will crash.
   SHK_BIND_HOOK( setBlackMaskCueID, setBlackMaskCueIDHook );
@@ -1011,6 +1209,12 @@ void dcInit( void )
   SHK_BIND_HOOK( FUN_00263b94, FUN_00263b94Hook );
   SHK_BIND_HOOK( BlackMaskEncounterIntroBCD, BlackMaskEncounterIntroBCDHook );
   SHK_BIND_HOOK( IsEncounterEventSoundBankExist, IsEncounterEventSoundBankExistHook );
+  SHK_BIND_HOOK( FUN_00af3cb0, CheckIsEncounterAmbush );
+  SHK_BIND_HOOK( FUN_003735d8, FUN_003735d8Hook );
+  SHK_BIND_HOOK( FUN_00829ce8, FUN_00829ce8Hook );
+  SHK_BIND_HOOK( FUN_00043fac, GetNPCTBLEntry );
+  SHK_BIND_HOOK( FUN_00262258, GetItemTBLMeleeWeaponField0E );
+  wasBGMRandom = false;
 }
 
 void dcShutdown( void )

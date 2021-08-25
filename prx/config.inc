@@ -5,29 +5,26 @@ CONFIG_START()
     CONFIG_SETTING( BOOL, enableEXFLWModule, "Enable Flowscripts module", true )
     CONFIG_SETTING( BOOL, enableDCModule, "Enable dc module", true )
     CONFIG_SETTING( BOOL, enableP5EModule, "Enable P5 Enhanced module", true )
-    CONFIG_SETTING( BOOL, enableGlobalBF, "Enable Global Script", true )
-    CONFIG_SETTING( BOOL, enableSumire, "Enable Sumire models", true )
-    CONFIG_SETTING( BOOL, enableCutsceneOutfits, "Enable Player Outfits in cutscenes", true )
-    CONFIG_SETTING( BOOL, enableAkechiMod, "Enable Royal Akechi patches", true )
-    CONFIG_SETTING( BOOL, enablePersonaEnemies, "Enable Persona Using Enemies", true )
-    CONFIG_SETTING( BOOL, enableExpandedBGM, "Enable Expanded BGM Patches", true )
-    CONFIG_SETTING( BOOL, enableExternalNavi, "Enable external navigator text file", false )
-    CONFIG_SETTING( BOOL, enableCustomNaviSoundPack, "Enable Custom Navigator SoundPack", false )
+    CONFIG_SETTING( BOOL, enableKasumiModule, "Enable Kasumi Fixes module", true )
+    CONFIG_SETTING( BOOL, enableGlobalBF, "Global Script", true )
+    CONFIG_SETTING( BOOL, enableSumire, "Sumire models", true )
+    CONFIG_SETTING( BOOL, enableCutsceneOutfits, "Player Outfits in cutscenes", true )
+    CONFIG_SETTING( BOOL, enableAkechiMod, "Royal Akechi patches", true )
+    CONFIG_SETTING( BOOL, enablePersonaEnemies, "Persona Using Enemies", true )
+    CONFIG_SETTING( BOOL, randomDLCBGM, "Randomized DLC BGM", true )
+    CONFIG_SETTING( BOOL, enableExpandedBGM, "Expanded BGM Patches", true )
+    CONFIG_SETTING( BOOL, enableExternalNavi, "External navigator text file", false )
+    CONFIG_SETTING( BOOL, enableCustomNaviSoundPack, "Custom Navigator SoundPack", false )
     CONFIG_SETTING( BOOL, forceSingleCombatGAP, "Force Single GAP Player Combat Animations", true )
-    CONFIG_SETTING( BOOL, enableModCPK, "Enable mod cpk", true )
+    CONFIG_SETTING( BOOL, enableModCPK, "mod cpk", true )
+    CONFIG_SETTING( BOOL, enableKasumi, "Kasumi patches", true )
+    CONFIG_SETTING( BOOL, enableTTYCommands, "tty commands", true )
+    CONFIG_SETTING( BOOL, P5RTitleBGM, "Alternate title screens", true )
+    CONFIG_SETTING( BOOL, DLCAmbush, "Ambush themes override DLC Music", false )
     CONFIG_SETTING( STRING,  modCPKName,"mod cpk name",  "mod" )
     CONFIG_SETTING( INT,  extraModCPK,  "Number of extra mod cpk", 0 )
-    CONFIG_SETTING( BOOL, enableFileAccessLogging, "Enable file access logging", true )
-    CONFIG_SETTING_ARRAY( STRING, extraModCPKName, "names of extra mod cpk", 100,
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
-    "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod",
+    CONFIG_SETTING( BOOL, enableFileAccessLogging, "file access logging", true )
+    CONFIG_SETTING_ARRAY( STRING, extraModCPKName, "names of extra mod cpk", 10,
     "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod", "mod")
     CONFIG_SETTING_ARRAY( INT, bitChkLogIgnore, "BIT_CHK flags to ignore when logging (1)", 100, 
     0x2101, 0x22ff, 0x2216, 0x2110, 0x2111, 
@@ -75,195 +72,9 @@ CONFIG_START()
     CONFIG_SETTING_ARRAY( INT, bitSetLogIgnore, "BIT_SET flags to ignore when logging", 10, 
     0x006b, 0x21ce, 0x2235, 0xFFFF, 0xFFFF, 
     0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF )
-    CONFIG_SETTING_ARRAY( INT, MeleeWeaponModelIDTable1, "Melee Weapon Model IDs Table 1", 100, 
-    1,   1,   1,   7,   9, 
-    3,   4,   7,   1,   7, 
-    7,   3,   8,   8,   1, 
-    7,   7,   3,   8,   2, 
-    3,   2,   4,   4,   6, 
-    2,   4,   8,   6,   4, 
-    3,   4,   5,   5,   6, 
-    10,  8,   101, 103, 109, 
-    101, 102, 105, 101, 102, 
-    103, 107, 105, 106, 102, 
-    108, 106, 106, 104, 107, 
-    108, 104, 108, 106, 108, 
-    108, 108, 106, 104, 109, 
-    110, 107, 107, 107, 107, 
-    104, 105, 104, 201, 209, 
-    205, 207, 201, 207, 203, 
-    202, 207, 202, 205, 207, 
-    205, 204, 203, 205, 208, 
-    208, 206, 206, 206, 209, 
-    204, 206, 204, 210, 209 )
-    CONFIG_SETTING_ARRAY( INT, MeleeWeaponModelIDTable2, "Melee Weapon Model IDs Table 2", 100, 
-    203, 204, 205, 202, 204, 
-    204, 204, 204, 301, 305, 
-    303, 302, 305, 301, 301, 
-    305, 306, 303, 304, 306, 
-    302, 307, 301, 303, 308, 
-    304, 302, 304, 308, 307, 
-    308, 306, 302, 307, 301, 
-    307, 305, 306, 306, 302, 
-    304, 310, 401, 403, 401, 
-    401, 405, 403, 403, 402, 
-    404, 404, 402, 406, 405, 
-    402, 404, 407, 408, 408, 
-    405, 407, 408, 407, 401, 
-    408, 410, 405, 401, 409, 
-    402, 409, 406, 501, 501, 
-    502, 502, 502, 503, 501, 
-    503, 508, 501, 505, 503, 
-    508, 506, 507, 504, 503, 
-    502, 506, 509, 501, 507, 
-    502, 504, 510, 508,   4 )
-    CONFIG_SETTING_ARRAY( INT, MeleeWeaponModelIDTable3, "Melee Weapon Model IDs Table 3", 100, 
-    401, 601, 601, 603, 602, 
-    603, 605, 604, 606, 602, 
-    605, 606, 602, 604, 601, 
-    601, 605, 606, 604, 608, 
-    508, 505, 503, 801, 801, 
-    801, 801, 203, 309, 309, 
-    601, 601, 601, 603, 607, 
-      1,   1,   6,   1, 406, 
-    308, 506,   1, 202, 108, 
-      3, 802, 803, 810,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1)
-      CONFIG_SETTING_ARRAY( INT, MeleeWeaponModelIDTable4, "Melee Weapon Model IDs Table 4", 100, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1, 
-      1,   1,   1,   1,   1)
-      CONFIG_SETTING_ARRAY( INT, GunWeaponModelTable1, "Gun Weapon Model IDs Table 1", 100,
-        0,   1,   1,   1,   1, 
-        1,   1, 601, 701, 801, 
-        1,   1,   1,   1,   1, 
-        1,   1,   3,   1,   1, 
-        1,   1,   1,   3,   2, 
-        2,   1,   2,   1,   2, 
-        4,   1, 101, 103, 102, 
-      101, 103, 102, 101, 103, 
-      102, 102, 103, 104, 105, 
-      101, 103, 102, 101, 104, 
-      102, 103, 104, 102, 102, 
-      102, 104, 103, 104, 101, 
-      103, 101, 104, 101, 201, 
-      201, 203, 201, 202, 201, 
-      204, 202, 202, 202, 201, 
-      201, 204, 202, 203, 204, 
-      201, 201, 204, 203, 203, 
-      201, 202, 204, 203, 204, 
-      205, 204, 201, 203, 203, 
-      202, 301, 304, 301, 302 )
-      CONFIG_SETTING_ARRAY( INT, GunWeaponModelTable2, "Gun Weapon Model IDs Table 2", 100,
-      302, 304, 303, 302, 302, 
-      302, 303, 303, 304, 303, 
-      304, 304, 301, 302, 301, 
-      304, 304, 302, 304, 302, 
-      303, 301, 302, 305, 304, 
-      303, 301, 303, 401, 403, 
-      402, 403, 401, 402, 401, 
-      403, 404, 403, 401, 404, 
-      402, 403, 404, 402, 404, 
-      404, 402, 402, 404, 403, 
-      405, 404, 405, 401, 402, 
-      402, 403, 401, 404, 406, 
-      501, 502, 501, 502, 501, 
-      501, 501, 502, 504, 504, 
-      503, 501, 504, 501, 503, 
-      504, 504, 504, 503, 502, 
-      504, 503, 505, 503, 502, 
-      503, 502, 506, 101, 104, 
-      103, 106, 601, 604, 601, 
-      601, 601, 602, 601, 603 )
-      CONFIG_SETTING_ARRAY( INT, GunWeaponModelTable3, "Gun Weapon Model IDs Table 3", 100,
-      602, 601, 603, 602, 601, 
-      603, 602, 602, 603, 602, 
-      601, 602, 603, 603, 603, 
-      605, 303, 301, 303, 306, 
-      203, 801, 802, 810, 801, 
-      801, 801, 801, 204, 202, 
-      203, 206,   3,   4,   3, 
-        2,   3,   3,   2,   3, 
-        2,   2,   4,   4,   5, 
-        3,   4,   4,   2,   3, 
-        4,   4,   6,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1 )
-        CONFIG_SETTING_ARRAY( INT, GunWeaponModelTable4, "Gun Weapon Model IDs Table 4", 100,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1,
-        1,   1,   1,   1,   1 )
-        CONFIG_SETTING_ARRAY( INT, fastSummonEnemy, "Fast Persona Summon Enemies", 100,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359,
-      359, 359, 359, 359, 359 )
+    CONFIG_SETTING_ARRAY( INT, fastSummonEnemy, "Fast Persona Summon Enemies", 10,
+    359, 359, 359, 359, 359,
+    359, 359, 359, 359, 359)
         
 #endif
 #ifdef GAME_TEST
