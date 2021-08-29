@@ -474,6 +474,18 @@ ItemTBL_RangedWeapon* GetRangedWeaponTBLEntry( u16 WeaponID )
     SHK_FUNCTION_CALL_1(0x26393c , ItemTBL_RangedWeapon*, u16, WeaponID);
 }
 
+bool CheckHasSkill ( btlUnit_Unit* btlUnit, int SkillID ){
+    SHK_FUNCTION_CALL_2( 0x259148, bool, btlUnit_Unit*, btlUnit, int, SkillID );
+}
+
+u32 FUN_000442cc ( int param_1, int param_2 ){
+    SHK_FUNCTION_CALL_2( 0x442cc, u32, int, param_1, int, param_2 );
+}
+
+void FUN_0024c018 ( u64 param_1, char param_2 ){
+    SHK_FUNCTION_CALL_2( 0x24c018, void, u64, param_1, char, param_2 );
+}
+
 int GetRandom( int MaxValue )
 {
   int v0; // r31

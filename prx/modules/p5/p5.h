@@ -1765,10 +1765,11 @@ fieldworkdataStruct* GetFieldWorkData( void );
 u16 GetTotalDays( void );
 int isCharacterAssistExpressonValid( short a1, short a2 );
 int FUN_003b9110( int a1, int a2, int a3, int a4, int a5 );
-void FUN_00263728 ( btlUnitContextInfo context, short ElementID );
-u64 FUN_002595c4(int param_1,uint param_2);
-u64 FUN_00250000();
-u64 FUN_0025d0c4( u32 UnitId, short ElementID);
+bool CheckHasSkill ( btlUnit_Unit* btlUnit, int SkillID );
+bool GetAccessoryEffect ( btlUnit_Unit* btlUnit, int EffectID );
+bool CheckAccessoryEffect ( btlUnit_Unit* btlUnit, int EffectID );
+u32 FUN_000442cc ( int param_1,int param_2 );
+void FUN_0024c018 ( u64 param_1, char param_2 );
 
 
 /**
