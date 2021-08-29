@@ -486,6 +486,10 @@ void FUN_0024c018 ( u64 param_1, char param_2 ){
     SHK_FUNCTION_CALL_2( 0x24c018, void, u64, param_1, char, param_2 );
 }
 
+double FUN_00250a10( btlUnit_Unit* btlUnit, u32 param_2, undefined8 param_3 ){
+    SHK_FUNCTION_CALL_3( 0x250a10, double, btlUnit_Unit*, btlUnit, u32, param_2, undefined8, param_3 );
+}
+
 int GetRandom( int MaxValue )
 {
   int v0; // r31

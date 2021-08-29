@@ -49,7 +49,7 @@ SHK_HOOK( u64, SkillHealDamageModifier, u32 SkillID, btlUnit_Unit *btlUnit_1, bt
 SHK_HOOK( void, ParseSKILLTBL, u64 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment0, u32 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment1, u32 param_1);
-SHK_HOOK( void, FUN_00044400, u32 param_1);
+//SHK_HOOK( void, FUN_00044400, u32 param_1);
 
 static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, short ElementID ){
     u64 Resist = 0x10000032;
@@ -134,7 +134,7 @@ static u64 SkillHealDamageModifierHook ( u32 SkillID, btlUnit_Unit* btlUnit_1, b
     int TotalHealing;
 
     SkillData = GetCopySegment1SKILL(SkillID);
-    EffectToHP, dVar7, dVar8, HPDamage = 1.0;
+    EffectToHP, dVar7, dVar8, HPDamage, v20 = 1.0;
     TotalHPReduce, TotalHPIncrease = 0;
 
     if (Bit01 < 2) {
@@ -447,7 +447,7 @@ static u64 SkillHealDamageModifierHook ( u32 SkillID, btlUnit_Unit* btlUnit_1, b
         }
         if ( sub_2588B4(btlUnit_Unit_2) )
         {
-LABEL_498:
+
           TotalDmg = ((((TotalHPReduce * EffectToHPCalc) * v20) * ExtraEffectToHP) * EffectToHP);
           if ( v10 == 16 )
           {
@@ -831,8 +831,8 @@ LABEL_60:
 
 
 static void ParseSKILLTBLHook ( u64 param_1 ){
-  memset( &NewSKILLTBLSegment0, 0x69, sizeof( NewSKILLTBLSegment0 ) );
-  memset( &NewSKILLTBLSegment1, 0x69, sizeof( NewSKILLTBLSegment1 ) );
+  memset( &NewSKILLTBLSegment0, 0xFF, sizeof( NewSKILLTBLSegment0 ) );
+  memset( &NewSKILLTBLSegment1, 0xFF, sizeof( NewSKILLTBLSegment1 ) );
 
   u16 uVar1;
   u32 uVar2;
@@ -853,7 +853,7 @@ static void ParseSKILLTBLHook ( u64 param_1 ){
     local_30[0] = local_30[0] << 0x18 | (local_30[0] & 0xff00) << 8 | local_30[0] >> 0x18 | local_30[0] >> 8 & 0xff00;
   }
   uVar3 = param_1 + 4 & 0xffffffff;
-  FUN_0090053c((u32)&NewSKILLTBLSegment0,uVar3,(u64)local_30[0]);
+  FUN_0090053c(&NewSKILLTBLSegment0,uVar3,(u64)local_30[0]);
   uVar5 = (u64)local_30[0] + 4;
   iVar7 = (int)uVar5;
   uVar4 = __builtin_clz(iVar7 + ((iVar7 >> 4) + (u32)(iVar7 < 0 && (uVar5 & 0xf) != 0)) * -0x10);
@@ -868,28 +868,28 @@ static void ParseSKILLTBLHook ( u64 param_1 ){
     local_30[0] = local_30[0] << 0x18 |
                   (local_30[0] & 0xff00) << 8 | local_30[0] >> 0x18 | local_30[0] >> 8 & 0xff00;
   }
-  FUN_0090053c((u32)&NewSKILLTBLSegment1,uVar3 + 4 & 0xffffffff,(u64)local_30[0]);
+  FUN_0090053c(&NewSKILLTBLSegment1,uVar3 + 4 & 0xffffffff,(u64)local_30[0]);
   if (bVar9 != 0) {
     lVar10 = 2000; // Change
     puVar8 = &NewSKILLTBLSegment1;
     do {
-      uVar2 = *(u32 *)(puVar8 + 0x10);
+      uVar2 = *(puVar8 + 0x10);
       *puVar8 = *puVar8 >> 8 | *puVar8 << 8;
       uVar1 = puVar8[3];
-      *(u32 *)(puVar8 + 0x10) =
+      *(puVar8 + 0x10) =
            uVar2 << 0x18 | (uVar2 & 0xff00) << 8 | uVar2 >> 0x18 | uVar2 >> 8 & 0xff00;
       puVar8[3] = uVar1 >> 8 | uVar1 << 8;
       uVar1 = puVar8[4];
-      uVar2 = *(u32 *)(puVar8 + 0x12);
+      uVar2 = *(puVar8 + 0x12);
       puVar8[4] = uVar1 >> 8 | uVar1 << 8;
       uVar1 = puVar8[0xc];
-      *(u32 *)(puVar8 + 0x12) =
+      *(puVar8 + 0x12) =
            uVar2 << 0x18 | (uVar2 & 0xff00) << 8 | uVar2 >> 0x18 | uVar2 >> 8 & 0xff00;
       puVar8[0xc] = uVar1 >> 8 | uVar1 << 8;
       uVar1 = puVar8[0xe];
-      uVar2 = *(u32 *)(puVar8 + 8);
+      uVar2 = *(puVar8 + 8);
       puVar8[0xe] = uVar1 >> 8 | uVar1 << 8;
-      *(u32 *)(puVar8 + 8) =
+      *(puVar8 + 8) =
            uVar2 << 0x18 | (uVar2 & 0xff00) << 8 | uVar2 >> 0x18 | uVar2 >> 8 & 0xff00;
       lVar10 = lVar10 + -1;
       puVar8 = puVar8 + 0x16;
@@ -905,15 +905,17 @@ static u64* ReturnAddressOfSKILLTBL_Segment0Hook( u32 param_1 )
 
 static u64* ReturnAddressOfSKILLTBL_Segment1Hook( u32 param_1 )
 {
+    return &NewSKILLTBLSegment1.entry[param_1];
+    /*
     if (param_1 >= 1500){ // New active skills starts at ID 1500, change if necessary
         return &NewSKILLTBLSegment1.entry[param_1-700];
     }
     else {
         return &NewSKILLTBLSegment1.entry[param_1];
     }
-    
+    */
 }
-
+/*
 static void FUN_00044400Hook(int param_1)
 {
   int iVar1;
@@ -938,11 +940,11 @@ static void FUN_00044400Hook(int param_1)
       }
     }
     SkillId = SkillId + 1;
-    if (799 < SkillId && SkillId < 1499) {
+    if (1999 < SkillId) {
       return;
     }
   } while( true );
-}
+}*/
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
@@ -954,7 +956,7 @@ void scarltzInit( void ){
   SHK_BIND_HOOK( ParseSKILLTBL, ParseSKILLTBLHook );
   SHK_BIND_HOOK( ReturnAddressOfSKILLTBL_Segment0, ReturnAddressOfSKILLTBL_Segment0Hook );
   SHK_BIND_HOOK( ReturnAddressOfSKILLTBL_Segment1, ReturnAddressOfSKILLTBL_Segment1Hook );
-  SHK_BIND_HOOK( FUN_00044400, FUN_00044400Hook );
+  //SHK_BIND_HOOK( FUN_00044400, FUN_00044400Hook );
 }
 
 void scarltzShutdown( void ){

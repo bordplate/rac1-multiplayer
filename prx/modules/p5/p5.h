@@ -1770,6 +1770,7 @@ bool GetAccessoryEffect ( btlUnit_Unit* btlUnit, int EffectID );
 bool CheckAccessoryEffect ( btlUnit_Unit* btlUnit, int EffectID );
 u32 FUN_000442cc ( int param_1,int param_2 );
 void FUN_0024c018 ( u64 param_1, char param_2 );
+double FUN_00250a10( btlUnit_Unit *btlUnit, u32 param_2, undefined8 param_3 );
 
 
 /**

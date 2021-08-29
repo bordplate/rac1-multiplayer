@@ -29,42 +29,42 @@ typedef struct
   u8 AreaType; // 2
   u8 DamageStat; // 3
   u8 CostType; // 4
-  u16 Unknown0; // 5
+  u16 Field05; // 5
   u8 SkillCost; // 7
-  u8 Unknown1; // 8
+  u8 Field08; // 8
   u8 MagicOrPhys; // 9
   u8 TargetNum; // A
-  bool UsableOnEnemy; // B
-  bool UsableOnAllies; // C
-  u8 AdditionalTargetRestrictions; // D
-  u8 Unknown2; // E
-  u8 Unknown3; // F
-  u8 Unknown4; // 10
-  u8 Unknown5; // 11
-  u8 Unknown6; // 12
-  u8 Unknown7; // 13
-  u8 Unknown8; // 14
-  u8 Accuracy; // 15
-  u8 MinHits; // 16
-  u8 MaxHits; // 17
-  u8 DamageHealingType; // 18
-  u16 BaseDamage; // 19
-  u8 SPEffect; // 1B
-  u16 Unknown9; // 1C
-  u8 SPAmount; // 1E
-  u8 SkillEffect; // 1F
-  u8 EffectChance; // 20
-  u8 Unknown10; // 21
-  u8 EffectList1; // 22
-  u8 EffectList2; // 23
-  u8 EffectList3; // 24
-  u8 EffectList4; // 25
-  u8 EffectList5; // 26
-  u8 EffectList6; // 27
-  u8 BuffDebuff; // 28
-  u8 ExtraSkillEffect; // 29
-  u8 CritChance; // 2A
-  u8 Unknown11; // 2B
+  u8 UsableOnEnemyOrAllies; // B
+  u8 AdditionalTargetRestrictions; // C
+  u8 Field0D; // D
+  u8 Field0E; // E
+  u8 Field0F; // F
+  u8 Field10; // 10
+  u8 Field11; // 11
+  u8 Field12; // 12
+  u8 Field13; // 13
+  u8 Accuracy; // 14
+  u8 MinHits; // 15
+  u8 MaxHits; // 16
+  u8 DamageHealingType; // 17
+  u16 BaseDamage; // 18
+  u8 SPEffect; // 1A
+  u16 Field1B; // 1B
+  u8 SPAmount; // 1D
+  u8 SkillEffect; // 1E
+  u8 EffectChance; // 1F
+  u8 Field20; // 20
+  u8 EffectList1; // 21
+  u8 EffectList2; // 22
+  u8 EffectList3; // 23
+  u8 EffectList4; // 24
+  u8 EffectList5; // 25
+  u8 EffectList6; // 26
+  u8 BuffDebuff; // 27
+  u8 ExtraSkillEffect; // 28
+  u8 CritChance; // 29
+  u8 Field2A; // 2A
+  u8 Field2B; // 2B
 } ActiveSkillData;
 
 typedef struct
@@ -86,7 +86,7 @@ typedef struct
 
 typedef struct
 {
-  ActiveSkillData2 entry[2000];
+  ActiveSkillData entry[2000];
 }SKILLTBLSegment1;
 
 SKILLTBLSegment0 NewSKILLTBLSegment0;

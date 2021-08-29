@@ -423,7 +423,3 @@ ReturnAddressOfSKILLTBL_Segment0:
 ReturnAddressOfSKILLTBL_Segment1:
     addr: 0x2635a0
     emitTrampoline: no
-
-FUN_00044400:
-    addr: 0x44400
-    emitTrampoline: no
