@@ -37,18 +37,18 @@ static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, ElementalType Ele
     u64 Weak = 0x800007d;
     u64 Neutral = 0x140032; //Made-up tail value
 
-    u64 Resistance = SHK_CALL_HOOK( ResistancePassiveCheck, btlUnit, ElementID );
+    u64 Resistance = SHK_CALL_HOOK( ResistancePassiveCheck, btlUnit, ElementID ); // Have some initialization I don't really understand
 
     bool pass = false;
     
-    if (ElementID >= Physical) {
+    if (ElementID >= ET_Physical) {
         if ( CheckHasSkill ( btlUnit, 1000 ) ) {
             Resistance = Resistance | Repel;
             pass = true;
         }
     }
 
-    if (ElementID == GunSkill) {
+    if (ElementID == ET_Gun) {
         if ( CheckHasSkill ( btlUnit, 1001 ) ) {
             Resistance = Resistance | Resist;
             pass = true;
