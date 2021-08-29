@@ -21,37 +21,15 @@
 #define DEBUG_LOG( msg, ... ) \
   if ( CONFIG_ENABLED( debug ) ) printf( "DEBUG: " msg, ##__VA_ARGS__ )
 
-short Physical = 0;
-short GunSkill = 1;
-short Fire = 2;
-short Ice = 3;
-short Electric = 4;
-short Wind = 5;
-short Psy = 6;
-short Nuke = 7;
-short Bless = 8;
-short Curse = 9;
-short Almighty = 10;
-short Dizzy = 11;
-short Confuse = 12;
-short Fear = 13;
-short Forget = 14;
-short Hunger = 15;
-short Sleep = 16;
-short Rage = 17;
-short Despair = 18;
-short Brainwash = 19;
-
 // You need to declare hooks with SHK_HOOK before you can use them.
 
-SHK_HOOK( u64, ResistancePassiveCheck, btlUnit_Unit* btlUnit, short ElementID);
+SHK_HOOK( u64, ResistancePassiveCheck, btlUnit_Unit* btlUnit, ElementalType ElementID);
 SHK_HOOK( u64, SkillHealDamageModifier, u32 SkillID, btlUnit_Unit *btlUnit_1, btlUnit_Unit *btlUnit_2, u32 param_4, short ElementalAffinity, u8 param_6, u8 param_7, u8 Bit01 );
 SHK_HOOK( void, ParseSKILLTBL, u64 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment0, u32 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment1, u32 param_1);
-//SHK_HOOK( void, FUN_00044400, u32 param_1);
 
-static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, short ElementID ){
+static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, ElementalType ElementID ){
     u64 Resist = 0x10000032;
     u64 Block = 0x1000064;
     u64 Repel = 0x2000064;
@@ -831,8 +809,8 @@ LABEL_60:
 
 
 static void ParseSKILLTBLHook ( u64 param_1 ){
-  memset( &NewSKILLTBLSegment0, 0xFF, sizeof( NewSKILLTBLSegment0 ) );
-  memset( &NewSKILLTBLSegment1, 0xFF, sizeof( NewSKILLTBLSegment1 ) );
+  memset( &NewSKILLTBL_Segment0, 0xFF, sizeof( NewSKILLTBL_Segment0 ) );
+  memset( &NewSKILLTBL_Segment1, 0xFF, sizeof( NewSKILLTBL_Segment1 ) );
 
   u16 uVar1;
   u32 uVar2;
@@ -853,7 +831,7 @@ static void ParseSKILLTBLHook ( u64 param_1 ){
     local_30[0] = local_30[0] << 0x18 | (local_30[0] & 0xff00) << 8 | local_30[0] >> 0x18 | local_30[0] >> 8 & 0xff00;
   }
   uVar3 = param_1 + 4 & 0xffffffff;
-  FUN_0090053c(&NewSKILLTBLSegment0,uVar3,(u64)local_30[0]);
+  FUN_0090053c(&NewSKILLTBL_Segment0,uVar3,(u64)local_30[0]);
   uVar5 = (u64)local_30[0] + 4;
   iVar7 = (int)uVar5;
   uVar4 = __builtin_clz(iVar7 + ((iVar7 >> 4) + (u32)(iVar7 < 0 && (uVar5 & 0xf) != 0)) * -0x10);
@@ -868,10 +846,10 @@ static void ParseSKILLTBLHook ( u64 param_1 ){
     local_30[0] = local_30[0] << 0x18 |
                   (local_30[0] & 0xff00) << 8 | local_30[0] >> 0x18 | local_30[0] >> 8 & 0xff00;
   }
-  FUN_0090053c(&NewSKILLTBLSegment1,uVar3 + 4 & 0xffffffff,(u64)local_30[0]);
+  FUN_0090053c(&NewSKILLTBL_Segment1,uVar3 + 4 & 0xffffffff,(u64)local_30[0]);
   if (bVar9 != 0) {
     lVar10 = 2000; // Change
-    puVar8 = &NewSKILLTBLSegment1;
+    puVar8 = &NewSKILLTBL_Segment1;
     do {
       uVar2 = *(puVar8 + 0x10);
       *puVar8 = *puVar8 >> 8 | *puVar8 << 8;
@@ -900,51 +878,21 @@ static void ParseSKILLTBLHook ( u64 param_1 ){
 
 static u64* ReturnAddressOfSKILLTBL_Segment0Hook( u32 param_1 )
 {
-    return &NewSKILLTBLSegment0.entry[param_1];
+    return &NewSKILLTBL_Segment0.entry[param_1];
 }
 
 static u64* ReturnAddressOfSKILLTBL_Segment1Hook( u32 param_1 )
 {
-    return &NewSKILLTBLSegment1.entry[param_1];
-    /*
+    
     if (param_1 >= 1500){ // New active skills starts at ID 1500, change if necessary
-        return &NewSKILLTBLSegment1.entry[param_1-700];
+        return &NewSKILLTBL_Segment1.entry[param_1-700];
     }
     else {
-        return &NewSKILLTBLSegment1.entry[param_1];
+        return &NewSKILLTBL_Segment1.entry[param_1];
     }
-    */
+    
 }
-/*
-static void FUN_00044400Hook(int param_1)
-{
-  int iVar1;
-  int iVar3;
-  int iVar4;
-  undefined8 uVar2;
-  int SkillId;
-  
-  SkillId = 0;
-  do {
-    iVar3 = FUN_000442cc(SkillId,param_1);
-    iVar1 = param_1;
-    if (iVar3 != 0) {
-      do {
-        iVar1 = iVar1 + -1;
-        if (iVar1 < 0) FUN_0024c018(SkillId,1);
-        iVar4 = FUN_000442cc(SkillId,iVar1);
-      } while (iVar4 == 0);
-      uVar2 = __builtin_clz(iVar3 - iVar4);
-      if (((u8)((u32)uVar2 >> 5) & 1) != 1) {
-        FUN_0024c018(SkillId,1);
-      }
-    }
-    SkillId = SkillId + 1;
-    if (1999 < SkillId) {
-      return;
-    }
-  } while( true );
-}*/
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.

@@ -1,4 +1,6 @@
 #ifdef GAME_P5
+#ifndef SCARLTZ_H
+#define SCARLTZ_H
 
 void scarltzInit( void );
 void scarltzShutdown( void );
@@ -10,10 +12,28 @@ void scarltzShutdown( void );
 
 #include "modules/p5/p5.h"
 
-typedef struct 
-{
-    u32 field00;
-} testStruct;
+typedef enum{
+  Physical,
+  GunSkill,
+  Fire,
+  Ice,
+  Electric,
+  Wind,
+  Psy,
+  Nuke,
+  Bless,
+  Curse,
+  Almighty,
+  Dizzy,
+  Confuse,
+  Fear,
+  Forget,
+  Hunger,
+  Sleep,
+  Rage,
+  Despair,
+  Brainwash
+} ElementalType;
 
 typedef struct
 {
@@ -69,27 +89,16 @@ typedef struct
 
 typedef struct
 {
-  u8 idk[44];
-
-}ActiveSkillData2;
-
-typedef struct
-{
-  u8 idk[3];
-
-} SkillElement2;
-
-typedef struct
-{
-  SkillElement2 entry[2000];
-}SKILLTBLSegment0;
+  SkillElement entry[2000];
+}SKILLTBL_Segment0;
 
 typedef struct
 {
   ActiveSkillData entry[2000];
-}SKILLTBLSegment1;
+}SKILLTBL_Segment1;
 
-SKILLTBLSegment0 NewSKILLTBLSegment0;
-SKILLTBLSegment1 NewSKILLTBLSegment1;
+SKILLTBL_Segment0 NewSKILLTBL_Segment0;
+SKILLTBL_Segment1 NewSKILLTBL_Segment1;
 
+#endif
 #endif
