@@ -24,7 +24,7 @@
 // You need to declare hooks with SHK_HOOK before you can use them.
 
 SHK_HOOK( u64, ResistancePassiveCheck, btlUnit_Unit* btlUnit, ElementalType ElementID);
-SHK_HOOK( u64, SkillHealDamageModifier, u16 SkillID_A1, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, u16 param_4, u16 ElementalAffinity, u16 param_6, u16 param_7, u8 SkillMode_1_2 );
+SHK_HOOK( u64, SkillHealDamageModifier, u16 SkillID, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, u16 param_4, u16 ElementalAffinity, u16 param_6, u16 param_7, u8 SkillMode_1_2 );
 SHK_HOOK( void, ParseSKILLTBL, u64 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment0, u32 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment1, u32 param_1);
@@ -159,7 +159,7 @@ static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, ElementalType Ele
     return Resistance;
 }
 
-static u64 SkillHealDamageModifierHook ( u16 SkillID_A1, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, u16 param_4, u16 ElementalAffinity, u16 param_6, u16 param_7, u8 SkillMode_1_2 )
+static u64 SkillHealDamageModifierHook ( u16 SkillID, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, u16 param_4, u16 ElementalAffinity, u16 param_6, u16 param_7, u8 SkillMode_1_2 )
 {
   bool Pass = false;
   u64 Result;
@@ -185,9 +185,6 @@ static u64 SkillHealDamageModifierHook ( u16 SkillID_A1, btlUnit_Unit* btlUnit_1
   ElementalType ElementID; // r18
   int v34; // r31
   int v35; // r3
-  double CurseDmgMul; // fp23
-  u64 CurseAccID; // r31
-  int v68; // r23
   double v70; // fp21
   double v71; // fp23
   double v72; // fp21
@@ -217,7 +214,6 @@ static u64 SkillHealDamageModifierHook ( u16 SkillID_A1, btlUnit_Unit* btlUnit_1
   u64 v117; // r3
   int v119; // r23
   int TotalDmg; // r4
-  int TotalDmgCopy; // r24
   int v122; // r3
   int v123; // r4
   int v124; // r3
@@ -226,7 +222,7 @@ static u64 SkillHealDamageModifierHook ( u16 SkillID_A1, btlUnit_Unit* btlUnit_1
 
   EffectToHPCalc = 1.0;
   TotalHPIncrease = 0;
-  SkillData = (ActiveSkillData*)ReturnAddressOfSKILLTBL_Segment1Hook(SkillID_A1);
+  SkillData = (ActiveSkillData*)ReturnAddressOfSKILLTBL_Segment1Hook(SkillID);
   TotalHPReduce = 0;
   SomeKindOfMultiplier = 1.0;
   ExtraEffectToHP = 1.0;
@@ -263,7 +259,7 @@ static u64 SkillHealDamageModifierHook ( u16 SkillID_A1, btlUnit_Unit* btlUnit_1
           goto FinalDamageCalc;
         }
         
-        TotalHPReduce = FUN_25E5D8(9, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+        TotalHPReduce = FUN_25E5D8(9, btlUnit_1, btlUnit_2, SkillID, SkillMode_1_2);
         if ( TotalHPReduce <= 0 )
           TotalHPReduce = 1;
 LABEL_85:
@@ -297,7 +293,7 @@ LABEL_506:
           }
           goto FinalDamageCalc;
         }
-        ElementID = GetSkillData(btlUnit_1, SkillID_A1);
+        ElementID = GetSkillData(btlUnit_1, SkillID);
         if ( SkillData->DamageStat == 2 ) // Magic stat
         {
           if ( SPEffectOrDamageHealingType != 16 )
@@ -339,15 +335,14 @@ LABEL_506:
           EffectToHPCalc = (EffectToHPCalc * 1.15);
         }
 ElementalDamageCalc:
-        if ( ElementID >= ET_Physical )
+        if ( ElementID >= ET_Physical && ElementID <= ET_Almighty)
         {
+          double AmpAll = 1.0;
           if ( CheckHasSkill(btlUnit_1, 1005) ){
-            EffectToHP = 2.0;
+            AmpAll = 1.0 * 2.0;
             Pass = true;
           }
-          else{
-            EffectToHP = 1.0;
-          }
+          EffectToHP = 1.0 * AmpAll;
         }
 
         v70 = 0.5;
@@ -591,21 +586,19 @@ ElementalDamageCalc:
         if ( FUN_002588b4(btlUnit_2) )
         {
 LABEL_498:
-          TotalDmg = ((((TotalHPReduce * EffectToHPCalc) * SomeKindOfMultiplier) * ExtraEffectToHP) * EffectToHP);
+          TotalDmg = TotalHPReduce * EffectToHPCalc * SomeKindOfMultiplier * ExtraEffectToHP * EffectToHP;
           if ( param_6 == 16 )
           {
             TotalHPReduce = 99999;
           }
           else
           {
-            TotalDmgCopy = 99999;
             if ( TotalDmg <= 99999 )
             {
               if ( TotalDmg < 1 )
                 TotalDmg = 1;
-              TotalDmgCopy = TotalDmg;
             }
-            TotalHPReduce = (TotalDmgCopy * FUN_26AE14(0xBu) + 95 * TotalDmgCopy) / 100;
+            TotalHPReduce = (TotalDmg * FUN_26AE14(0xB) + 95 * TotalDmg) / 100;
             if ( TotalHPReduce <= 0 )
               TotalHPReduce = 1;
           }
@@ -698,20 +691,20 @@ LABEL_50:
     }
 LABEL_60:
     if ( SkillData->DamageStat == 2 )
-      TotalHPReduce = FUN_25E5D8(2, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+      TotalHPReduce = FUN_25E5D8(2, btlUnit_1, btlUnit_2, SkillID, SkillMode_1_2);
     else if ( SkillData->DamageStat == 1 )
     {
       if ( (param_7 & 0x80) != 0 )
       {
-        v32 = FUN_25E5D8(12, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+        v32 = FUN_25E5D8(12, btlUnit_1, btlUnit_2, SkillID, SkillMode_1_2);
       }
       else if ( (*&SkillData->CasterEffect1 & 0x200) != 0 )
       {
-        v32 = FUN_25E5D8(11, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+        v32 = FUN_25E5D8(11, btlUnit_1, btlUnit_2, SkillID, SkillMode_1_2);
       }
       else
       {
-        v32 = FUN_25E5D8(1, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+        v32 = FUN_25E5D8(1, btlUnit_1, btlUnit_2, SkillID, SkillMode_1_2);
       }
       TotalHPReduce = v32;
     }
@@ -723,6 +716,22 @@ LABEL_60:
       TotalHPReduce = 1;
     goto LABEL_85;
   }
+  switch ( SPEffectOrDamageHealingType )
+  {
+    case 7:
+      TotalHPIncrease = 50;
+      if ( TotalHPIncrease <= 0 )
+        TotalHPIncrease = 1;
+      goto LABEL_85;
+    case 6:
+      TotalHPReduce = 50;
+      goto LABEL_85;
+    case 5:
+      TotalHPIncrease = HPSPReduceBase;
+      goto FinalDamageCalc;
+    case 4:
+      goto LABEL_50;
+  }
   if ( SPEffectOrDamageHealingType != 3 )
   {
     if ( SPEffectOrDamageHealingType != 2 )
@@ -733,15 +742,15 @@ LABEL_60:
     }
     if ( SkillData->DamageStat == 2 )
     {
-      TotalHPIncrease = FUN_25E5D8(3, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+      TotalHPIncrease = FUN_25E5D8(3, btlUnit_1, btlUnit_2, SkillID, SkillMode_1_2);
       goto LABEL_46;
     }
     else if ( SkillData->DamageStat == 1 )
     {
       if ( (*&SkillData->CasterEffect1 & 0x200) != 0 )
-        v30 = FUN_252980(SkillID_A1, btlUnit_1, btlUnit_2, SkillMode_1_2);
+        v30 = FUN_252980(SkillID, btlUnit_1, btlUnit_2, SkillMode_1_2);
       else
-        v30 = FUN_25294C(SkillID_A1, btlUnit_1, btlUnit_2, SkillMode_1_2);
+        v30 = FUN_25294C(SkillID, btlUnit_1, btlUnit_2, SkillMode_1_2);
       TotalHPIncrease = v30;
 LABEL_46:
       if ( TotalHPIncrease > 0 ){
@@ -780,9 +789,8 @@ FinalDamageCalc:
       Result = -TotalHPReduce;
     return Result;
   }
-  
   else {
-    Result = SHK_CALL_HOOK( SkillHealDamageModifier, SkillID_A1, btlUnit_1, btlUnit_2, param_4, ElementalAffinity, param_6, param_7, SkillMode_1_2 );
+    Result = SHK_CALL_HOOK( SkillHealDamageModifier, SkillID, btlUnit_1, btlUnit_2, param_4, ElementalAffinity, param_6, param_7, SkillMode_1_2 );
     return Result;
   }
 }
