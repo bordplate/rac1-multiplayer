@@ -24,789 +24,10 @@
 // You need to declare hooks with SHK_HOOK before you can use them.
 
 SHK_HOOK( u64, ResistancePassiveCheck, btlUnit_Unit* btlUnit, ElementalType ElementID);
-SHK_HOOK( u64, SkillHealDamageModifier, u32 SkillID, btlUnit_Unit *btlUnit_1, btlUnit_Unit *btlUnit_2, u32 param_4, short ElementalAffinity, u8 param_6, u8 param_7, u8 Bit01 );
+SHK_HOOK( u64, SkillHealDamageModifier, u16 SkillID_A1, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, u16 param_4, u16 ElementalAffinity, u16 param_6, u16 param_7, u8 SkillMode_1_2 );
 SHK_HOOK( void, ParseSKILLTBL, u64 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment0, u32 param_1);
 SHK_HOOK( u64, ReturnAddressOfSKILLTBL_Segment1, u32 param_1);
-
-static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, ElementalType ElementID ){
-    u64 Resist = 0x10000032;
-    u64 Block = 0x1000064;
-    u64 Repel = 0x2000064;
-    u64 Drain =  0x4000064;
-    u64 Weak = 0x800007d;
-    u64 Neutral = 0x140032; //Made-up tail value
-
-    u64 Resistance = SHK_CALL_HOOK( ResistancePassiveCheck, btlUnit, ElementID ); // Have some initialization I don't really understand
-
-    bool pass = false;
-    
-    if (ElementID >= ET_Physical) {
-        if ( CheckHasSkill ( btlUnit, 1000 ) ) {
-            Resistance = Resistance | Repel;
-            pass = true;
-        }
-    }
-
-    if (ElementID == ET_Gun) {
-        if ( CheckHasSkill ( btlUnit, 1001 ) ) {
-            Resistance = Resistance | Resist;
-            pass = true;
-        }
-        if ( CheckHasSkill ( btlUnit, 1002 ) ) {
-            Resistance = Resistance | Block;
-            pass = true;
-        }
-        if ( CheckHasSkill ( btlUnit, 1003 ) ) {
-            Resistance = Resistance | Repel;
-            pass = true;
-        }
-        if ( CheckHasSkill ( btlUnit, 1004 ) ) {
-            Resistance = Resistance | Drain;
-            pass = true;
-        }
-    }
-
-    if ( !pass ){
-        Resistance = SHK_CALL_HOOK( ResistancePassiveCheck, btlUnit, ElementID );
-    }
-
-    return Resistance;
-}
-
-static u64 SkillHealDamageModifierHook ( u32 SkillID, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, u32 param_4, short ElementalAffinity, u8 param_6, u8 param_7, u8 Bit01 )
-{
-    u64 Result = SHK_CALL_HOOK( SkillHealDamageModifier, SkillID, btlUnit_1, btlUnit_2, param_4, ElementalAffinity, param_6, param_7, Bit01 );
-
-    return Result;
-
-/*
-    ActiveSkillData *SkillData;
-    int i;
-
-    u32 CurrentHPSP_sharedvar;
-    u32 HPSPBonus;
-    int ElementId_sharedvar;
-    undefined uVar1;
-    bool bVar2;
-    short AccessoryId;
-    u64 uVar3;
-    undefined uVar4;
-    u64 HPSPCopy;
-    u64 TotalHPIncrease;
-    u64 TotalHPReduce;
-    u64 Result;
-    double extraout_f1;
-    double extraout_f1_00;
-    double uVar11;
-    double dVar5;
-    double dVar6;
-    double dVar7;
-    double dVar8;
-    double EffectToHP;
-    double HPDamage;
-    u16 DamageHealingTypeOrUnknown;
-    byte BaseDamageOrMaxHit;
-    byte DamageStat;
-    u32 SkillIDMasked;
-    int TotalHealing;
-
-    SkillData = GetCopySegment1SKILL(SkillID);
-    EffectToHP, dVar7, dVar8, HPDamage, v20 = 1.0;
-    TotalHPReduce, TotalHPIncrease = 0;
-
-    if (Bit01 < 2) {
-        if (Bit01 == 0) goto FinalDamageCalc;
-        BaseDamageOrMaxHit = SkillData->MaxHit;
-        DamageHealingTypeOrUnknown = &SkillData->DamageHealingType;
-        CurrentHPSP_sharedvar = GetCurrentHP(btlUnit_2);
-        HPSPBonus = GetCountEquipHPBonus(btlUnit_2);
-    }
-    else {
-        if (2 < Bit01) goto FinalDamageCalc;
-        BaseDamageOrMaxHit = &SkillData->BaseDamage + 1;
-        DamageHealingTypeOrUnknown = SkillData->Unknown9;
-        CurrentHPSP_sharedvar = GetCurrentSP(btlUnit_2);
-        HPSPBonus = GetCountEquipSPBonus(btlUnit_2);
-    }
-    uVar3 = DamageHealingTypeOrUnknown;
-    HPSPCopy = CurrentHPSP_sharedvar;
-
-    ElementId_sharedvar = Function_GetSkillData(btlUnit_1,SkillID);
-    DamageStat = SkillData->DamageStat;
-    if (DamageStat < 2) {
-      if (DamageStat != 0) {
-        if (BaseDamageOrMaxHit != 0x10) {
-          FUN_00250a10(btlUnit_1,0,SkillID);
-          FUN_002595c4(btlUnit_1,0x16);
-        }
-        FUN_00250a10(btlUnit_2,2,SkillID);
-        if (BaseDamageOrMaxHit != 0x10) {
-          FUN_0025a328(btlUnit_1,0x16);
-        }
-      }
-    }
-    else {
-      if (DamageStat < 3) {
-        if (BaseDamageOrMaxHit != 0x10) {
-          FUN_00250a10(btlUnit_1,0,SkillID);
-          FUN_002595c4(btlUnit_1,0x17);
-        }
-        FUN_00250a10(btlUnit_2,2,SkillID);
-        if (BaseDamageOrMaxHit != 0x10) {
-          FUN_0025a328(btlUnit_1,0x17);
-        }
-      }
-    }
-
-    if ( ElementID <= 9 )
-    {
-        CurseDmgMul = 1.0;
-        CurseAccID = GetEquipActual(btlUnit_Unit_1, 2);
-        if ( CurseAccID != 0x2000 )
-        {
-            i = 0;
-            do
-            {
-                if ( GetEquipmentEffect(CurseAccID, i) == 151 )
-                    CurseDmgMul = CurseDmgMul * (CalculateResistEffect(CurseAccID) / 100.0) + 1.0;
-                i++;
-            }
-            while ( i < 3 );
-        }
-
-        if ( CheckHasSkill(btlUnit_Unit_1, 982) )
-            CurseDmgMul = CurseDmgMul * 1.5);
-        if ( CheckHasSkill(btlUnit_Unit_1, 984) )
-            CurseDmgMul = CurseDmgMul * 1.25);
-        if ( CurseDmgMul > 2.0 )
-            CurseDmgMul = 2.0;
-
-        EffectToHP = 1.0 * CurseDmgMul;
-    }
-
-    v70 = 0.5;
-    if ( CheckHasSkill(btlUnit_Unit_2, 858) )
-        EffectToHP = EffectToHP * 0.5);
-    if ( !sub_2588B4(btlUnit_Unit_2) && CheckAccessoryEffect(btlUnit_Unit_2, 186) )
-        EffectToHP = EffectToHP * 0.5);
-    if ( &btlUnit_Unit_1->Flags & 0x20000000) != 0 )
-        EffectToHPCalc = EffectToHPCalc * 0.1);
-        v71 = 1.0;
-        if ( GetBitflagState(0x2160) )
-        {
-          if ( !sub_2588B4(btlUnit_Unit_1) )
-            v70 = 2.0;
-          v71 = v70;
-        }
-        else if ( GetBitflagState(0x2161) )
-        {
-          if ( !sub_2588B4(btlUnit_Unit_1) )
-            v70 = 1.25;
-          v71 = v70;
-        }
-        else if ( GetBitflagState(0x2162) )
-        {
-          v71 = 1.0;
-          if ( !sub_2588B4(btlUnit_Unit_1) )
-            v71 = 1.25;
-        }
-        else
-        {
-          v72 = 1.6;
-          if ( GetBitflagState(0x2163) )
-          {
-            if ( GetBitflagState(0x10CE) )
-            {
-              if ( !sub_2588B4(btlUnit_Unit_1) )
-                v72 = 0.80000001;
-            }
-            else
-            {
-              v72 = 1.3;
-              if ( !sub_2588B4(btlUnit_Unit_1) )
-                v72 = 0.80000001;
-            }
-            v71 = v72;
-          }
-          else if ( GetBitflagState(0x2164) )
-          {
-            if ( !sub_2588B4(btlUnit_Unit_1) )
-              v72 = 0.80000001;
-            v71 = v72;
-          }
-        }
-        v73 = EffectToHPCalc * v71);
-        if ( &btlUnit_Unit_1->Flags & 0x800000) != 0 )
-          sub_2588B4(btlUnit_Unit_1);
-        if ( &btlUnit_Unit_2->Flags & 0x800000) != 0 )
-          sub_2588B4(btlUnit_Unit_2);
-        if ( !Function_AilmentCheckProb(btlUnit_Unit_2, 0x100u) )
-        {
-          if ( Function_AilmentCheckProb(btlUnit_Unit_2, 0x200u) )
-          {
-            ExtraEffectToHP = 1.0 * 2.0);
-          }
-          else if ( Function_AilmentCheckProb(btlUnit_Unit_2, 0x1000u) )
-          {
-            ExtraEffectToHP = (1.0 * 1.5);
-          }
-          else if ( Function_AilmentCheckProb(btlUnit_Unit_2, 0x10000u) )
-          {
-            ExtraEffectToHP = (1.0 * 1.75);
-          }
-          else if ( Function_AilmentCheckProb(btlUnit_Unit_2, 0x400000u) )
-          {
-            ExtraEffectToHP = (1.0 * 2.0);
-          }
-        }
-        if ( Function_AilmentCheckProb(btlUnit_Unit_1, 0x80u) )
-        {
-          ExtraEffectToHP = (ExtraEffectToHP * 0.34999999);
-        }
-        else if ( Function_AilmentCheckProb(btlUnit_Unit_1, 0x200u) )
-        {
-          ExtraEffectToHP = (ExtraEffectToHP * 2.0);
-          if ( Function_CheckAccessoryEffect(btlUnit_Unit_1, 156) )
-            ExtraEffectToHP = (ExtraEffectToHP * 1.5);
-        }
-        else if ( Function_AilmentCheckProb(btlUnit_Unit_1, 0x1000u) )
-        {
-          ExtraEffectToHP = (ExtraEffectToHP * 1.75);
-        }
-        else if ( Function_AilmentCheckProb(btlUnit_Unit_1, 0x10000u) )
-        {
-          ExtraEffectToHP = (ExtraEffectToHP * 1.5);
-        }
-        if ( v10 == 2 )
-        {
-          sub_2588B4(btlUnit_Unit_1);
-          v74 = Function_GetBitflagState(8548);
-          v75 = (EffectToHPCalc * v71);
-          v76 = 1.5;
-          if ( v74 )
-          {
-            sub_2588B4(btlUnit_Unit_1);
-            v75 = ((EffectToHPCalc * v71) * 1.5);
-            v76 = 3.0;
-          }
-        }
-        else if ( v10 == 8 )
-        {
-          v77 = 1.5;
-          if ( !sub_2588B4(btlUnit_Unit_1) )
-            v77 = 1.75;
-          v78 = v77;
-          v79 = (v73 * v77);
-          v80 = Function_GetBitflagState(8548);
-          v75 = v73;
-          v76 = v78;
-          if ( v80 )
-          {
-            sub_2588B4(btlUnit_Unit_1);
-            v75 = v79;
-            v76 = 3.0;
-          }
-        }
-        else
-        {
-          v75 = EffectToHPCalc;
-          v76 = v71;
-          if ( v10 == 4 )
-          {
-            v81 = Function_GetBitflagState(8548);
-            v75 = EffectToHPCalc;
-            v76 = v71;
-            if ( v81 )
-            {
-              sub_2588B4(btlUnit_Unit_1);
-              v75 = (EffectToHPCalc * v71);
-              v76 = 3.0;
-            }
-          }
-        }
-        v82 = (v75 * v76);
-        if ( sub_25963C(btlUnit_Unit_2) )
-          v20 = (v20 * 0.40000001);
-        if ( Function_AilmentCheckProb(btlUnit_Unit_2, 0x100000u) )
-          ExtraEffectToHP = (ExtraEffectToHP * 1.25);
-        if ( SkillData->unsigned28 > 15u )
-        {
-          if ( SkillData->unsigned28 <= 16u )
-          {
-            EffectToHPCalc = v82;
-            if ( (a7 & 0x40) != 0 )
-            {
-              v83 = sub_25893C(btlUnit_Unit_1);
-              EffectToHPCalc = v82;
-              if ( v83 != sub_25893C(btlUnit_Unit_2) )
-                EffectToHPCalc = (v82 * 1.5);
-            }
-          }
-          else
-          {
-            EffectToHPCalc = v82;
-            if ( SkillData->unsigned28 <= 0x11u )
-            {
-              EffectToHPCalc = v82;
-              if ( (a7 & 0x400) != 0 )
-              {
-                v84 = sub_25893C(btlUnit_Unit_1);
-                EffectToHPCalc = v82;
-                if ( v84 != sub_25893C(btlUnit_Unit_2) )
-                  EffectToHPCalc = (v82 * 1.5);
-              }
-            }
-          }
-        }
-        else
-        {
-          EffectToHPCalc = v82;
-          if ( SkillData->unsigned28 == 3 )
-          {
-            EffectToHPCalc = v82;
-            if ( Function_AilmentCheckProb(btlUnit_Unit_2, 0x100000u) )
-              EffectToHPCalc = (v82 * 2.0);
-          }
-        }
-        if ( Function_GetBitflagState(8303) )
-        {
-          v85 = 1.0;
-          if ( (sub_24BF5C(205) * 0.25) < 1.0 )
-            v85 = (sub_24BF5C(205) * 0.25);
-          v86 = v85;
-          v87 = (1.0 - v85);
-          v88 = (v86 + 1.0);
-          if ( Function_GetBitflagState(8298) || Function_GetBitflagState(8301) )
-          {
-            if ( sub_2588B4(btlUnit_Unit_2) )
-            {
-              v91 = Function_GetBitflagState(8301);
-              v90 = v88;
-              if ( v91 )
-                v90 = v87;
-            }
-            else
-            {
-              v89 = Function_GetBitflagState(8298);
-              v90 = v88;
-              if ( v89 )
-                v90 = v87;
-            }
-            v92 = (v20 * v90);
-            v20 = 0.0;
-            if ( v92 > 0.0 )
-              v20 = v92;
-          }
-          if ( Function_GetBitflagState(8297) || Function_GetBitflagState(8300) )
-          {
-            if ( sub_2588B4(btlUnit_Unit_2) )
-            {
-              if ( Function_GetBitflagState(8300) )
-                v87 = v88;
-            }
-            else if ( Function_GetBitflagState(8297) )
-            {
-              v87 = v88;
-            }
-            v93 = (EffectToHPCalc * v87);
-            EffectToHPCalc = 0.0;
-            if ( v93 > 0.0 )
-              EffectToHPCalc = v93;
-          }
-        }
-        v94 = sub_24BF5C(220);
-        if ( v94 > 0 )
-        {
-          v95 = 2;
-          if ( v94 - 1 < 2 )
-            v95 = v94 - 1;
-          EffectToHPCalc = (EffectToHPCalc * ((v95 * 0.25) + 1.5));
-        }
-        if ( sub_2588B4(btlUnit_Unit_2) )
-        {
-
-          TotalDmg = ((((TotalHPReduce * EffectToHPCalc) * v20) * ExtraEffectToHP) * EffectToHP);
-          if ( v10 == 16 )
-          {
-            TotalHPReduce = 99999LL;
-          }
-          else
-          {
-            TotalDmgCopy = 99999;
-            if ( TotalDmg <= 99999 )
-            {
-              if ( TotalDmg < 1 )
-                TotalDmg = 1;
-              TotalDmgCopy = TotalDmg;
-            }
-            TotalHPReduce = (TotalDmgCopy * sub_26AE14(0xBu) + 95 * TotalDmgCopy) / 100;
-            if ( TotalHPReduce <= 0 )
-              TotalHPReduce = 1LL;
-          }
-          goto LABEL_506;
-        }
-        if ( !ElementID )
-        {
-          if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 79) )
-            EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-          if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 80) )
-            EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-          if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 81) )
-            EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-        }
-        if ( ElementID > 5 )
-        {
-          if ( ElementID <= 7 || ElementID <= 9 )
-            goto LABEL_388;
-        }
-        else if ( ElementID > 1 )
-        {
-LABEL_388:
-          if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 106) )
-            EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-          if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 107) )
-            EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-          if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 108) )
-            EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-          goto LABEL_394;
-        }
-LABEL_394:
-        switch ( ElementID )
-        {
-          case 9:
-            v117 = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            v118 = v117;
-            if ( (_DWORD)v117 && (_DWORD)v117 != 0x2000 )
-            {
-              LOWORD(v119) = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(v118, v119) == 155 )
-                  EffectToHPCalc = (EffectToHPCalc * (1.0 - (Function_CalculateResistEffect(v118) / 100.0)));
-                v119 = v119 + 1;
-              }
-              while ( v119 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 103) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 104) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 105) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-          case 8:
-            v114 = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            v115 = v114;
-            if ( (_DWORD)v114 && (_DWORD)v114 != 0x2000 )
-            {
-              LOWORD(v116) = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(v115, v116) == 154 )
-                  EffectToHPCalc = (EffectToHPCalc * (1.0 - (Function_CalculateResistEffect(v115) / 100.0)));
-                v116 = v116 + 1;
-              }
-              while ( v116 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 100) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 101) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 102) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-          case 7:
-            v108 = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            v109 = v108;
-            if ( (_DWORD)v108 && (_DWORD)v108 != 0x2000 )
-            {
-              LOWORD(v110) = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(v109, v110) == 152 )
-                  EffectToHPCalc = (EffectToHPCalc * (1.0 - (Function_CalculateResistEffect(v109) / 100.0)));
-                v110 = v110 + 1;
-              }
-              while ( v110 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 94) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 95) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 96) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-          case 6:
-            v111 = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            v112 = v111;
-            if ( (_DWORD)v111 && (_DWORD)v111 != 0x2000 )
-            {
-              LOWORD(v113) = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(v112, v113) == 153 )
-                  EffectToHPCalc = (EffectToHPCalc * (1.0 - (Function_CalculateResistEffect(v112) / 100.0)));
-                v113 = v113 + 1;
-              }
-              while ( v113 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 97) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 98) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 99) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-          case 5:
-            v105 = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            v106 = v105;
-            if ( v105 && v105 != 0x2000 )
-            {
-              v107 = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(v106, v107) == 146 )
-                  EffectToHPCalc = (EffectToHPCalc * (1.0 - (Function_CalculateResistEffect(v106) / 100.0)));
-                v107 = v107 + 1;
-              }
-              while ( v107 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 91) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 92) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 93) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-          case 4:
-            v102 = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            v103 = v102;
-            if ( (_DWORD)v102 && (_DWORD)v102 != 0x2000 )
-            {
-              LOWORD(v104) = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(v103, v104) == 147 )
-                  EffectToHPCalc = (EffectToHPCalc * (1.0 - (Function_CalculateResistEffect(v103) / 100.0)));
-                v104 = v104 + 1;
-              }
-              while ( v104 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 88) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 89) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 90) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-          case 3:
-            v99 = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            v100 = v99;
-            if ( (_DWORD)v99 && (_DWORD)v99 != 0x2000 )
-            {
-              LOWORD(v101) = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(v100, v101) == 145 )
-                  EffectToHPCalc = (EffectToHPCalc
-                                         * (1.0
-                                                 - (Function_CalculateResistEffect(v100)
-                                                         / 100.0)));
-                v101 = (unsigned __int16)(v101 + 1);
-              }
-              while ( v101 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 85) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 86) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 87) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-          case 2:
-            FireRelatedAccID = Function_GetEquipActual(btlUnit_Unit_2, 2);
-            FireRelatedAccCopy = FireRelatedAccID;
-            if ( (_DWORD)FireRelatedAccID && (_DWORD)FireRelatedAccID != 0x2000 )
-            {
-              LOWORD(v98) = 0;
-              do
-              {
-                if ( Function_GetEquipmentEffect(FireRelatedAccCopy, v98) == 144 )
-                  EffectToHPCalc = (EffectToHPCalc
-                                         * (1.0
-                                                 - (Function_CalculateResistEffect(FireRelatedAccCopy)
-                                                         / 100.0)));
-                v98 = (unsigned __int16)(v98 + 1);
-              }
-              while ( v98 < 3 );
-            }
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 82) )
-              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 83) )
-              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
-            if ( Function_CheckAccessoryEffect(btlUnit_Unit_2, 84) )
-              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
-            break;
-        }
-        goto LABEL_498;
-      }
-      if ( BaseDamageOrMaxHit <= 13 )
-      {
-LABEL_50:
-        TotalHPReduce = HPReduceCopy;
-        if ( BaseDamageOrMaxHit == 13 )
-        {
-          if ( HPReduceCopy > CurrentHPSP )
-            HPReduceCopy = CurrentHPSP;
-          TotalHPReduce = HPReduceCopy;
-        }
-        goto FinalDamageCalc;
-      }
-    }
-    else
-    {
-      if ( BaseDamageOrMaxHit <= 9 )
-      {
-        if ( BaseDamageOrMaxHit <= 8 )
-        {
-          TotalHPReduce = CurrentHPSP * HPReduceCopy / 100;
-          if ( TotalHPReduce <= 0 && HPReduceCopy > 0 )
-            TotalHPReduce = 1LL;
-        }
-        else
-        {
-          TotalHPIncrease = (CurrentHPSP * (((0x51EB851FLL * CurrentHPSP * HPReduceCopy) >> 32) >> 31)) / 0x64;
-          if ( TotalHPIncrease < 1 )
-            TotalHPIncrease = 1LL;
-        }
-        goto FinalDamageCalc;
-      }
-      if ( BaseDamageOrMaxHit <= 10 )
-      {
-        v31 = ((0x51EB851FLL * HPSPBonus * HPReduceCopy) >> 32) >> 5;
-        TotalHPReduce = (v31 + (v31 >> 31));
-        if ( TotalHPReduce <= 0 && HPReduceCopy > 0 )
-          TotalHPReduce = 1LL;
-        goto FinalDamageCalc;
-      }
-      if ( BaseDamageOrMaxHit <= 11 )
-      {
-        v29 = ((0x51EB851FLL * HPSPBonus * HPReduceCopy) >> 32) >> 5;
-        TotalHPIncrease = (v29 + (v29 >> 31));
-        if ( TotalHPIncrease < 1 )
-          TotalHPIncrease = 1LL;
-        goto FinalDamageCalc;
-      }
-    }
-LABEL_60:
-    if ( SkillData->DamageStat > 1 )
-    {
-      if ( SkillData->DamageStat <= 2 )
-        TotalHPReduce = sub_25E5D8( 2, btlUnit_Unit_1, btlUnit_Unit_2, SkillId_v8, Bit01Copy);
-    }
-    else if ( SkillData->DamageStat )
-    {
-      if ( (a7 & 0x80) != 0 )
-      {
-        v32 = sub_25E5D8(12LL, btlUnit_Unit_1, btlUnit_Unit_2, SkillId_v8, Bit01Copy);
-      }
-      else if ( &SkillData->CasterEffect1 & 0x200) != 0 )
-      {
-        v32 = sub_25E5D8(11LL, btlUnit_Unit_1, btlUnit_Unit_2, SkillId_v8, Bit01Copy);
-      }
-      else
-      {
-        v32 = sub_25E5D8(1LL, btlUnit_Unit_1, btlUnit_Unit_2, SkillId_v8, Bit01Copy);
-      }
-      TotalHPReduce = v32;
-    }
-    if ( !((BaseDamageOrMaxHit > 13) | ((BaseDamageOrMaxHit > 11))
-      && TotalHPReduce > CurrentHPSP )
-    {
-      TotalHPReduce = CurrentHPSP;
-    }
-    if ( BaseDamageOrMaxHit == 14 && v14 > 1 )
-      TotalHPReduce = TotalHPReduce / v14;
-    if ( TotalHPReduce <= 0 )
-      TotalHPReduce = 1;
-    goto LABEL_85;
-  }
-  switch ( BaseDamageOrMaxHit )
-  {
-    case 7:
-      TotalHPIncrease = Function_Return50();
-      if ( TotalHPIncrease <= 0 )
-        TotalHPIncrease = 1;
-      goto LABEL_85;
-    case 6:
-      TotalHPReduce = 50;
-      goto LABEL_85;
-    case 5:
-      TotalHPIncrease = HPReduceCopy;
-      goto FinalDamageCalc;
-    case 4:
-      goto LABEL_50;
-  }
-  if ( BaseDamageOrMaxHit != 3 )
-  {
-    if ( BaseDamageOrMaxHit != 2 )
-    {
-      if ( BaseDamageOrMaxHit != 1 )
-        goto FinalDamageCalc;
-      goto LABEL_60;
-    }
-    if ( SkillData->DamageStat > 1 )
-    {
-      if ( SkillData->DamageStat <= 2 )
-      {
-        TotalHPIncrease = sub_25E5D8(
-                            3,
-                            btlUnit_Unit_1,
-                            btlUnit_Unit_2,
-                            SkillId_v8,
-                            Bit01Copy);
-      }
-    }
-    else if ( SkillData->DamageStat )
-    {
-      if ( &SkillData->CasterEffect1 & 0x200) != 0 )
-        v30 = sub_252980(SkillId_v8, btlUnit_Unit_1, btlUnit_Unit_2, Bit01Copy);
-      else
-        v30 = sub_25294C(SkillId_v8, btlUnit_Unit_1, btlUnit_Unit_2, Bit01Copy);
-      TotalHPIncrease = v30;
-      if ( TotalHPIncrease > 0 )
-        goto LABEL_85;
-      goto LABEL_47;
-    }
-    TotalHPIncrease = 1LL;
-    goto LABEL_85;
-  }
-  if ( CurrentHPSP > HPReduceCopy )
-    TotalHPReduce = CurrentHPSP - HPReduceCopy;
-
-  if ( ElementalAffinity == 0x400 && TotalHPReduce > 0 )
-  {
-    TotalHPIncrease = TotalHPReduce;
-    TotalHPReduce = 0;
-  }
-  if ( ElementalAffinity == 0x100 || ElementalAffinity == 4 || ElementalAffinity == 2 )
-  {
-    TotalHPIncrease = 0;
-    TotalHPReduce = 0;
-  }
-  if ( Bit01Copy == 1 && SkillData->ExtraSkillEffect == 21 && AilmentCheckProb(btlUnit_Unit_2, 0x80u) )
-  {
-    TotalHPIncrease = GetCountEquipHPBonus(btlUnit_Unit_2);
-    TotalHPReduce = 0;
-  }
-  result = TotalHPIncrease;
-  if ( TotalHPReduce > 0 )
-    result = -TotalHPReduce;
-  return result;
-*/
-}
-
 
 static void ParseSKILLTBLHook ( u64 param_1 ){
   memset( &NewSKILLTBL_Segment0, 0xFF, sizeof( NewSKILLTBL_Segment0 ) );
@@ -893,6 +114,679 @@ static u64* ReturnAddressOfSKILLTBL_Segment1Hook( u32 param_1 )
     
 }
 
+static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, ElementalType ElementID ){
+    u64 Resist = 0x10000032;
+    u64 Block = 0x1000064;
+    u64 Repel = 0x2000064;
+    u64 Drain =  0x4000064;
+    u64 Weak = 0x800007d;
+    u64 Neutral = 0x140032; //Made-up tail value
+
+    u64 Resistance = SHK_CALL_HOOK( ResistancePassiveCheck, btlUnit, ElementID ); // Have some initialization I don't really understand
+
+    bool pass = false;
+    
+    if (ElementID >= ET_Physical) {
+        if ( CheckHasSkill ( btlUnit, 1000 ) ) {
+            Resistance = Resistance | Repel;
+            pass = true;
+        }
+    }
+
+    if (ElementID == ET_Gun) {
+        if ( CheckHasSkill ( btlUnit, 1001 ) ) {
+            Resistance = Resistance | Resist;
+            pass = true;
+        }
+        if ( CheckHasSkill ( btlUnit, 1002 ) ) {
+            Resistance = Resistance | Block;
+            pass = true;
+        }
+        if ( CheckHasSkill ( btlUnit, 1003 ) ) {
+            Resistance = Resistance | Repel;
+            pass = true;
+        }
+        if ( CheckHasSkill ( btlUnit, 1004 ) ) {
+            Resistance = Resistance | Drain;
+            pass = true;
+        }
+    }
+
+    if ( !pass ){
+        Resistance = SHK_CALL_HOOK( ResistancePassiveCheck, btlUnit, ElementID );
+    }
+
+    return Resistance;
+}
+
+static u64 SkillHealDamageModifierHook ( u16 SkillID_A1, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, u16 param_4, u16 ElementalAffinity, u16 param_6, u16 param_7, u8 SkillMode_1_2 )
+{
+  bool Pass = false;
+  u64 Result;
+
+  double EffectToHPCalc; // fp31
+  u64 TotalHPIncrease; // r25
+  ActiveSkillData* SkillData; // r26
+  u64 TotalHPReduce; // r24
+  double SomeKindOfMultiplier; // fp30
+  double ExtraEffectToHP; // fp29
+  double EffectToHP; // fp28
+  int SPEffectOrDamageHealingType; // r23
+  u16 BaseDamage;
+  u16 DamageHealingType; // r17
+  u64 CurrentHPSP; // r18
+  u16 HPSPBonus; // r3
+  u64 HPSPReduceBase; // r4
+  u16 Unknown; // r17
+  int v29; // r3
+  u64 v30; // r3
+  int v31; // r3
+  u64 v32; // r3
+  ElementalType ElementID; // r18
+  int v34; // r31
+  int v35; // r3
+  double CurseDmgMul; // fp23
+  u64 CurseAccID; // r31
+  int v68; // r23
+  double v70; // fp21
+  double v71; // fp23
+  double v72; // fp21
+  double v73; // fp21
+  bool v74; // r3
+  double v75; // fp2
+  double v76; // fp3
+  double v77; // fp31
+  double v78; // fp23
+  double v79; // fp31
+  bool v80; // r3
+  bool v81; // r3
+  double v82; // fp23
+  int v83; // r31
+  int v84; // r31
+  double v85; // fp27
+  double v86; // fp25
+  double v87; // fp27
+  double v88; // fp25
+  bool v89; // r3
+  double v90; // fp2
+  bool v91; // r3
+  double v92; // fp2
+  double v93; // fp2
+  int v94; // r3
+  int v95; // r4
+  u64 v117; // r3
+  int v119; // r23
+  int TotalDmg; // r4
+  int TotalDmgCopy; // r24
+  int v122; // r3
+  int v123; // r4
+  int v124; // r3
+  int TotalHealing; // r25
+  int TotalHealingCalc; // r4
+
+  EffectToHPCalc = 1.0;
+  TotalHPIncrease = 0;
+  SkillData = (ActiveSkillData*)ReturnAddressOfSKILLTBL_Segment1Hook(SkillID_A1);
+  TotalHPReduce = 0;
+  SomeKindOfMultiplier = 1.0;
+  ExtraEffectToHP = 1.0;
+  EffectToHP = 1.0;
+  if ( SkillMode_1_2 == 2 ) // SP related
+  {
+    SPEffectOrDamageHealingType = SkillData->SPEffect;
+    Unknown = *(&SkillData->Field1B + 1);
+    CurrentHPSP = btlUnit_2->currentSP;
+    HPSPBonus = GetCountEquipSPBonus(btlUnit_2);
+    HPSPReduceBase = Unknown;
+  }
+  else if ( SkillMode_1_2 == 1 ) // HP related
+  {
+    SPEffectOrDamageHealingType = SkillData->DamageHealingType;
+    BaseDamage = SkillData->BaseDamage;
+    CurrentHPSP = btlUnit_2->currentHP;
+    HPSPBonus = GetCountEquipHPBonus(btlUnit_2);
+    HPSPReduceBase = BaseDamage;
+  }
+
+  if ( SPEffectOrDamageHealingType > 7 )
+  {
+    if ( SPEffectOrDamageHealingType > 12 )
+    {
+      if ( SPEffectOrDamageHealingType > 14 )
+      {
+         if ( SPEffectOrDamageHealingType <= 15 )
+        {
+          TotalHPIncrease = FUN_26AE14(HPSPReduceBase);
+          goto FinalDamageCalc;
+        }
+        if ( SPEffectOrDamageHealingType > 16 ){
+          goto FinalDamageCalc;
+        }
+        
+        TotalHPReduce = FUN_25E5D8(9, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+        if ( TotalHPReduce <= 0 )
+          TotalHPReduce = 1;
+LABEL_85:
+        if ( TotalHPReduce <= 0 || (param_7 & 1) != 0 )
+        {
+LABEL_506:
+          if ( TotalHPIncrease > 0 && (param_7 & 1) == 0 )
+          {
+            if ( CheckHasSkill(btlUnit_1, 829) )
+              EffectToHP = (EffectToHP * 1.5);
+            v122 = ActualGetCount(220);
+            if ( v122 > 0 )
+            {
+              v123 = v122 - 1;
+              v124 = 2;
+              if ( v123 < 2 )
+                v124 = v123;
+              EffectToHPCalc = (EffectToHPCalc * ((v124 * 0.25) + 1.5));
+            }
+            TotalHealing = 99999;
+            TotalHealingCalc = ((((TotalHPIncrease * EffectToHPCalc) * SomeKindOfMultiplier) * ExtraEffectToHP) * EffectToHP);
+            if ( TotalHealingCalc <= 99999 )
+            {
+              if ( TotalHealingCalc < 1 )
+                TotalHealingCalc = 1;
+              TotalHealing = TotalHealingCalc;
+            }
+            TotalHPIncrease = (TotalHealing * FUN_26AE14(0xBu) + 95 * TotalHealing) / 100;
+            if ( TotalHPIncrease <= 0 )
+              TotalHPIncrease = 1;
+          }
+          goto FinalDamageCalc;
+        }
+        ElementID = GetSkillData(btlUnit_1, SkillID_A1);
+        if ( SkillData->DamageStat == 2 ) // Magic stat
+        {
+          if ( SPEffectOrDamageHealingType != 16 )
+          {
+            EffectToHPCalc = FUN_250A10(btlUnit_1, 0);
+            if ( FUN_2595C4(btlUnit_1, 23) > 0 ) // Concentrate buff
+              EffectToHPCalc = (EffectToHPCalc * 2.5);
+          }
+          SomeKindOfMultiplier = FUN_250A10(btlUnit_2, 2);
+          if ( SPEffectOrDamageHealingType != 16 )
+            FUN_25A328(btlUnit_1, 23);
+        }
+        else if ( SkillData->DamageStat == 1 ) // Strength stat
+        {
+          if ( SPEffectOrDamageHealingType != 16 )
+          {
+            EffectToHPCalc = FUN_250A10(btlUnit_1, 0);
+            if ( FUN_2595C4(btlUnit_1, 22) > 0 ) // Charge buff
+              EffectToHPCalc = (EffectToHPCalc * 2.5);
+          }
+          SomeKindOfMultiplier = FUN_250A10(btlUnit_2, 2);
+          if ( SPEffectOrDamageHealingType != 16 )
+            FUN_25A328(btlUnit_1, 22);
+        }
+        if ( SPEffectOrDamageHealingType == 16 )
+        {
+          v34 = 0;
+          while ( 1 )
+          {
+            if ( GetUnitIDFromPartySlot(v34) )
+            {
+              v35 = GetBtlPlayerUnitFromID(v34);
+              if ( unitGetEquipment(v35, 2) == 0x20F7 ) // Midnight Bandana?
+                break;
+            }
+            if ( ++v34 >= 9 )
+              goto ElementalDamageCalc;
+          }
+          EffectToHPCalc = (EffectToHPCalc * 1.15);
+        }
+ElementalDamageCalc:
+        if ( ElementID >= ET_Physical )
+        {
+          if ( CheckHasSkill(btlUnit_1, 1005) ){
+            EffectToHP = 2.0;
+            Pass = true;
+          }
+          else{
+            EffectToHP = 1.0;
+          }
+        }
+
+        v70 = 0.5;
+        if ( CheckHasSkill(btlUnit_2, 858) )
+          EffectToHP = (EffectToHP * 0.5);
+        if ( !FUN_002588b4(btlUnit_2) && CheckAccessoryEffect(btlUnit_2, 186) )
+          EffectToHP = (EffectToHP * 0.5);
+        if ( (*&btlUnit_1->Flags & 0x20000000) != 0 )
+          EffectToHPCalc = (EffectToHPCalc * 0.1);
+        v71 = 1.0;
+        if ( GetBitflagState(0x2160) )
+        {
+          if ( !FUN_002588b4(btlUnit_1) )
+            v70 = 2.0;
+          v71 = v70;
+        }
+        else if ( GetBitflagState(0x2161) )
+        {
+          if ( !FUN_002588b4(btlUnit_1) )
+            v70 = 1.25;
+          v71 = v70;
+        }
+        else if ( GetBitflagState(0x2162) )
+        {
+          v71 = 1.0;
+          if ( !FUN_002588b4(btlUnit_1) )
+            v71 = 1.25;
+        }
+        else
+        {
+          v72 = 1.6;
+          if ( GetBitflagState(0x2163) )
+          {
+            if ( GetBitflagState(0x10CE) )
+            {
+              if ( !FUN_002588b4(btlUnit_1) )
+                v72 = 0.8;
+            }
+            else
+            {
+              v72 = 1.3;
+              if ( !FUN_002588b4(btlUnit_1) )
+                v72 = 0.8;
+            }
+            v71 = v72;
+          }
+          else if ( GetBitflagState(0x2164) )
+          {
+            if ( !FUN_002588b4(btlUnit_1) )
+              v72 = 0.8;
+            v71 = v72;
+          }
+        }
+        v73 = (EffectToHPCalc * v71);
+        if ( (*&btlUnit_1->Flags & 0x800000) != 0 )
+          FUN_002588b4(btlUnit_1);
+        if ( (*&btlUnit_2->Flags & 0x800000) != 0 )
+          FUN_002588b4(btlUnit_2);
+        if ( !AilmentCheck(btlUnit_2, 0x100) )
+        {
+          if ( AilmentCheck(btlUnit_2, 0x200) )
+          {
+            ExtraEffectToHP = (1.0 * 2.0);
+          }
+          else if ( AilmentCheck(btlUnit_2, 0x1000) )
+          {
+            ExtraEffectToHP = (1.0 * 1.5);
+          }
+          else if ( AilmentCheck(btlUnit_2, 0x10000) )
+          {
+            ExtraEffectToHP = (1.0 * 1.75);
+          }
+          else if ( AilmentCheck(btlUnit_2, 0x400000) )
+          {
+            ExtraEffectToHP = (1.0 * 2.0);
+          }
+        }
+        if ( AilmentCheck(btlUnit_1, 0x80u) )
+        {
+          ExtraEffectToHP = (ExtraEffectToHP * 0.35);
+        }
+        else if ( AilmentCheck(btlUnit_1, 0x200) )
+        {
+          ExtraEffectToHP = (ExtraEffectToHP * 2.0);
+          if ( CheckAccessoryEffect(btlUnit_1, 156) )
+            ExtraEffectToHP = (ExtraEffectToHP * 1.5);
+        }
+        else if ( AilmentCheck(btlUnit_1, 0x1000) )
+        {
+          ExtraEffectToHP = (ExtraEffectToHP * 1.75);
+        }
+        else if ( AilmentCheck(btlUnit_1, 0x10000) )
+        {
+          ExtraEffectToHP = (ExtraEffectToHP * 1.5);
+        }
+        if ( param_6 == 2 )
+        {
+          FUN_002588b4(btlUnit_1);
+          v74 = GetBitflagState(8548);
+          v75 = (EffectToHPCalc * v71);
+          v76 = 1.5;
+          if ( v74 )
+          {
+            FUN_002588b4(btlUnit_1);
+            v75 = ((EffectToHPCalc * v71) * 1.5);
+            v76 = 3.0;
+          }
+        }
+        else if ( param_6 == 8 )
+        {
+          v77 = 1.5;
+          if ( !FUN_002588b4(btlUnit_1) )
+            v77 = 1.75;
+          v78 = v77;
+          v79 = (v73 * v77);
+          v80 = GetBitflagState(8548);
+          v75 = v73;
+          v76 = v78;
+          if ( v80 )
+          {
+            FUN_002588b4(btlUnit_1);
+            v75 = v79;
+            v76 = 3.0;
+          }
+        }
+        else
+        {
+          v75 = EffectToHPCalc;
+          v76 = v71;
+          if ( param_6 == 4 )
+          {
+            v81 = GetBitflagState(8548);
+            v75 = EffectToHPCalc;
+            v76 = v71;
+            if ( v81 )
+            {
+              FUN_002588b4(btlUnit_1);
+              v75 = (EffectToHPCalc * v71);
+              v76 = 3.0;
+            }
+          }
+        }
+        v82 = (v75 * v76);
+        if ( FUN_25963C(btlUnit_2) )
+          SomeKindOfMultiplier = (SomeKindOfMultiplier * 0.4);
+        if ( AilmentCheck(btlUnit_2, 0x100000) )
+          ExtraEffectToHP = (ExtraEffectToHP * 1.25);
+        if ( SkillData->ExtraSkillEffect > 15 )
+        {
+          if ( SkillData->ExtraSkillEffect <= 16 )
+          {
+            EffectToHPCalc = v82;
+            if ( (param_7 & 0x40) != 0 )
+            {
+              v83 = FUN_25893C(btlUnit_1);
+              EffectToHPCalc = v82;
+              if ( v83 != FUN_25893C(btlUnit_2) )
+                EffectToHPCalc = (v82 * 1.5);
+            }
+          }
+          else
+          {
+            EffectToHPCalc = v82;
+            if ( SkillData->ExtraSkillEffect <= 0x11 )
+            {
+              EffectToHPCalc = v82;
+              if ( (param_7 & 0x400) != 0 )
+              {
+                v84 = FUN_25893C(btlUnit_1);
+                EffectToHPCalc = v82;
+                if ( v84 != FUN_25893C(btlUnit_2) )
+                  EffectToHPCalc = (v82 * 1.5);
+              }
+            }
+          }
+        }
+        else
+        {
+          EffectToHPCalc = v82;
+          if ( SkillData->ExtraSkillEffect == 3 )
+          {
+            EffectToHPCalc = v82;
+            if ( AilmentCheck(btlUnit_2, 0x100000) )
+              EffectToHPCalc = (v82 * 2.0);
+          }
+        }
+        if ( GetBitflagState(8303) )
+        {
+          v85 = 1.0;
+          if ( (ActualGetCount(205) * 0.25) < 1.0 )
+            v85 = (ActualGetCount(205) * 0.25);
+          v86 = v85;
+          v87 = (1.0 - v85);
+          v88 = (v86 + 1.0);
+          if ( GetBitflagState(8298) || GetBitflagState(8301) )
+          {
+            if ( FUN_002588b4(btlUnit_2) )
+            {
+              v91 = GetBitflagState(8301);
+              v90 = v88;
+              if ( v91 )
+                v90 = v87;
+            }
+            else
+            {
+              v89 = GetBitflagState(8298);
+              v90 = v88;
+              if ( v89 )
+                v90 = v87;
+            }
+            v92 = (SomeKindOfMultiplier * v90);
+            SomeKindOfMultiplier = 0.0;
+            if ( v92 > 0.0 )
+              SomeKindOfMultiplier = v92;
+          }
+          if ( GetBitflagState(8297) || GetBitflagState(8300) )
+          {
+            if ( FUN_002588b4(btlUnit_2) )
+            {
+              if ( GetBitflagState(8300) )
+                v87 = v88;
+            }
+            else if ( GetBitflagState(8297) )
+            {
+              v87 = v88;
+            }
+            v93 = (EffectToHPCalc * v87);
+            EffectToHPCalc = 0.0;
+            if ( v93 > 0.0 )
+              EffectToHPCalc = v93;
+          }
+        }
+        v94 = ActualGetCount(220);
+        if ( v94 > 0 )
+        {
+          v95 = 2;
+          if ( v94 - 1 < 2 )
+            v95 = v94 - 1;
+          EffectToHPCalc = (EffectToHPCalc * ((v95 * 0.25) + 1.5));
+        }
+        if ( FUN_002588b4(btlUnit_2) )
+        {
+LABEL_498:
+          TotalDmg = ((((TotalHPReduce * EffectToHPCalc) * SomeKindOfMultiplier) * ExtraEffectToHP) * EffectToHP);
+          if ( param_6 == 16 )
+          {
+            TotalHPReduce = 99999;
+          }
+          else
+          {
+            TotalDmgCopy = 99999;
+            if ( TotalDmg <= 99999 )
+            {
+              if ( TotalDmg < 1 )
+                TotalDmg = 1;
+              TotalDmgCopy = TotalDmg;
+            }
+            TotalHPReduce = (TotalDmgCopy * FUN_26AE14(0xBu) + 95 * TotalDmgCopy) / 100;
+            if ( TotalHPReduce <= 0 )
+              TotalHPReduce = 1;
+          }
+          goto LABEL_506;
+        }
+        if ( ElementID > 1 )
+        {
+LABEL_388:
+          if ( CheckAccessoryEffect(btlUnit_2, 106) )
+            EffectToHPCalc = (EffectToHPCalc * 0.89999998);
+          if ( CheckAccessoryEffect(btlUnit_2, 107) )
+            EffectToHPCalc = (EffectToHPCalc * 0.80000001);
+          if ( CheckAccessoryEffect(btlUnit_2, 108) )
+            EffectToHPCalc = (EffectToHPCalc * 0.69999999);
+          goto LABEL_394;
+        }
+LABEL_394:
+        switch ( ElementID )
+        {
+          case 9:
+            v117 = unitGetEquipment(btlUnit_2, 2);
+            if ( v117 && v117 != 0x2000 )
+            {
+              v119 = 0;
+              do
+              {
+                if ( GetEquipmentEffect(v117, v119) == 155 )
+                  EffectToHPCalc = (EffectToHPCalc * (1.0 - (CalculateResistEffect(v117) / 100.0)));
+                v119 = (v119 + 1);
+              }
+              while ( v119 < 3 );
+            }
+            if ( CheckAccessoryEffect(btlUnit_2, 103) )
+              EffectToHPCalc = (EffectToHPCalc * 0.89999998);
+            if ( CheckAccessoryEffect(btlUnit_2, 104) )
+              EffectToHPCalc = (EffectToHPCalc * 0.80000001);
+            if ( CheckAccessoryEffect(btlUnit_2, 105) )
+              EffectToHPCalc = (EffectToHPCalc * 0.69999999);
+            break;
+        }
+        goto LABEL_498;
+      }
+      if ( SPEffectOrDamageHealingType <= 13 )
+      {
+LABEL_50:
+        TotalHPReduce = HPSPReduceBase;
+        if ( SPEffectOrDamageHealingType == 13 )
+        {
+          if ( HPSPReduceBase > CurrentHPSP )
+            HPSPReduceBase = CurrentHPSP;
+          TotalHPReduce = HPSPReduceBase;
+        }
+        goto FinalDamageCalc;
+      }
+    }
+    else
+    {
+      if ( SPEffectOrDamageHealingType <= 9 )
+      {
+        if ( SPEffectOrDamageHealingType <= 8 )
+        {
+          TotalHPReduce = CurrentHPSP * HPSPReduceBase / 100;
+          if ( TotalHPReduce <= 0 && HPSPReduceBase > 0 )
+            TotalHPReduce = 1;
+        }
+        else
+        {
+          TotalHPIncrease = (CurrentHPSP * (((1374389535 * CurrentHPSP * HPSPReduceBase) >> 32) >> 31)) / 100;
+          if ( TotalHPIncrease < 1 )
+            TotalHPIncrease = 1;
+        }
+        goto FinalDamageCalc;
+      }
+      if ( SPEffectOrDamageHealingType <= 10 )
+      {
+        v31 = ((1374389535 * HPSPBonus * HPSPReduceBase) >> 32) >> 5;
+        TotalHPReduce = (v31 + (v31 >> 31));
+        if ( TotalHPReduce <= 0 && HPSPReduceBase > 0 )
+          TotalHPReduce = 1;
+        goto FinalDamageCalc;
+      }
+      if ( SPEffectOrDamageHealingType <= 11 )
+      {
+        v29 = ((0x51EB851F * HPSPBonus * HPSPReduceBase) >> 32) >> 5;
+        TotalHPIncrease = (v29 + (v29 >> 31));
+        if ( TotalHPIncrease < 1 )
+          TotalHPIncrease = 1;
+        goto FinalDamageCalc;
+      }
+    }
+LABEL_60:
+    if ( SkillData->DamageStat == 2 )
+      TotalHPReduce = FUN_25E5D8(2, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+    else if ( SkillData->DamageStat == 1 )
+    {
+      if ( (param_7 & 0x80) != 0 )
+      {
+        v32 = FUN_25E5D8(12, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+      }
+      else if ( (*&SkillData->CasterEffect1 & 0x200) != 0 )
+      {
+        v32 = FUN_25E5D8(11, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+      }
+      else
+      {
+        v32 = FUN_25E5D8(1, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+      }
+      TotalHPReduce = v32;
+    }
+    if ( !((SPEffectOrDamageHealingType > 13) | ~(SPEffectOrDamageHealingType > 11)) && TotalHPReduce > CurrentHPSP )
+      TotalHPReduce = CurrentHPSP;
+    if ( SPEffectOrDamageHealingType == 14 && param_4 > 1 )
+      TotalHPReduce = TotalHPReduce / param_4;
+    if ( TotalHPReduce <= 0 )
+      TotalHPReduce = 1;
+    goto LABEL_85;
+  }
+  if ( SPEffectOrDamageHealingType != 3 )
+  {
+    if ( SPEffectOrDamageHealingType != 2 )
+    {
+      if ( SPEffectOrDamageHealingType != 1 )
+        goto FinalDamageCalc;
+      goto LABEL_60;
+    }
+    if ( SkillData->DamageStat == 2 )
+    {
+      TotalHPIncrease = FUN_25E5D8(3, btlUnit_1, btlUnit_2, SkillID_A1, SkillMode_1_2);
+      goto LABEL_46;
+    }
+    else if ( SkillData->DamageStat == 1 )
+    {
+      if ( (*&SkillData->CasterEffect1 & 0x200) != 0 )
+        v30 = FUN_252980(SkillID_A1, btlUnit_1, btlUnit_2, SkillMode_1_2);
+      else
+        v30 = FUN_25294C(SkillID_A1, btlUnit_1, btlUnit_2, SkillMode_1_2);
+      TotalHPIncrease = v30;
+LABEL_46:
+      if ( TotalHPIncrease > 0 ){
+        goto LABEL_85;
+      }
+        
+      goto LABEL_47;
+    }
+LABEL_47:
+    TotalHPIncrease = 1;
+    goto LABEL_85;
+  }
+  if ( CurrentHPSP > HPSPReduceBase )
+    TotalHPReduce = CurrentHPSP - HPSPReduceBase;
+  goto FinalDamageCalc;
+
+FinalDamageCalc:
+  if (Pass){
+    if ( ElementalAffinity == 0x400 && TotalHPReduce > 0 )
+    {
+      TotalHPIncrease = TotalHPReduce;
+      TotalHPReduce = 0;
+    }
+    if ( ElementalAffinity == 0x100 || ElementalAffinity == 4 || ElementalAffinity == 2 )
+    {
+      TotalHPIncrease = 0;
+      TotalHPReduce = 0;
+    }
+    if ( SkillMode_1_2 == 1 && SkillData->ExtraSkillEffect == 21 && AilmentCheck(btlUnit_2, 0x80u) )
+    {
+      TotalHPIncrease = GetCountEquipHPBonus(btlUnit_2);
+      TotalHPReduce = 0;
+    }
+    Result = TotalHPIncrease;
+    if ( TotalHPReduce > 0 )
+      Result = -TotalHPReduce;
+    return Result;
+  }
+  
+  else {
+    Result = SHK_CALL_HOOK( SkillHealDamageModifier, SkillID_A1, btlUnit_1, btlUnit_2, param_4, ElementalAffinity, param_6, param_7, SkillMode_1_2 );
+    return Result;
+  }
+}
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
@@ -904,7 +798,7 @@ void scarltzInit( void ){
   SHK_BIND_HOOK( ParseSKILLTBL, ParseSKILLTBLHook );
   SHK_BIND_HOOK( ReturnAddressOfSKILLTBL_Segment0, ReturnAddressOfSKILLTBL_Segment0Hook );
   SHK_BIND_HOOK( ReturnAddressOfSKILLTBL_Segment1, ReturnAddressOfSKILLTBL_Segment1Hook );
-  //SHK_BIND_HOOK( FUN_00044400, FUN_00044400Hook );
+  SHK_BIND_HOOK( SkillHealDamageModifier, SkillHealDamageModifierHook );
 }
 
 void scarltzShutdown( void ){

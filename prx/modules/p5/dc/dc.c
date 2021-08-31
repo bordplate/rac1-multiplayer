@@ -1117,7 +1117,7 @@ static int FUN_00829ce8Hook( ActiveCombatUnitStruct* a1 )
 
   int numOfSkills = 0;
   int result = SHK_CALL_HOOK( FUN_00829ce8, a1 );
-  if ( skillID != 0 && accessoryID >= 255 && skillID < 800 )
+  if ( skillID != 0 && accessoryID >= 255 && skillID < 2000 )
   {
     //printf("Unit holding accessory ID %d granting skill ID %d\n", accessoryID, skillID );
     for ( int i = 0; i <= 8; i++ )
