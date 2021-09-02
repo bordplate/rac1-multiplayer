@@ -1122,7 +1122,7 @@ static int FUN_00829ce8Hook( ActiveCombatUnitStruct* a1 )
 
   int numOfSkills = 0;
   int result = SHK_CALL_HOOK( FUN_00829ce8, a1 );
-  if ( skillID != 0 && accessoryID >= 255 && skillID < 800 )
+  if ( skillID != 0 && accessoryID >= 255 && skillID < 2000 )
   {
     //printf("Unit holding accessory ID %d granting skill ID %d\n", accessoryID, skillID );
     for ( int i = 0; i <= 8; i++ )
@@ -1160,7 +1160,7 @@ static int FUN_00829ce8Hook( ActiveCombatUnitStruct* a1 )
 
 static resrcNPCTblEntry* GetNPCTBLEntry( int a1 )
 {
-  //printf("NPC TBL NPC ID %d loaded\n", a1 );
+  printf("NPC TBL NPC ID %d loaded\n", a1 );
   //printf("NPC TBL Entry %d loaded\n",  ( (int)SHK_CALL_HOOK( FUN_00043fac, a1 ) - (int)SHK_CALL_HOOK( FUN_00043fac, 0 ) ) / 0x1C );
   return SHK_CALL_HOOK( FUN_00043fac, a1 );
 }

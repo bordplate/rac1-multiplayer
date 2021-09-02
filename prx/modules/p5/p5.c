@@ -474,6 +474,98 @@ ItemTBL_RangedWeapon* GetRangedWeaponTBLEntry( u16 WeaponID )
     SHK_FUNCTION_CALL_1(0x26393c , ItemTBL_RangedWeapon*, u16, WeaponID);
 }
 
+bool CheckHasSkill ( btlUnit_Unit* btlUnit, int SkillID ){
+    SHK_FUNCTION_CALL_2( 0x259148, bool, btlUnit_Unit*, btlUnit, int, SkillID );
+}
+
+u32 FUN_000442cc ( int param_1, int param_2 ){
+    SHK_FUNCTION_CALL_2( 0x442cc, u32, int, param_1, int, param_2 );
+}
+
+void FUN_0024c018 ( u64 param_1, char param_2 ){
+    SHK_FUNCTION_CALL_2( 0x24c018, void, u64, param_1, char, param_2 );
+}
+
+double FUN_00250a10( btlUnit_Unit* btlUnit, u32 param_2, undefined8 param_3 ){
+    SHK_FUNCTION_CALL_3( 0x250a10, double, btlUnit_Unit*, btlUnit, u32, param_2, undefined8, param_3 );
+}
+
+bool AilmentCheck(btlUnit_Unit* btlUnit, u32 param_2){
+    SHK_FUNCTION_CALL_2( 0x2590d8, bool, btlUnit_Unit*, btlUnit, u32, param_2 );
+}
+
+int GetCountEquipHPBonus(btlUnit_Unit* param_1){
+    SHK_FUNCTION_CALL_1( 0x258d1c, int, btlUnit_Unit*, param_1 );
+}
+
+int GetCountEquipSPBonus(btlUnit_Unit* param_1){
+    SHK_FUNCTION_CALL_1( 0x258e48, int, btlUnit_Unit*, param_1 );
+}
+
+bool CheckAccessoryEffect(btlUnit_Unit* btlUnit, int EffectID){
+    SHK_FUNCTION_CALL_2( 0x2594b4, bool, btlUnit_Unit*, btlUnit, int, EffectID );
+}
+
+int FUN_26AE14(u32 param_1){
+    SHK_FUNCTION_CALL_1( 0x26ae14, int, u32, param_1 );
+}
+
+undefined4 FUN_25E5D8(int param_1, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, undefined2 param_4, undefined4 param_5){
+    SHK_FUNCTION_CALL_5( 0x25e5d8, undefined4, int, param_1, btlUnit_Unit*, btlUnit_1, btlUnit_Unit*, btlUnit_2, undefined2, param_4, undefined4, param_5 );
+}
+
+short FUN_25893C(btlUnit_Unit* param_1){
+    SHK_FUNCTION_CALL_1( 0x25893C, short, btlUnit_Unit*, param_1 );
+}
+
+u64 GetSkillData(btlUnit_Unit* btlUnit, u32 SkillId){
+    SHK_FUNCTION_CALL_2( 0x25007c, u64, btlUnit_Unit*, btlUnit, u32, SkillId );
+}
+
+u8 FUN_2588B4(btlUnit_Unit *param_1){
+    SHK_FUNCTION_CALL_1( 0x2588B4, u8, btlUnit_Unit*, param_1 );
+}
+
+double FUN_250A10(btlUnit_Unit* param_1, u32 param_2){
+    SHK_FUNCTION_CALL_2( 0x250A10, double, btlUnit_Unit*, param_1, u32, param_2 );
+}
+
+bool GetEquipmentEffect(u64 AccessoryID, int param_2){
+    SHK_FUNCTION_CALL_2( 0x260d18, bool, u64, AccessoryID, int, param_2 );
+}
+
+double CalculateResistEffect(int AccId){
+    SHK_FUNCTION_CALL_1( 0x260dc4, double, int, AccId );
+}
+
+u64 FUN_2595C4(btlUnit_Unit* btlUnit,u32 param_2){
+    SHK_FUNCTION_CALL_2( 0x2595C4, u64, btlUnit_Unit*, btlUnit, u32, param_2 );
+}
+
+void FUN_25A328(btlUnit_Unit* param_1,u64 buff){
+    SHK_FUNCTION_CALL_2( 0x25A328, void, btlUnit_Unit*, param_1, u64, buff );
+}
+
+bool FUN_25963C(btlUnit_Unit* param_1){
+    SHK_FUNCTION_CALL_1( 0x25963C, bool, btlUnit_Unit*, param_1 );
+}
+
+u64 FUN_252980(u16 SkillId, btlUnit_Unit* btlUnit_1,btlUnit_Unit *btlUnit_2,u8 mode){
+    SHK_FUNCTION_CALL_4( 0x252980, u64, u16, SkillId, btlUnit_Unit*, btlUnit_1, btlUnit_Unit*, btlUnit_2, u8, mode );
+}
+
+u64 FUN_25294C(u16 SkillId,btlUnit_Unit *btlUnit_1,btlUnit_Unit *btlUnit_2,u8 mode){
+    SHK_FUNCTION_CALL_4( 0x25294C, u64, u16, SkillId, btlUnit_Unit*, btlUnit_1, btlUnit_Unit*, btlUnit_2, u8, mode );
+}
+
+u32 GetCurrentHP(btlUnit_Unit *param_1){
+    SHK_FUNCTION_CALL_1( 0x2589c0, u32, btlUnit_Unit*, param_1 );
+}
+
+u32 GetCurrentSP(btlUnit_Unit *param_1){
+    SHK_FUNCTION_CALL_1( 0x2589cc, u32, btlUnit_Unit*, param_1 );
+}
+
 int GetRandom( int MaxValue )
 {
   int v0; // r31

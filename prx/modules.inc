@@ -3,6 +3,7 @@
 #include "modules/p5/kasumi/kasumi.h"
 #include "modules/p5/p5e/p5e.h"
 #include "modules/p5/EXFLW/EXFLW.h"
+#include "modules/p5/scarltz/scarltz.h"
 
 static ModuleInfo sModules[] =
 {
@@ -16,5 +17,6 @@ static ModuleInfo sModules[] =
     {   "dc",       "dc Module",             "enableDCModule",     dcInit,          dcShutdown,             { "EXFLW" } },  
     {   "p5e",      "P5 Enhanced Module",    "enableP5EModule",    p5eInit,         p5eShutdown,            { "EXFLW" } },  
     {   "kasumi",   "Kasumi Module",         "enableKasumiModule", KasumiInit,      KasumiShutdown,            { "EXFLW" } },  
+    {   "scarltz",  "Scarltz Module",    "enableScarltzModule", scarltzInit,          scarltzShutdown,            { "EXFLW" } },
 #endif
 };

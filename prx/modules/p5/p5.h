@@ -1806,6 +1806,31 @@ fieldworkdataStruct* GetFieldWorkData( void );
 u16 GetTotalDays( void );
 int isCharacterAssistExpressonValid( short a1, short a2 );
 int FUN_003b9110( int a1, int a2, int a3, int a4, int a5 );
+bool CheckHasSkill ( btlUnit_Unit* btlUnit, int SkillID );
+bool GetAccessoryEffect ( btlUnit_Unit* btlUnit, int EffectID );
+bool CheckAccessoryEffect ( btlUnit_Unit* btlUnit, int EffectID );
+u32 FUN_000442cc ( int param_1,int param_2 );
+void FUN_0024c018 ( u64 param_1, char param_2 );
+double FUN_00250a10( btlUnit_Unit* btlUnit, u32 param_2, undefined8 param_3 );
+bool AilmentCheck(btlUnit_Unit* btlUnit, u32 param_2);
+int GetCountEquipHPBonus(btlUnit_Unit* param_1);
+int GetCountEquipSPBonus(btlUnit_Unit* param_1);
+bool CheckAccessoryEffect(btlUnit_Unit *btlUnit,int EffectID);
+int FUN_26AE14(u32 param_1);
+undefined4 FUN_25E5D8(int param_1, btlUnit_Unit* btlUnit_1, btlUnit_Unit* btlUnit_2, undefined2 param_4, undefined4 param_5);
+u8 FUN_2588B4(btlUnit_Unit *param_1);
+short FUN_25893C(btlUnit_Unit *param_1);
+u64 GetSkillData(btlUnit_Unit* btlUnit, u32 SkillId);
+double FUN_250A10(btlUnit_Unit *param_1, u32 param_2);
+bool GetEquipmentEffect(u64 AccessoryID, int param_2);
+double CalculateResistEffect(int AccId);
+u64 FUN_2595C4(btlUnit_Unit *btlUnit,u32 param_2);
+void FUN_25A328(btlUnit_Unit *param_1,u64 buff);
+bool FUN_25963C(btlUnit_Unit *param_1);
+u64 FUN_252980(u16 SkillId,btlUnit_Unit *btlUnit_1,btlUnit_Unit *btlUnit_2,u8 mode);
+u64 FUN_25294C(u16 SkillId,btlUnit_Unit *btlUnit_1,btlUnit_Unit *btlUnit_2,u8 mode);
+u32 Function_GetCurrentHP(btlUnit_Unit *param_1);
+u32 Function_GetCurrentSP(btlUnit_Unit *param_1);
 
 /**
  * @brief Set priority of target CPK
