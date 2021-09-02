@@ -403,3 +403,7 @@ FUN_00af4434:
 FUN_0063acc8:
     addr: 0x63acc8
     replacedInstr: stdu r1, -0x80(r1)
+
+FUN_0094c048:
+    addr: 0x94c048
+    replacedInstr: stdu r1, -0x130(r1)

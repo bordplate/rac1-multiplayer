@@ -35,6 +35,47 @@ typedef struct
   u32 bgmId;
 } btlEquipBgmTableEntry;
 
+typedef struct GFDModelMaterial_Processed
+{
+  u32 field00;
+  u32 field04;
+  u32 field08;
+  u32 field0c;
+  u32 field10;
+  u32 field14;
+  u32 field18;
+  u32 field1c;
+  u32 field20;
+  u32 field24;
+  u32 field28;
+  u32 field2c;
+  u32 field30;
+  u32 field34;
+  u32 field38;
+  u32 field3c;
+  u32 field40;
+  u32 field44;
+  u32 field48;
+  u32 field4c;
+  u32 field50;
+  u32 field54;
+  u32 field58;
+  u32 field5c;
+  u32 field60;
+  u32 field64;
+  u32 field68;
+  u32 field6c;
+  u32 field70;
+  u32 field74;
+  u32 field78;
+  u32 field7c;
+  u32 field80;
+  char* MaterialName;
+  u32 field88;
+  u32 field8c;
+} GFDModelMaterial_Processed;
+
+
 btlEquipBgmTableEntry btlEquipBgmTable[20];
 
 int sVanillaBits[6];

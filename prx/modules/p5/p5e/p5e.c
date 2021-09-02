@@ -146,7 +146,7 @@ static int GenericCharacterModelLoaderHook( char* result, u64 modelType, u64 cha
         modelSubID = titleScreenBGM;
       }
     }
-    if ( characterID == 1 )
+    if ( characterID == 1 ) // store Joker model for Kasumi model fix
     {
       JokerModel = modelID;
     }
@@ -158,7 +158,7 @@ static int GenericCharacterModelLoaderHook( char* result, u64 modelType, u64 cha
         modelSubID = 1;
       }
     }
-    if ( characterID >= 1 && characterID <= 10 || characterID == 1011 || characterID == 1003 )
+    if ( characterID >= 1 && characterID <= 10 || characterID == 1011 || characterID == 1003 ) // Midwinter Models
     {
       if ( modelID == 2 && isMidWinterValid() )
       {
@@ -175,15 +175,19 @@ static int GenericCharacterModelLoaderHook( char* result, u64 modelType, u64 cha
     }
     //printf("Character ID %d loading model ID %d\n", characterID, modelID);
   }
-  else if ( modelType == 4 && characterID > 200 ) // force load regular Persona models instead of using PSZ/Enemy model
+  else if ( modelType == 4 ) // Persona models
   {
-    if ( characterID >= 221 && characterID <= 0251 ) // party member reserve personas
+    if ( CONFIG_ENABLED( forcePSZModel ) ) // party member reserve personas
     {
-      modelType = 3;
+      return sprintf( result, "model/character/persona/%04d/psz%04d.GMD", characterID, characterID );
+    }
+    else if ( characterID >= 221 && characterID <= 0251 ) // party member reserve personas
+    {
+      modelType = 3; // force load regular Persona models instead of using PSZ/Enemy model
     }
     else if ( characterID >= 0322 ) // only force this on reserve personas
     {
-      modelType = 3;
+      modelType = 3; // force load regular Persona models instead of using PSZ/Enemy model
     }
   }
   return SHK_CALL_HOOK( GenericCharacterModelLoader, result, modelType, characterID, modelID, modelSubID );
@@ -359,13 +363,13 @@ static int FUN_000bee20Hook( int a1, int a2, int a3 )
 
 static void FUN_0062b08c_Hook( int a1 )
 {
-  //a1 = 0;
+  //printf("FUN_0062b08c called with arg %d\n", a1);
   return SHK_CALL_HOOK( FUN_0062b08c, a1 );
 }
 
 static void FUN_0062b080_Hook( int a1 )
 {
-  //a1 = 1;
+  //printf("FUN_0062b080 called with arg %d\n", a1);
   return SHK_CALL_HOOK( FUN_0062b080, a1 );
 }
 

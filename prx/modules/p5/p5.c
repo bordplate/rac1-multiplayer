@@ -488,7 +488,10 @@ bool isMidWinterValid( void )
 {
     isMidwinter = false;
 
-    return isMidwinter; // todo, remove this to restore functionality
+    if ( !CONFIG_ENABLED( enableMidWinterOutfits ) )
+    {
+        return isMidwinter;
+    }
     
     if ( GetTotalDays() >= 214 )
     {
