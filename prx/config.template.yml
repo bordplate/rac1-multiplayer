@@ -19,11 +19,13 @@ tty commands: yes
 Global Script: no
 Persona Using Enemies: yes
 Expanded BGM Patches: yes
-Ambush themes override DLC Music: no
+Ambush themes override DLC Music: yes
 Randomized DLC BGM: no
 Custom Navigator SoundPack: yes
 External navigator text file: yes
+Sumire models: no
 Alternate title screens: yes
+Kasumi patches: yes
 Royal Akechi patches: yes
 Player Outfits in cutscenes: yes
 Force Single GAP Player Combat Animations: yes

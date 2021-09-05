@@ -57,6 +57,7 @@ SHK_HOOK( int, FUN_0026b1fc, u16 a1 );
 SHK_HOOK( int, FUN_00262258, u16 a1 );
 SHK_HOOK( int, ParseUNITTBL, u64 a1 );
 SHK_HOOK( int, FUN_00af3cb0, int a1 );
+SHK_HOOK( GFDModelMaterial_Processed*, FUN_0094c048, int* a1 );
 SHK_HOOK( int, FUN_00829ce8, ActiveCombatUnitStruct* a1 );
 SHK_HOOK( u64*, ReturnAddressOfUNITTBL_EnemyStats, s64 a1 );
 SHK_HOOK( u16, ReturnAddressOfUNITTBL_EnemyAffinities, u32 a1, u16 a2 );
@@ -916,7 +917,11 @@ static bool EnemyHasCombatCutinHook( int a1, int a2 )
   bool result = SHK_CALL_HOOK( EnemyHasCombatCutin, a1, a2 );
   if ( GlobalEnemyID >= 350 )
   {
-    return true;
+    if ( EnemyPersona == 0 )
+    {
+      return false;
+    }
+    else return true;
   }
   else return result;
 }
@@ -1165,6 +1170,13 @@ static int GetItemTBLMeleeWeaponField0E( u16 a1 )
   return 0;
 }
 
+static GFDModelMaterial_Processed* ReadMaterial( int* a1 )
+{
+  GFDModelMaterial_Processed* result = SHK_CALL_HOOK( FUN_0094c048, a1 );
+  printf("GFD Material %s at address 0x%x\n", result->MaterialName, (int)result);
+  return result;
+}
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
@@ -1214,6 +1226,7 @@ void dcInit( void )
   SHK_BIND_HOOK( FUN_00829ce8, FUN_00829ce8Hook );
   SHK_BIND_HOOK( FUN_00043fac, GetNPCTBLEntry );
   SHK_BIND_HOOK( FUN_00262258, GetItemTBLMeleeWeaponField0E );
+  SHK_BIND_HOOK( FUN_0094c048, ReadMaterial );
   wasBGMRandom = false;
 }
 
