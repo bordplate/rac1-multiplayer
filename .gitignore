@@ -7,3 +7,4 @@ userconfig*
 .vscode/*
 loader/build/*
 prx/build/*
+.vs/*
