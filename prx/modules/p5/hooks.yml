@@ -407,3 +407,23 @@ FUN_0063acc8:
 FUN_0094c048:
     addr: 0x94c048
     replacedInstr: stdu r1, -0x130(r1)
+
+ResistancePassiveCheck:
+    addr: 0x259658
+    replacedInstr: stdu r1,-0xc0(r1)
+
+SkillHealDamageModifier:
+    addr: 0x252a10
+    replacedInstr: stdu r1,-0x170(r1)
+
+ParseSKILLTBL:
+    addr: 0x264708
+    emitTrampoline: no
+
+ReturnAddressOfSKILLTBL_Segment0:
+    addr: 0x263580
+    emitTrampoline: no
+
+ReturnAddressOfSKILLTBL_Segment1:
+    addr: 0x2635a0
+    emitTrampoline: no

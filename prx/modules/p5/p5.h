@@ -846,7 +846,8 @@ typedef struct
   u32 currentHP; // C
   u32 currentSP; // 10
   u32 StatusAilments; // 14
-  u32 Lv; // 18
+  u16 Field16; // 16
+  u16 Lv; // 18
   btlUnitContextInfo context;
 } btlUnit_Unit;
 

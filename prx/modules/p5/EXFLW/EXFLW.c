@@ -942,16 +942,18 @@ static int EX_GET_PLAYER_LV( void )
   {
     return 1;
   }
-  int returnValue = 0;
+  
   btlUnit_Unit* Player = GetBtlPlayerUnitFromID( partyMemberID );
   if ( partyMemberID == 1)
   {
-    returnValue = Player->Lv;
+    printf("GET_PLAYER_LV: Joker is lv %d\n", Player->Lv);
+    FLW_SetIntReturn( Player->Lv );
   }
-  else returnValue = Player->context.player.StockPersona[0].personaLv;
-
-  printf("GET_PLAYER_LV: Unit ID %d is lv %d\n", partyMemberID, returnValue);
-  FLW_SetIntReturn( returnValue );
+  else
+  {
+    FLW_SetIntReturn( Player->context.player.StockPersona[0].personaLv );
+    printf("GET_PLAYER_LV: Unit ID %d is lv %d\n", partyMemberID, Player->context.player.StockPersona[0].personaLv);
+  }
 
   return 1;
 }
@@ -1037,6 +1039,23 @@ static int EX_CMM_FLAG_CONVERT( void )
   return 1;
 }*/
 
+static int EX_CLEAR_PERSONA_SKILLS( void )
+{
+  int charID = FLW_GetIntArg(0);
+
+  if ( 0 > charID || charID > 11 )
+  {
+    return 1;
+  }
+
+  btlUnit_Unit* PlayerUnit = GetBtlPlayerUnitFromID( charID );
+  for ( int i = 0; i < 8; i++ )
+  {
+    PlayerUnit->context.player.StockPersona[0].SkillID[i] = 0;
+  }
+  return 1;
+}
+
 scrCommandTableEntry exCommandTable[] =
 {
   { EX_FLW_PRINTF, 1, "EX_PRINTF" },
@@ -1049,6 +1068,7 @@ scrCommandTableEntry exCommandTable[] =
   { EX_GET_PLAYER_LV, 1, "GET_PLAYER_LV" },
   { EX_SET_TACTICS_STATE, 2, "SET_TACTICS_STATE" },
   { EX_CALL_NAVI_DIALOGUE, 4, "CALL_NAVI_DIALOGUE" },
+  { EX_CLEAR_PERSONA_SKILLS, 1, "CLEAR_PERSONA_SKILLS" },
 };
 
 static scrCommandTableEntry* scrGetCommandFuncHook( u32 id )
