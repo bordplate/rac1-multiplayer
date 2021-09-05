@@ -104,9 +104,13 @@ static u64* ReturnAddressOfSKILLTBL_Segment0Hook( u32 param_1 )
 
 static u64* ReturnAddressOfSKILLTBL_Segment1Hook( u32 param_1 )
 {
-    
+  /*if (param_1 >= 1500){ // New active skills starts at ID 1500, change if necessary
+      return &NewSKILLTBL_Segment1.entry[param_1-700];
+  }
+  else {
+      return &NewSKILLTBL_Segment1.entry[param_1];
+  }*/
   return &NewSKILLTBL_Segment1.entry[param_1];
-    
 }
 
 static u64 ResistancePassiveCheckHook ( btlUnit_Unit* btlUnit, ElementalType ElementID ){

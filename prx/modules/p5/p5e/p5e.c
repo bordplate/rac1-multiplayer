@@ -152,7 +152,12 @@ static int GenericCharacterModelLoaderHook( char* result, u64 modelType, u64 cha
     }
     if ( characterID == 10 && modelID == 50 ) //for now copy Joker outfit to Kasumi
     {
-      modelID = JokerModel;
+      if ( sequenceIDGlobal == 4 ) // fix for some boss battles not reloading joker model
+      {
+        modelID = PlayerUnitGetModelMinorID( 1, 50, 0 );
+      }
+      else modelID = JokerModel;
+
       if ( CONFIG_ENABLED( enableSumire ) )
       {
         modelSubID = 1;
@@ -181,11 +186,15 @@ static int GenericCharacterModelLoaderHook( char* result, u64 modelType, u64 cha
     {
       return sprintf( result, "model/character/persona/%04d/psz%04d.GMD", characterID, characterID );
     }
-    else if ( characterID >= 221 && characterID <= 0251 ) // party member reserve personas
+    else if ( characterID >= 239 && characterID <= 250 ) // party member tier 3 personas
+    {
+      return sprintf( result, "model/character/persona/%04d/psz%04d.GMD", characterID, characterID );
+    }
+    else if ( characterID >= 221 && characterID <= 238 ) // party member reserve personas
     {
       modelType = 3; // force load regular Persona models instead of using PSZ/Enemy model
     }
-    else if ( characterID >= 0322 ) // only force this on reserve personas
+    else if ( characterID >= 322 ) // only force this on reserve personas
     {
       modelType = 3; // force load regular Persona models instead of using PSZ/Enemy model
     }
@@ -375,7 +384,7 @@ static void FUN_0062b080_Hook( int a1 )
 
 static void FUN_00af4434Hook( int a1, int a2 )
 {
-  hexDump( "FUN_00af4434", a1, 0x5E0 );
+  //hexDump( "FUN_00af4434", a1, 0x5E0 );
   return SHK_CALL_HOOK( FUN_00af4434, a1, a2 );
 }
 
@@ -384,7 +393,7 @@ static void BtlPlayBGM( int a1, int a2 )
   /*char hexdumpString[64];
   sprintf( hexdumpString, "BtlPlayBGM; struct at 0x%x", a1);
   hexDump( hexdumpString, a1, 0x5E0 );*/
-  printf("BtlPlayBGM called with BGM ID %d\n", a2);
+  //printf("BtlPlayBGM called with BGM ID %d\n", a2);
   return SHK_CALL_HOOK( FUN_0063acc8, a1, a2 );
 }
 

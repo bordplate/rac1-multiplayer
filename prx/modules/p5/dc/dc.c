@@ -295,7 +295,7 @@ static void CombatPersonaCueIDHook( CueIDThingy* param_1, int param_2, short par
     uVar3 = FUN_002584cc(uVar1,1);
     if (((int)uVar3 == 0) && (uVar3 = FUN_0025867c(uVar1), (int)uVar3 == 0)) 
     {
-      if ( CONFIG_ENABLED( enableAkechiMod ) && ( param_3 == 360 || param_3 == 361 ) ) // Charge and Concentrate
+      if ( CONFIG_ENABLED( enableAkechiMod ) && ( param_3 == 360 || param_3 == 361 || param_3 == 1511 || param_3 == 1505 ) ) // Charge and Concentrate type skills
       {
         LoadSoundByCueIDCombatVoice(param_1, param_2, 78, 0);
       }
@@ -1173,7 +1173,7 @@ static int GetItemTBLMeleeWeaponField0E( u16 a1 )
 static GFDModelMaterial_Processed* ReadMaterial( int* a1 )
 {
   GFDModelMaterial_Processed* result = SHK_CALL_HOOK( FUN_0094c048, a1 );
-  printf("GFD Material %s at address 0x%x\n", result->MaterialName, (int)result);
+  if ( CONFIG_ENABLED( enableModelDebuggingHelp ) ) printf("GFD Material %s at address 0x%x\n", result->MaterialName, (int)result);
   return result;
 }
 
