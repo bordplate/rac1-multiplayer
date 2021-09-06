@@ -554,6 +554,10 @@ bool FUN_0025b6ac(btlUnit_Unit* param_1){
     SHK_FUNCTION_CALL_1( 0x25b6ac, bool, btlUnit_Unit*, param_1 );
 }
 
+bool FUN_00258888(btlUnit_Unit* param_1){
+    SHK_FUNCTION_CALL_1( 0x258888, bool, btlUnit_Unit*, param_1 );
+}
+
 int GetNumberOfBullets(btlUnit_Unit* param_1){
     SHK_FUNCTION_CALL_1( 0x25b880, int, btlUnit_Unit*, param_1 );
 }
