@@ -68,6 +68,7 @@ SHK_HOOK( u64*, ReturnAddressOfELSAITBL_Segment1, u32 a1 );
 SHK_HOOK( u64, CalculateShdPersonaEnemyEntry, shdHelper* a1, u32 a2 );
 SHK_HOOK( void, FUN_003735d8, fechance* a1, u64 a2, u64 a3, u64 a4, u64 a5 );
 SHK_HOOK( bool, FUN_00259148, btlUnit_Unit* a1, u32 skillID );
+SHK_HOOK( int, FUN_00256830, btlUnit_Unit* a1, u32 skillID );
 
 static u64 BtlUnitGetUnitIDHook( btlUnit_Unit* btlUnit  )
 {
@@ -1181,21 +1182,7 @@ static GFDModelMaterial_Processed* ReadMaterial( int* a1 )
 
 static bool Unit_CheckHasSkillHook( btlUnit_Unit* btlUnit, u32 skillID )
 {
-  bool result = SHK_CALL_HOOK( FUN_00259148, btlUnit, skillID );
-  u32 unitIDLocal = btlUnit->unitID;
-  if ( btlUnit->unitType == 1 && skillID == 805 ) // only check players for endure
-  {
-    //printf("Unit_CheckHasSkill called on Player ID %d, Checking skill ID %d, result is %d\n", unitIDLocal, skillID, result);
-    if ( unitIDLocal == 9 && GetEquippedPersonaFunction( 9 ) != Persona_RobinHood )
-    {
-      result = true;
-    }
-    else if ( unitIDLocal == 10 )
-    {
-      result = true;
-    }
-  }
-  return result;
+  return SHK_CALL_HOOK( FUN_00259148, btlUnit, skillID );
 }
 
 bool CheckPartyMemberConfidantCombatAbilities(u32 playerID, int param_2)
@@ -1222,6 +1209,10 @@ bool CheckPartyMemberConfidantCombatAbilities(u32 playerID, int param_2)
         if (playerID == 9) // Follow Up Attack
         {
           sVar5 = 86;
+        }
+        if (playerID == 10) // Follow Up Attack
+        {
+          sVar5 = 12;
         }
         else 
         {
@@ -1558,7 +1549,28 @@ bool CheckPartyMemberConfidantCombatAbilities(u32 playerID, int param_2)
   return 0;
 }
 
-
+static int CheckUnitIsEndure( btlUnit_Unit* btlUnit, u32 skillID )
+{
+  int result = SHK_CALL_HOOK( FUN_00256830, btlUnit, skillID );
+  if ( btlUnit->unitType == 1 && btlUnit->Flags & 0x400 != 0) // emulate same exact check as original code for consistency
+  {
+    u32 unitID = btlUnit->unitID;
+    u32 confidantEndureBonusID;
+    if ( unitID == 9 ) // Akechi
+    {
+      confidantEndureBonusID = 17;// Morgana as Placeholder
+    }
+    else if ( unitID == 10 ) // Kasumi
+    {
+      confidantEndureBonusID = 17;// Morgana as Placeholder
+    }
+    if ( IsConfidantBonusObtained(confidantEndureBonusID) )
+    {
+      result = 805;
+    }
+  }
+  return result;
+}
 
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
@@ -1612,6 +1624,7 @@ void dcInit( void )
   SHK_BIND_HOOK( FUN_0094c048, ReadMaterial );
   SHK_BIND_HOOK( FUN_00259148, Unit_CheckHasSkillHook );
   SHK_BIND_HOOK( FUN_00745e28, CheckPartyMemberConfidantCombatAbilities );
+  SHK_BIND_HOOK( FUN_00256830, CheckUnitIsEndure );
   wasBGMRandom = false;
 }
 

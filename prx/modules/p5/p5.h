@@ -1830,6 +1830,7 @@ u64 FUN_2595C4(btlUnit_Unit *btlUnit,u32 param_2);
 void FUN_25A328(btlUnit_Unit *param_1,u64 buff);
 bool FUN_25963C(btlUnit_Unit *param_1);
 bool FUN_0025b6ac(btlUnit_Unit *param_1);
+bool FUN_00258888(btlUnit_Unit *param_1);
 int GetNumberOfBullets(btlUnit_Unit* param_1);
 u64 FUN_252980(u16 SkillId,btlUnit_Unit *btlUnit_1,btlUnit_Unit *btlUnit_2,u8 mode);
 u64 FUN_25294C(u16 SkillId,btlUnit_Unit *btlUnit_1,btlUnit_Unit *btlUnit_2,u8 mode);

@@ -455,3 +455,7 @@ FUN_00259148:
 FUN_00745e28:
     addr: 0x745e28
     replacedInstr: stdu r1, -0x70(r1)
+
+FUN_00256830:
+    addr: 0x256830
+    replacedInstr: stdu r1, -0x90(r1)
