@@ -41,6 +41,7 @@ SHK_HOOK( resrcNPCTblEntry*, FUN_00043fac, int a1 );
 SHK_HOOK( int, LoadShdPersonaEnemy, char* result );
 SHK_HOOK( int, SetEnemyAkechiPersona, u64 a1, u64 a2, EnemyPersonaFunctionStruct1* a3 );
 SHK_HOOK( bool, EnemyHasCombatCutin, int a1, int a2 );
+SHK_HOOK( bool, FUN_00745e28, u32 a1, int a2 );
 SHK_HOOK( int, SetUpEncounterFlags, EncounterFuncStruct* a1, EncounterStructShort* a2);
 SHK_HOOK( int, BlackMaskEncounterIntroBCD, int a1, int a2, EncounterFuncStruct* a3);
 // EXIST stuff
@@ -66,6 +67,7 @@ SHK_HOOK( u64*, ReturnAddressOfUNITTBL_Segment3, s64 a1 );
 SHK_HOOK( u64*, ReturnAddressOfELSAITBL_Segment1, u32 a1 );
 SHK_HOOK( u64, CalculateShdPersonaEnemyEntry, shdHelper* a1, u32 a2 );
 SHK_HOOK( void, FUN_003735d8, fechance* a1, u64 a2, u64 a3, u64 a4, u64 a5 );
+SHK_HOOK( bool, FUN_00259148, btlUnit_Unit* a1, u32 skillID );
 
 static u64 BtlUnitGetUnitIDHook( btlUnit_Unit* btlUnit  )
 {
@@ -1177,6 +1179,387 @@ static GFDModelMaterial_Processed* ReadMaterial( int* a1 )
   return result;
 }
 
+static bool Unit_CheckHasSkillHook( btlUnit_Unit* btlUnit, u32 skillID )
+{
+  bool result = SHK_CALL_HOOK( FUN_00259148, btlUnit, skillID );
+  u32 unitIDLocal = btlUnit->unitID;
+  if ( btlUnit->unitType == 1 && skillID == 805 ) // only check players for endure
+  {
+    //printf("Unit_CheckHasSkill called on Player ID %d, Checking skill ID %d, result is %d\n", unitIDLocal, skillID, result);
+    if ( unitIDLocal == 9 && GetEquippedPersonaFunction( 9 ) != Persona_RobinHood )
+    {
+      result = true;
+    }
+    else if ( unitIDLocal == 10 )
+    {
+      result = true;
+    }
+  }
+  return result;
+}
+
+bool CheckPartyMemberConfidantCombatAbilities(u32 playerID, int param_2)
+{
+  int iVar3;
+  short sVar5;
+  bool result = 0;
+  btlUnit_Unit* pbVar4;
+  
+  if (param_2 < 11) 
+  {
+    if (param_2 < 5) 
+    {
+      if (1 < param_2) 
+      {
+        if (2 < param_2) 
+        {
+          if (param_2 < 4) 
+          {
+            return IsConfidantBonusObtained(173);
+          }
+          return IsConfidantBonusObtained(171);
+        }
+        if (playerID == 9) // Follow Up Attack
+        {
+          sVar5 = 86;
+        }
+        else 
+        {
+          if (playerID == 7) 
+          {
+            sVar5 = 32;
+          }
+          else 
+          {
+            if (playerID == 6) 
+            {
+              sVar5 = 22;
+            }
+            else 
+            {
+              if (playerID == 5) 
+              {
+                sVar5 = 42;
+              }
+              else 
+              {
+                if (playerID == 4) 
+                {
+                  sVar5 = 63;
+                }
+                else 
+                {
+                  if (playerID == 3) 
+                  {
+                    sVar5 = 12;
+                  }
+                  else 
+                  {
+                    if (playerID != 2) 
+                    {
+                      return 0;
+                    }
+                    sVar5 = 73;
+                  }
+                }
+              }
+            }
+          }
+        }
+        return IsConfidantBonusObtained(sVar5);
+      }
+      if (-1 < param_2) 
+      {
+        if (0 < param_2) 
+        {
+          if (playerID == 1) // Baton Pass
+          {
+            return 1;
+          }
+          if (playerID == 9) 
+          {
+            sVar5 = 88;
+          }
+          if (playerID == 10) // Kasumi, use Morgana as placeholder
+          {
+            sVar5 = 13;
+          }
+          else 
+          {
+            if (playerID == 7) 
+            {
+              sVar5 = 35;
+            }
+            else 
+            {
+              if (playerID == 6) 
+              {
+                sVar5 = 25;
+              }
+              else 
+              {
+                if (playerID == 5) 
+                {
+                  sVar5 = 45;
+                }
+                else 
+                {
+                  if (playerID == 4) 
+                  {
+                    sVar5 = 65;
+                  }
+                  else 
+                  {
+                    if (playerID == 3) 
+                    {
+                      sVar5 = 13;
+                    }
+                    else 
+                    {
+                      if (playerID != 2) 
+                      {
+                        return 0;
+                      }
+                      sVar5 = 72;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          result = IsConfidantBonusObtained(sVar5);
+          if ( CONFIG_ENABLED( AutoUnlockBatonPass ) )
+          {
+            result = true;
+          }
+          return result;
+        }
+        iVar3 = GetBitflagState(8202);
+        if ((iVar3 == 0) && (iVar3 = GetBitflagState(8206), iVar3 == 0)) 
+        {
+          return 1;
+        }
+      }
+    }
+    else 
+    {
+      if (param_2 < 8) 
+      {
+        if (param_2 < 6) 
+        {
+          result = IsConfidantBonusObtained(180);
+          return result;
+        }
+        if (param_2 < 7) 
+        {
+          result = IsConfidantBonusObtained(175);
+          return result;
+        }
+        result = IsConfidantBonusObtained(179);
+        return result;
+      }
+      if (param_2 < 9) 
+      {
+        result = IsConfidantBonusObtained(161);
+        if ((int)result != 0) 
+        {
+          pbVar4 = GetBtlPlayerUnitFromID(1);
+          FUN_0025b6ac(pbVar4);
+          pbVar4 = GetBtlPlayerUnitFromID(1);
+          GetNumberOfBullets(pbVar4);
+          IsConfidantBonusObtained(166);
+          return 1;
+        }
+      }
+      else 
+      {
+        if (param_2 < 10) 
+        {
+          result = IsConfidantBonusObtained(30);
+          return result;
+        }
+        result = IsConfidantBonusObtained(163);
+        if ((int)result != 0) 
+        {
+          pbVar4 = GetBtlPlayerUnitFromID(1);
+          result = GetNumberOfBullets(pbVar4);
+          if (0 < (short)result) 
+          {
+            return 1;
+          }
+        }
+      }
+    }
+  }
+  else 
+  {
+    if (param_2 < 17) 
+    {
+      if (param_2 < 14) 
+      {
+        if (11 < param_2) 
+        {
+          if (param_2 < 13) 
+          {
+            result = CheckPartyMemberConfidantCombatAbilities(playerID,1);
+            return result;
+          }
+          result = IsConfidantBonusObtained(78);
+          return result;
+        }
+      }
+      else 
+      {
+        if (param_2 < 15) 
+        {
+          if (playerID == 9) // Harisen Recovery
+          {
+            sVar5 = 85;
+          }
+          if (playerID == 10)  // Kasumi, use Morgana as placeholder
+          {
+            sVar5 = 18;
+          }
+          else 
+          {
+            if (playerID == 7) 
+            {
+              sVar5 = 31;
+            }
+            else 
+            {
+              if (playerID == 6) 
+              {
+                sVar5 = 26;
+              }
+              else 
+              {
+                if (playerID == 5) 
+                {
+                  sVar5 = 46;
+                }
+                else 
+                {
+                  if (playerID == 4) 
+                  {
+                    sVar5 = 61;
+                  }
+                  else 
+                  {
+                    if (playerID == 3) 
+                    {
+                      sVar5 = 18;
+                    }
+                    else 
+                    {
+                      if (playerID != 2) 
+                      {
+                        return 0;
+                      }
+                      sVar5 = 74;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          result = IsConfidantBonusObtained(sVar5);
+          return result;
+        }
+        if (15 < param_2) 
+        {
+          result = IsConfidantBonusObtained(68);
+          return result;
+        }
+        if (playerID < 11) // Protect
+        {
+          if (playerID == 9) // Akechi, Use Mona as placeholder
+          {
+            sVar5 = 19;
+          }
+          if (playerID == 10) // Kasumi, Use Mona as placeholder
+          {
+            sVar5 = 19;
+          }
+          if (playerID == 7) 
+          {
+            sVar5 = 39;
+          }
+          else 
+          {
+            if (playerID == 6) 
+            {
+              sVar5 = 29;
+            }
+            else 
+            {
+              if (playerID == 5) 
+              {
+                sVar5 = 49;
+              }
+              else 
+              {
+                if (playerID == 4) 
+                {
+                  sVar5 = 69;
+                }
+                else 
+                {
+                  if (playerID == 3) 
+                  {
+                    sVar5 = 19;
+                  }
+                  else 
+                  {
+                    if (playerID != 2) 
+                    {
+                      return 0;
+                    }
+                    sVar5 = 79;
+                  }
+                }
+              }
+            }
+          }
+          result = IsConfidantBonusObtained(sVar5);
+          return result;
+        }
+      }
+    }
+    else 
+    {
+      if (param_2 < 20) 
+      {
+        if (param_2 < 18) 
+        {
+          result = IsConfidantBonusObtained(193);
+          return result;
+        }
+        if (param_2 < 19) 
+        {
+          result = IsConfidantBonusObtained(195);
+          return result;
+        }
+        result = IsConfidantBonusObtained(198);
+        return result;
+      }
+      if (param_2 < 21) 
+      {
+        result = IsConfidantBonusObtained(200);
+        return result;
+      }
+      if (param_2 < 22) 
+      {
+        result = IsConfidantBonusObtained(177);
+        return result;
+      }
+    }
+  }
+  return 0;
+}
+
+
+
 // The start function of the PRX. This gets executed when the loader loads the PRX at boot.
 // This means game data is not initialized yet! If you want to modify anything that is initialized after boot,
 // hook a function that is called after initialisation.
@@ -1227,6 +1610,8 @@ void dcInit( void )
   SHK_BIND_HOOK( FUN_00043fac, GetNPCTBLEntry );
   SHK_BIND_HOOK( FUN_00262258, GetItemTBLMeleeWeaponField0E );
   SHK_BIND_HOOK( FUN_0094c048, ReadMaterial );
+  SHK_BIND_HOOK( FUN_00259148, Unit_CheckHasSkillHook );
+  SHK_BIND_HOOK( FUN_00745e28, CheckPartyMemberConfidantCombatAbilities );
   wasBGMRandom = false;
 }
 

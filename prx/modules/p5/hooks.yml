@@ -427,3 +427,11 @@ ReturnAddressOfSKILLTBL_Segment0:
 ReturnAddressOfSKILLTBL_Segment1:
     addr: 0x2635a0
     emitTrampoline: no
+
+FUN_00259148:
+    addr: 0x259148
+    replacedInstr: stdu r1, -0x80(r1)
+
+FUN_00745e28:
+    addr: 0x745e28
+    replacedInstr: stdu r1, -0x70(r1)
