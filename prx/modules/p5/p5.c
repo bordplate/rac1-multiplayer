@@ -550,6 +550,18 @@ bool FUN_25963C(btlUnit_Unit* param_1){
     SHK_FUNCTION_CALL_1( 0x25963C, bool, btlUnit_Unit*, param_1 );
 }
 
+bool FUN_0025b6ac(btlUnit_Unit* param_1){
+    SHK_FUNCTION_CALL_1( 0x25b6ac, bool, btlUnit_Unit*, param_1 );
+}
+
+int GetNumberOfBullets(btlUnit_Unit* param_1){
+    SHK_FUNCTION_CALL_1( 0x25b880, int, btlUnit_Unit*, param_1 );
+}
+
+bool IsConfidantBonusObtained(int param_1){
+    SHK_FUNCTION_CALL_1( 0x54af94, bool, int, param_1 );
+}
+
 u64 FUN_252980(u16 SkillId, btlUnit_Unit* btlUnit_1,btlUnit_Unit *btlUnit_2,u8 mode){
     SHK_FUNCTION_CALL_4( 0x252980, u64, u16, SkillId, btlUnit_Unit*, btlUnit_1, btlUnit_Unit*, btlUnit_2, u8, mode );
 }
