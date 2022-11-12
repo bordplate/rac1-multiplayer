@@ -8,9 +8,10 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#include "../rc1.h"
+#include <rc1/rc1.h>
+#include <rc1/moby.h>
+
 #include "packet.h"
-#include "moby.h"
 
 int mp_sock;
 struct sockaddr_in mp_sockaddr;

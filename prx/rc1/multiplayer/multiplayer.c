@@ -1,5 +1,3 @@
-#include "../rc1.h"
-
 #include "multiplayer.h"
 
 #include <netex/net.h>
@@ -11,7 +9,6 @@ void mp_start() {
 	// You can technically bypass it by syscalling directly, but that brings other 
 	// 		bugs, so this is easier. 
 	sys_net_initialize_network();
-	///((void (*)())0)();
 	
 	memset(&mp_mobys, 0, sizeof(mp_mobys));
 }
@@ -26,7 +23,7 @@ void mp_send_handshake() {
 	syn_packet.type = MP_PACKET_SYN;
 	syn_packet.size = 0;
 	
-	//MULTI_LOG("Sent SYN packet with type: %d. Size: %d\n", syn_packet.type, sizeof(syn_packet));
+	MULTI_TRACE("Sent SYN packet with type: %d. Size: %d\n", syn_packet.type, sizeof(syn_packet));
 	sendto(mp_sock, &syn_packet, sizeof(syn_packet), MSG_DONTWAIT, &mp_sockaddr, sizeof(struct sockaddr_in));
 }
 
@@ -40,14 +37,12 @@ void mp_connect() {
 		MULTI_LOG("Couldn't open socket: %d\n", mp_sock);
 	}
 	
-	MULTI_LOG("Socket opened, making connection...\n");
 	mp_sockaddr.sin_addr.s_addr = inet_addr("10.9.0.212");
 	mp_sockaddr.sin_port = htons(2407);
 	mp_sockaddr.sin_len = sizeof(mp_sockaddr);
 	mp_sockaddr.sin_family = AF_INET;
 	
-	//connect(mp_sock, &mp_sockaddr, sizeof(mp_sockaddr));
-	MULTI_LOG("Socket opened and connected\n");
+	MULTI_LOG("Socket opened, and ready to blast data...\n");
 }
 
 Moby* mp_spawn_moby(u32 uuid, u32 o_class) {
@@ -66,7 +61,7 @@ Moby* mp_spawn_moby(u32 uuid, u32 o_class) {
 	moby->pUpdate = (void*)0x704720;  
 
 	MPMobyVars *vars = (MPMobyVars*)(moby->pVars);
-	//vars->uuid = uuid;
+	vars->uuid = uuid;
 
 	moby->enabled = 1;
 	moby->draw_distance = 0xff;
@@ -78,7 +73,6 @@ Moby* mp_spawn_moby(u32 uuid, u32 o_class) {
 	moby->mode_bits = 0x10 | 0x20 | 0x400 | 0x1000 | 0x4000;
 
 	idk(moby);
-	//idk2(moby, 0x202020, 0xe, 0xe, 0);
 	
 	mp_mobys[uuid] = moby;
 	
@@ -140,29 +134,18 @@ void mp_server_reset() {
 }
 
 char recv_buffer[1024];
-
 // Receive and process updates and events from the server. Typically called once per tick.
 void mp_receive_update() {
 	int recv = 0;
 	do {
 		MPPacketHeader packet_header = { 0, 0 };
 		
-		//char buffer[1024];
 		memset(&recv_buffer, 0, sizeof(recv_buffer));
 		int paddrlen = sizeof(struct sockaddr_in);
 		recv = recvfrom(mp_sock, &recv_buffer, sizeof(recv_buffer), MSG_DONTWAIT, &mp_sockaddr, &paddrlen);
 		
 		if (recv > 0) {
 			memcpy(&packet_header, &recv_buffer, sizeof(packet_header));
-			
-			// If packet header specifies a size, then we fetch the actual packet contents. 
-			// TODO: Variable Length Arrays are apparently discouraged as they are slow and generate more instructions.
-			//		 If not careful, could this be a performance bottleneck?
-			// Packet body size is limited to 8KB.
-			//char buffer[packet_header.size];
-			//if (packet_header.size > 0 && packet_header.size < 1024 * 8) {
-			//	//recvfrom(mp_sock, &buffer, sizeof(buffer), MSG_DONTWAIT, &mp_sockaddr, &paddrlen);
-			//}
 		
 			MULTI_TRACE("Received %d bytes from server\n", recv);
 			
@@ -209,7 +192,7 @@ void mp_send_update() {
 	memcpy(&buffer, &header, sizeof(header));
 	memcpy(&buffer[sizeof(header)], &update_packet, sizeof(update_packet));
 	
-	//MULTI_LOG("Sent update packet with advertised size: %d. Actual size: %d\n", header.size, sizeof(buffer));
+	MULTI_TRACE("Sent update packet with advertised size: %d. Actual size: %d\n", header.size, sizeof(buffer));
 	sendto(mp_sock, &buffer, sizeof(buffer), MSG_DONTWAIT, &mp_sockaddr, sizeof(struct sockaddr_in));
 }
 

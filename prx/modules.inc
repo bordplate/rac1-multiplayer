@@ -1,4 +1,4 @@
-#include "modules/rc1/rc1.h"
+#include "rc1/rc1.h"
 
 static ModuleInfo sModules[] =
 {

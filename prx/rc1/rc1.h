@@ -4,7 +4,7 @@
 #define RC1_H
 
 #include <sys/tty.h>
-#include "lib/common.h"
+#include <lib/common.h>
 
 #define MULTI_TRACE_LOG 0
 #define MULTI_LOG( msg, ... ) printf( "rac1multi: " msg, ##__VA_ARGS__ )
@@ -17,6 +17,8 @@
 
 void rc1_init();
 void rc1_shutdown();
+
+// Common rc1 structs and types
 
 typedef struct {
     float x;
@@ -44,6 +46,11 @@ typedef enum GameState {
     UnkFF=255
 } GameState;
 
+
+// Global variables
+extern int game_ticks;
+
+
 // The currently loaded planet.
 #define current_planet (*((GameState*)0x969C70))
 
@@ -70,20 +77,7 @@ typedef enum GameState {
 // Pointer to Ratchet moby
 #define ratchet_moby (*((Moby**)0x96bd60))
 
-extern int game_ticks;
-
-// Used for animating mobies.
-// Arguments: moby, animationID, unknown, speed
-//#define animate ((void (*)(void*, char, char, float))0xfddc0)
-
 #define animation_speed (*((float*)0x0071f410))
-
-// Animation stuff, but idk what they do.
-//#define idk ((void (*)(void*))0xf31a8)
-//#define idk2 ((void (*)(void*, int, int, int, int))0xf1ea0)
-
-
-//#define memcpy ((void (*)(void*, void*, int))0x5C5AD0)
 
 
 #endif // RC1_H

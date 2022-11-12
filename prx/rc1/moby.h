@@ -1,7 +1,7 @@
 #ifndef MOBY_H
 #define MOBY_H
 
-#include "../rc1.h"
+#include <rc1/rc1.h>
 
 typedef struct {
 	char uuid;
@@ -141,10 +141,6 @@ typedef struct {
     char field135_0xfb;
     unsigned int field136_0xfc;
 } Moby;
-
-// Used for spawning mobys.
-// Argument: o_class
-//#define spawn_moby ((Moby* (*)(int))0x0EFA28)
 
 Moby* moby_spawn_hook(s32 o_class);
 Moby *spawn_moby(int o_class);

@@ -28,7 +28,7 @@ GAME_DIR ?= $(RPCS3_DIR)/dev_hdd0/disc/$(GAME_ID)/PS3_GAME/USRDIR
 endif
 
 # merge user specified hooks files with the game specific one
-HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)/modules/$(GAME)/hooks.yml
+HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)/$(GAME)/hooks.yml
 
 # workaround for hooks argument not accepting an empty list
 ifneq ($(HOOKS),)
