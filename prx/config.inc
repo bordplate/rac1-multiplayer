@@ -98,4 +98,9 @@ CONFIG_START()
     CONFIG_SETTING_ARRAY( FLOAT,      testFloatAray,   "Test float array",               0 )
     CONFIG_SETTING_ARRAY( STRING,     testRmotd,       "Test random message of the day", 4,                "Hi", "Hello", "Hello World", "Bonjour" )
 #endif
+
+#ifdef GAME_RC1
+    //             type      short name        long name        default value
+    CONFIG_SETTING( BOOL,    enableRatchetTestModule, "Test module",   true )
+#endif
 CONFIG_END()

@@ -3,3 +3,28 @@
 _shk_prx_elf_substitute:
     addr: 0x5F7140
     emitTrampoline: no
+    
+#moby_spawn:
+#    addr: 0x0efa28
+#    replacedInstr: stdu r1, -0x80(r1)
+
+#update_mobys:
+game_loop_start:
+    addr: 0x0fc168
+    #addr: 0xe1930
+    #replacedInstr: li r3, 0
+    #emitTrampoline: no
+    replacedInstr: stdu r1, -0x80(r1)
+    
+STUB_0006544c:
+    addr: 0x6544c
+    replacedInstr: ori r0, r0, 0
+    
+#game_loop_start:
+#    addr: 0x5bdbc
+#    replacedInstr: li r5, 0
+
+
+ratchet_dying:
+    addr: 0x00609cf4
+    replacedInstr: stdu r1, -0x210(r1)

@@ -15,7 +15,7 @@
 
 extern "C" void loaderMain( void ) 
 {
-    __attribute((section(".text"))) static const char filename[]  = "/app_home/mod.sprx";
+    __attribute((section(".text"))) static const char filename[]  = "/dev_hdd0/mod.sprx";
     int id = sys_prx_load_module( filename, 0, NULL );
     int modres;
     int res = sys_prx_start_module( id, 0, NULL, &modres, 0, NULL );
