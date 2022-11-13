@@ -26,7 +26,7 @@ void ratchet_dying_hook() {
 }
 
 SHK_HOOK(void, STUB_0006544c);
-void STUB_0006544c_hook(Moby *moby) {
+void STUB_0006544c_hook(Moby* moby) {
 	moby_update(moby);
 }
 

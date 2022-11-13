@@ -1,7 +1,7 @@
 #include "moby.h"
 
-void moby_update(Moby *self) {
-	MPMobyVars *vars = (MPMobyVars*)(self->pVars);
+void moby_update(Moby* self) {
+	MPMobyVars* vars = (MPMobyVars*)(self->pVars);
 	
 	if (self->animationID != vars->next_animation_id && vars->next_animation_id < 127) {
 		// FIXME: This commented MULTI_TRACE call makes the game crash later in the rendering sequence for unknown reasons. 

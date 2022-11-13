@@ -1,7 +1,8 @@
 #ifndef MOBY_H
 #define MOBY_H
 
-#include <rc1/rc1.h>
+#include <lib/common.h>
+#include <rc1/common.h>
 
 typedef struct {
 	char uuid;
@@ -15,8 +16,8 @@ typedef struct {
     char group;
     char mClass;
     char alpha;
-    void * pClass;
-    void * pChain;
+    void* pClass;
+    void* pChain;
     float scale;
     char update_distance;
     char enabled;
@@ -43,14 +44,14 @@ typedef struct {
     char field37_0x61;
     char field38_0x62;
     char field39_0x63;
-    char * field40_0x64; /* Created by retype action */
-    void * field41_0x68; /* Created by retype action */
-    void * field42_0x6c;
+    char* field40_0x64;
+    void* field41_0x68;
+    void* field42_0x6c;
     char field43_0x70;
     char field44_0x71;
     char field45_0x72;
     char field46_0x73;
-    void * pUpdate;
+    void* pUpdate;
     void* pVars;
     char field49_0x7c;
     char field50_0x7d;
@@ -63,9 +64,9 @@ typedef struct {
     char field57_0x8d;
     char field58_0x8e;
     char field59_0x8f;
-    struct Moby * parentMaybe;
-    unsigned short * collision;
-    float * collisionMesh;
+    struct Moby* parentMaybe;
+    unsigned short* collision;
+    float* collisionMesh;
     unsigned int field63_0x9c;
     char field64_0xa0;
     char field65_0xa1;
@@ -73,7 +74,7 @@ typedef struct {
     char field67_0xa3;
     char field68_0xa4;
     char field69_0xa5;
-    short oClass; /* Created by retype action */
+    short oClass;
     int field71_0xa8;
     unsigned int field72_0xac;
     char field73_0xb0;
@@ -83,7 +84,7 @@ typedef struct {
     char field77_0xb5;
     char field78_0xb6;
     char field79_0xb7;
-    struct Moby * field80_0xb8;
+    struct Moby* field80_0xb8;
     char field81_0xbc;
     char field82_0xbd;
     char field83_0xbe;
@@ -130,7 +131,7 @@ typedef struct {
     char field124_0xed;
     char field125_0xee;
     char field126_0xef;
-    void * field127_0xf0;
+    void* field127_0xf0;
     char field128_0xf4;
     char field129_0xf5;
     char field130_0xf6;
@@ -143,14 +144,11 @@ typedef struct {
 } Moby;
 
 Moby* moby_spawn_hook(s32 o_class);
-Moby *spawn_moby(int o_class);
+void moby_update(Moby* self);
 
-void moby_update(Moby *self);
-
-void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, double param_4);
-
-
-int idk( void* );
-int idk2(void* p1, s64 p2, u64 p3, s64 p4, s64 p5);
+SHK_FUNCTION_DEFINE_STATIC_4(0xfddc0, void, set_moby_animation, Moby*, moby, u8, param_2, u8, param_3, double, param_4);
+SHK_FUNCTION_DEFINE_STATIC_1(0xefa28, Moby*, spawn_moby, int, o_class);
+SHK_FUNCTION_DEFINE_STATIC_1(0xf31a8, int, idk, void*, p1);
+SHK_FUNCTION_DEFINE_STATIC_5(0xf1ea0, int, idk2, void*, p1, s64, p2, u64, p3, s64, p4, s64, p5);
 
 #endif
