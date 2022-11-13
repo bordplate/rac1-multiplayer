@@ -1,11 +1,6 @@
 #ifdef GAME_RC1
 
-#include <rc1/rc1.h>
 #include <rc1/moby.h>
-
-#include <lib/shk.h>
-#include <lib/config.h>
-
 #include "multiplayer/multiplayer.h"
 
 int game_ticks = 0;

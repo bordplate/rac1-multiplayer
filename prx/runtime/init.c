@@ -4,6 +4,7 @@
 #include <sys/prx.h>
 #include <sys/tty.h>
 #include <sys/syscall.h>
+#include <stdio.h>
 
 #include "lib/common.h"
 #include "lib/shk.h"

@@ -94,9 +94,9 @@ typedef struct ConfigSetting
 #define CONFIG_OPTION CONFIG_SETTING
 #define CONFIG_OPTION_ARRAY CONFIG_SETTING_ARRAY
 
-#pragma pack(1)
+//#pragma pack(1)
 #include "../config.inc"
-#pragma pop
+//#pragma pop
 
 #undef CONFIG_OPTION_ARRAY
 #undef CONFIG_OPTION

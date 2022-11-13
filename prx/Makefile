@@ -16,8 +16,9 @@ CC = $(WINE) $(PS3_SDK)/host-win32/ppu/bin/ppu-lv2-gcc$(EXE_SUFFIX)
 MAKE_FSELF = $(WINE) $(PS3_SDK)/host-win32/bin/make_fself$(EXE_SUFFIX)
 CFILES = $(call rwildcard,.,*.c)
 SFILES = $(TMP_DIR)/shk_prx.gen.s runtime/init_$(GAME).s
+
 DEFINES = -DGAME_RC1
-CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) $(SFILES) $(CFILES) $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)/mod.map -lnet_stub
+CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CFILES) $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)/mod.map -lnet_stub
 SCETOOL = $(WINE) $(PS3_SDK)/Tools/tool/scetool.exe
 
 elf:

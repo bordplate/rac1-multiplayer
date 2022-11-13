@@ -45,7 +45,7 @@ void mp_connect() {
 	MULTI_LOG("Socket opened, and ready to blast data...\n");
 }
 
-Moby* mp_spawn_moby(u32 uuid, u32 o_class) {
+Moby* mp_spawn_moby(u32 uuid, int o_class) {
 	// Check that we're not trying to update a moby beyond our predefined moby space. 
 	if (uuid > sizeof(mp_mobys)/sizeof(mp_mobys[0])) {
 		MULTI_LOG("Tried to spawn illegal Moby UUID: %d\n", uuid);
@@ -99,7 +99,7 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 	
 	if (!moby || moby->state < 0) {
 		// Spawn moby
-		MULTI_TRACE("Spawning Moby at (%f, %f, %f)\n", update_packet->x, update_packet->y, update_packet->z);
+		//MULTI_TRACE("Spawning Moby at (%f, %f, %f)\n", update_packet->x, update_packet->y, update_packet->z);
 		moby = mp_spawn_moby(update_packet->uuid, update_packet->o_class);
 		
 		if (!moby) return;
@@ -141,7 +141,7 @@ void mp_receive_update() {
 		MPPacketHeader packet_header = { 0, 0 };
 		
 		memset(&recv_buffer, 0, sizeof(recv_buffer));
-		int paddrlen = sizeof(struct sockaddr_in);
+		socklen_t paddrlen = sizeof(struct sockaddr_in);
 		recv = recvfrom(mp_sock, &recv_buffer, sizeof(recv_buffer), MSG_DONTWAIT, &mp_sockaddr, &paddrlen);
 		
 		if (recv > 0) {
@@ -235,6 +235,4 @@ void mp_tick() {
 	mp_send_update();
 	
 	MULTI_TRACE("Done sending state to server\n");
-	
-	return;
 }

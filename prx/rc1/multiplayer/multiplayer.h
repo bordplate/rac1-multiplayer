@@ -1,15 +1,15 @@
 #ifndef MULTIPLAYER_H
 #define MULTIPLAYER_H
 
+#include <rc1/rc1.h>
+#include <rc1/moby.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-
-#include <rc1/rc1.h>
-#include <rc1/moby.h>
 
 #include "packet.h"
 

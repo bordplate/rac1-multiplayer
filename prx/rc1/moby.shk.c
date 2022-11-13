@@ -1,7 +1,7 @@
 #include "moby.h"
 
-void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, float param_4) {
-	SHK_FUNCTION_CALL_4(0xfddc0, void, Moby *, moby, u8, param_2, u8, param_3, float, param_4);
+void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, double param_4) {
+	SHK_FUNCTION_CALL_4(0xfddc0, void, Moby *, moby, u8, param_2, u8, param_3, double, param_4);
 }
 
 Moby *spawn_moby(int o_class) {
