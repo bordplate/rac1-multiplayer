@@ -1,4 +1,5 @@
 -include userconfig.mk
+-include os.mk
 
 # dirs
 BASE_DIR = $(CURDIR)
@@ -28,7 +29,7 @@ GAME_DIR ?= $(RPCS3_DIR)/dev_hdd0/disc/$(GAME_ID)/PS3_GAME/USRDIR
 endif
 
 # merge user specified hooks files with the game specific one
-HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)/$(GAME)/hooks.yml
+HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)/$(GAME_FOR_PATHS)/hooks.yml
 
 # workaround for hooks argument not accepting an empty list
 ifneq ($(HOOKS),)
@@ -72,8 +73,8 @@ setup:
 #	endif
 
 # copy userconfig from template
-	-copy userconfig.mk userconfig.mk.bak
-	-copy userconfig_$(GAME).template.mk userconfig.mk
+	-$(COPY) userconfig.mk userconfig.mk.bak
+	-$(COPY) userconfig_$(GAME).template.mk userconfig.mk
 
 # create folders used during build
 	-mkdir "$(LOADER_BUILD_DIR)"
