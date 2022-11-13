@@ -147,7 +147,7 @@ Moby *spawn_moby(int o_class);
 
 void moby_update(Moby *self);
 
-void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, float param_4);
+void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, double param_4);
 
 
 int idk( void* );

@@ -17,7 +17,7 @@ typedef struct {
 typedef struct {
 	u32 uuid;
 	u32 enabled;
-	u32 o_class;
+	int o_class;
 	u32 animation_id;
 	float x;
 	float y;

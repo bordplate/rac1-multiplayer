@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdio.h>
+
 // Useful type definitions
 #include "types.h"
 
@@ -20,7 +22,7 @@
 #include "string.h"
 
 // Random number generation functions
-#include "random.h" 
+#include "random.h"
 
 // SHK hooking functionality
 #include "shk.h"
