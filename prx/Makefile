@@ -16,7 +16,7 @@ MAKE_FSELF = $(PS3_SDK)\host-win32\bin\make_fself$(EXE_SUFFIX)
 CFILES = $(call rwildcard,.,*.c)
 SFILES = $(TMP_DIR)/shk_prx.gen.s runtime/init_$(GAME).s
 DEFINES = -DGAME_RC1 -DPRINTF_SUPPORT_FLOAT
-CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CFILES) $(DEFINES) -I$(PS3_SDK)\target\ppu\include -I./ -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)\mod.map -lnet_stub
+CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CFILES) $(DEFINES) -I$(PS3_SDK)\target\ppu\include -I./ -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)\mod.map -lnet_stub -lc
 SCETOOL = $(PS3_SDK)\Tools\tool\scetool.exe
 
 elf:

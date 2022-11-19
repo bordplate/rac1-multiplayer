@@ -71,3 +71,15 @@ s32 _stop( void )
     LOADER_LOG( "shutdown finished\n" );
     return SYS_PRX_STOP_OK;
 }
+
+void __exit_user_prx_modules() {
+    _stop();
+}
+
+void __fini() {
+    _stop();
+}
+
+void _exit() {
+    _stop();
+}

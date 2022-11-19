@@ -1,7 +1,14 @@
 #include "moby.h"
 
 void moby_update(Moby *self) {
+    if (self->oClass != 0) return;
+
 	MPMobyVars *vars = (MPMobyVars*)(self->pVars);
+
+    if (self->oClass != vars->o_class) {
+        MULTI_LOG("Game just tried to change my oClass\n");
+        self->oClass = vars->o_class;
+    }
 	
 	if (self->animationID != vars->next_animation_id && vars->next_animation_id < 127) {
 		// FIXME: This commented MULTI_TRACE call makes the game crash later in the rendering sequence for unknown reasons. 
@@ -9,4 +16,16 @@ void moby_update(Moby *self) {
 		set_moby_animation(self, vars->next_animation_id, 0, 10.5);
 		MULTI_TRACE("Done animating\n");
 	}
+}
+
+int item_to_oclass(ITEM item) {
+    switch(item) {
+        case Wrench:
+            return 0x47;
+        case Devastator:
+            return 0x9d;
+        default: return 0x47;
+    }
+
+    return 0x47;
 }

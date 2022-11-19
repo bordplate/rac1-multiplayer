@@ -1,1 +1,1 @@
-printff = 0x5cd098;
+current_weapon = 0x969c7c;
