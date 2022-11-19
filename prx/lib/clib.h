@@ -28,6 +28,9 @@ void _Assert( const char* pCond, const char* pFile, int line );
 // string.h
 #define RAND_MAX 32767
 
+extern void* malloc(size_t len);
+extern void free(void* ptr);
+
 int abs( int j );
 void * bsearch( const void * key, const void * base, size_t nmemb, size_t size, int ( *compar )( const void *, const void * ) );
 long int labs( long int j );
@@ -58,6 +61,7 @@ double pow( double x, double y );
 // stdio.h
 void _putchar( char c );
 #include "external/printf/printf.h"
+//extern void printf(const char* format, ...);
 
 // endian.h
 

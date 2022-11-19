@@ -1,3 +1,5 @@
+current_weapon = 0x969c7c;
+
 game_state = 0xA10708;
 frame_count = 0xA10710;
 

@@ -7,6 +7,7 @@
 typedef struct {
 	char uuid;
 	char next_animation_id;
+    char o_class;
 } MPMobyVars;
 
 typedef struct {
@@ -64,7 +65,7 @@ typedef struct {
     char field57_0x8d;
     char field58_0x8e;
     char field59_0x8f;
-    struct Moby* parentMaybe;
+    struct Moby* parent;
     unsigned short* collision;
     float* collisionMesh;
     unsigned int field63_0x9c;
@@ -150,5 +151,13 @@ SHK_FUNCTION_DEFINE_STATIC_4(0xfddc0, void, set_moby_animation, Moby*, moby, u8,
 SHK_FUNCTION_DEFINE_STATIC_1(0xefa28, Moby*, spawn_moby, int, o_class);
 SHK_FUNCTION_DEFINE_STATIC_1(0xf31a8, int, idk, void*, p1);
 SHK_FUNCTION_DEFINE_STATIC_5(0xf1ea0, int, idk2, void*, p1, s64, p2, u64, p3, s64, p4, s64, p5);
+
+void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, double param_4);
+
+
+int idk( void* );
+int idk2(void* p1, s64 p2, u64 p3, s64 p4, s64 p5);
+
+int item_to_oclass(ITEM item);
 
 #endif

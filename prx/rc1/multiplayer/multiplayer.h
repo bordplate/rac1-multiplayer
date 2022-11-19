@@ -16,9 +16,25 @@
 int mp_sock;
 struct sockaddr_in mp_sockaddr;
 
+// Networking metadata
+typedef struct {
+    void* data;
+    int (*ack_cb)(void* data, size_t len);
+    size_t len;
+    unsigned char next_unacked;
+} mp_unacked_metadata;
+
+unsigned char mp_acked[256];
+mp_unacked_metadata mp_unacked[256];
+unsigned char mp_ack_id;
+unsigned char mp_ack_cycle;
+
+
 Moby* mp_mobys[1024];
+u32 mp_current_weapon_uuid;
 
 void mp_start();
 void mp_tick();
+void mp_send(void* buffer, size_t len);
 
 #endif
