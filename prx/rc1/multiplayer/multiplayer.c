@@ -99,7 +99,7 @@ Moby* mp_spawn_moby(u32 uuid, int o_class) {
 	
 	moby->pUpdate = (void*)0x704720;
 
-	MPMobyVars *vars = (MPMobyVars*)(moby->pVars);
+	MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
 	vars->uuid = uuid;
     vars->o_class = o_class;
 
@@ -157,7 +157,7 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 		if (!moby) return;
 	}
 	
-	MPMobyVars *vars = (MPMobyVars*)(moby->pVars);
+	MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
 	
     moby->position.x = update_packet->x;
     moby->position.y = update_packet->y;

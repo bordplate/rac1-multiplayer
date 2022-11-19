@@ -1,15 +1,14 @@
 #include "moby.h"
 
-void moby_update(Moby *self) {
+void moby_update(Moby* self) {
     if (self->oClass != 0) return;
 
-	MPMobyVars *vars = (MPMobyVars*)(self->pVars);
+	MPMobyVars* vars = (MPMobyVars*)(self->pVars);
 
     if (self->oClass != vars->o_class) {
         MULTI_LOG("Game just tried to change my oClass\n");
         self->oClass = vars->o_class;
     }
-	
 	if (self->animationID != vars->next_animation_id && vars->next_animation_id < 127) {
 		// FIXME: This commented MULTI_TRACE call makes the game crash later in the rendering sequence for unknown reasons. 
 		//MULTI_TRACE("(uid: %d) Animating to ID: %hhd, from ID: %hhu\n", vars->uuid, vars->next_animation_id, self->animationID);
