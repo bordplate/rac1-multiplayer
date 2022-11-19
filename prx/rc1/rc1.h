@@ -4,34 +4,11 @@
 #define RC1_H
 
 #include <lib/common.h>
-
-#define MULTI_TRACE_LOG 1
-#define MULTI_LOG( msg, ... ) printf( "rac1multi: " msg, ##__VA_ARGS__ )
-#if MULTI_TRACE_LOG
-#define MULTI_TRACE( msg, ... ) printf( "*rac1multi: " msg, ##__VA_ARGS__ )
-#else
-#define MULTI_TRACE( msg, ... ) do {} while ( false )
-#endif
-
+#include <rc1/common.h>
+#include <rc1/moby.h>
 
 void rc1_init();
 void rc1_shutdown();
-
-// Common rc1 structs and types
-
-typedef struct {
-    float x;
-    float y;
-    float z;
-    float w;
-} vec4;
-
-typedef struct {
-    char a;
-    char b;
-    char g;
-    char r;
-} color;
 
 typedef enum GameState {
     PlayerControl=0,
@@ -46,38 +23,42 @@ typedef enum GameState {
 } GameState;
 
 
-// Global variables
+// Our global variables
 extern int game_ticks;
 
+//
+// Game-global variables
+//
 
 // The currently loaded planet.
-#define current_planet (*((GameState*)0x969C70))
+extern int current_planet;
 
 // Game state
-#define game_state (*((int*)0xa10708))
-#define frame_count (*((int*)0xa10710))
+extern GameState game_state;
+
+// Frames since death/reload
+extern int frame_count;
 
 // player
 
 // The player's current bolt count.
-#define player_bolts (*((int*)0x969CA0))
+extern int player_bolts;
 // The player's current position.
-#define player_pos (*((vec4*)0x969D60))
-// The player's current rotation in radians. Z is the most common axis.
-#define player_rot (*((vec4*)0x969D70))
+extern vec4 player_pos;
+// The player's current rotation in radians. Z is the most commonly used axis.
+extern vec4 player_rot;
 // The player's neutral momentum.
-#define player_neutral (*((float*)0x969E74))
+extern float player_neutral;
 // The frames until "Ghost Ratchet" will run out.
-#define player_ghost_frames (*((int*)0x969EAC))
+extern int player_ghost_frames;
 // The player's current state.
-#define player_state (*((int*)0x96BD64))
+extern int player_state;
 // The player's current HP.
-#define player_health (*((int*)0x96BF88))
-// Pointer to Ratchet moby
-#define ratchet_moby (*((Moby**)0x96bd60))
+extern int player_health;
+// Pointer to Ratchet moby.
+extern Moby* ratchet_moby;
 
-#define animation_speed (*((float*)0x0071f410))
-
+extern float animation_speed;
 
 #endif // RC1_H
 #endif // GAME_RC1

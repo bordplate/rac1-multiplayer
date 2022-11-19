@@ -4,6 +4,9 @@
 userconfig*
 !*.template.mk
 
+.clangd
+compile_commands.json*
+.cache/*
 .vscode/*
 loader/build/*
 prx/build/*
