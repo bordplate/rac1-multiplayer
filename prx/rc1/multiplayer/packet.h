@@ -25,7 +25,8 @@ typedef struct {
 	u16 uuid;
     u16 parent;
 	u32 enabled;
-	u32 o_class;
+	u16 o_class;
+    u16 level;
 	u32 animation_id;
 	float x;
 	float y;

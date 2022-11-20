@@ -137,6 +137,11 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 		MULTI_TRACE("Moby not updating because game state %d\n", game_state);
 	}
 
+    if (current_planet != update_packet->level) {
+        MULTI_LOG("Server sent update packet for a moby on a different level");
+        return;
+    }
+
 	Moby* moby = mp_mobys[update_packet->uuid];
 	
 	if (!moby || moby->state < 0) {
@@ -302,6 +307,7 @@ void mp_player_update() {
     update_packet.uuid = 0;  // Player moby is always uuid 0
     update_packet.enabled = 1;
     update_packet.o_class = 0;
+    update_packet.level = (u16)current_planet;
     update_packet.animation_id = ratchet_moby->animationID;
     update_packet.x = player_pos.x;
     update_packet.y = player_pos.y;
@@ -343,6 +349,7 @@ void mp_weapon_update() {
     update_packet.uuid = mp_current_weapon_uuid;
     update_packet.enabled = 1;
     update_packet.o_class = item_to_oclass(current_weapon);
+    update_packet.level = (u16)current_planet;
     update_packet.animation_id = 1;
     update_packet.x = player_pos.x;
     update_packet.y = player_pos.y;
