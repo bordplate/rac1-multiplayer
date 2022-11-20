@@ -57,7 +57,10 @@ void mp_make_rpc(void* packet, int (*ack_cb)(void* data, size_t len)) {
 }
 
 void mp_send_ack(char id, char cycle) {
-    MPPacketHeader ack_packet = {MP_PACKET_ACK, 0, id, cycle};
+    MPPacketHeader ack_packet = {MP_PACKET_ACK, 0};
+    ack_packet.size = 0;
+    ack_packet.requires_ack = id;
+    ack_packet.ack_cycle = cycle;
     mp_send(&ack_packet, sizeof(ack_packet));
 }
 

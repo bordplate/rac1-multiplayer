@@ -10,6 +10,8 @@
 #define MP_PACKET_MOBY_UPDATE 	4
 #define MP_PACKET_IDKU			5
 #define MP_PACKET_MOBY_CREATE   6
+#define MP_PACKET_DISCONNECT    7
+#define MP_PACKET_MOBY_DELETE   8
 
 #define MP_PACKET_FLAG_RPC      0x1
 

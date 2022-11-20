@@ -100,13 +100,15 @@ Moby* mp_spawn_moby(u32 uuid, int o_class) {
 	moby->pUpdate = (void*)0x704720;
 
 	MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
-	vars->uuid = uuid;
-    vars->o_class = o_class;
+    if (vars) {
+        vars->uuid = uuid;
+        vars->o_class = o_class;
+    }
 
 	moby->enabled = 1;
 	moby->draw_distance = 0xff;
 	moby->update_distance = 0xff;
-	moby->state = 0;
+	moby->state = 1;
 	moby->alpha = 0xff;
 
     if (moby->oClass == 0x47) {
@@ -115,8 +117,6 @@ Moby* mp_spawn_moby(u32 uuid, int o_class) {
     }
 
 	moby->mode_bits = 0x0;
-
-	//idk(moby);
 	
 	mp_mobys[uuid] = moby;
 	
@@ -162,15 +162,38 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 		if (!moby) return;
 	}
 	
-	MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
-	
     moby->position.x = update_packet->x;
     moby->position.y = update_packet->y;
     moby->position.z = update_packet->z;
     moby->rotation.z = update_packet->rotation;
 
+    MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
     if (vars) {
         vars->next_animation_id = (char) update_packet->animation_id;
+    }
+}
+
+void mp_delete_moby(MPPacketMobyCreate *delete_packet) {
+    Moby* moby = mp_mobys[delete_packet->uuid];
+    if (!moby || moby->state < 0) {
+        MULTI_LOG("Not deleting moby %d @ 0x%08x\n", delete_packet->uuid, moby);
+        return;
+    }
+
+    MULTI_LOG("Deleting moby %d\n", delete_packet->uuid);
+
+    delete_moby(moby);
+    mp_mobys[delete_packet->uuid] = 0;
+}
+
+void mp_delete_all_mobys() {
+    for(int i = 0; i <= sizeof(mp_mobys)/sizeof(mp_mobys[0])-1; i++) {
+        Moby* moby = mp_mobys[i];
+        if (moby && moby->state > 0) {
+            MULTI_LOG("Deleting moby %d", i);
+            delete_moby(moby);
+            mp_mobys[i] = 0;
+        }
     }
 }
 
@@ -212,8 +235,12 @@ void mp_reset_environment() {
 
 void mp_server_reset() {
 	MULTI_LOG("Server reset\n");
+
+    mp_delete_all_mobys();
+
     memset(&mp_mobys, 0, sizeof(mp_mobys));
-    memset(&mp_mobys, 0, sizeof(mp_mobys));
+    memset(&mp_acked, 0, sizeof(mp_acked));
+    memset(&mp_unacked, 0, sizeof(mp_unacked));
 
     mp_current_weapon_uuid = 0;
 }
@@ -242,12 +269,14 @@ void mp_receive_update() {
                 mp_send_ack(packet_header.requires_ack, packet_header.ack_cycle);
 
                 // Check the table to see if we've processed this ack ID in this ack cycle.
-                if (packet_header.ack_cycle == mp_acked[packet_header.requires_ack]) {
+                if (mp_acked[packet_header.requires_ack] != packet_header.ack_cycle) {
+                    MULTI_TRACE("Acked %d, cycle: %d", packet_header.requires_ack, packet_header.ack_cycle);
+
+                    // We haven't seen this packet before, so we add the cycle value to the acked table.
+                    mp_acked[packet_header.requires_ack] = packet_header.ack_cycle;
+                } else {
                     continue;
                 }
-
-                // We haven't seen this packet before, so we add the cycle value to the acked table.
-                mp_acked[packet_header.requires_ack] = packet_header.ack_cycle;
             }
 
             if (packet_header.size+sizeof(packet_header) > recv) {
@@ -279,6 +308,9 @@ void mp_receive_update() {
 					mp_update_moby(((MPPacketMobyUpdate*)&recv_buffer[sizeof(packet_header)]));
 					MULTI_TRACE("Done updating moby\n");
 					break;
+                case MP_PACKET_MOBY_DELETE:
+                    mp_delete_moby((MPPacketMobyCreate*)&recv_buffer[sizeof(packet_header)]);
+                    break;
 				default:
 					MULTI_LOG("Received %d bytes of unknown packet %d:\n", recv, packet_header.type);
                     MULTI_LOG("> Advertised size: %d\n", sizeof(packet_header)+packet_header.size);
