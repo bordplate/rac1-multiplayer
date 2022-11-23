@@ -52,6 +52,7 @@ void mp_ack(char* packet, size_t len) {
         MULTI_LOG("Acked message %d with size %d\n", header->type, header->size);
     }
 
+    // FIXME: Don't know how to free data.
     //free(unacked->data);
     unacked->data = 0;
 
@@ -84,13 +85,13 @@ void mp_connect() {
 	MULTI_LOG("Socket opened, and ready to blast data...\n");
 }
 
-Moby* mp_spawn_moby(u32 uuid, int o_class) {
+Moby* mp_spawn_moby(u16 uuid, int o_class) {
 	// Check that we're not trying to update a moby beyond our predefined moby space. 
 	if (uuid > sizeof(mp_mobys)/sizeof(mp_mobys[0])) {
 		MULTI_LOG("Tried to spawn illegal Moby UUID: %d\n", uuid);
 		return 0;
 	}
-	
+
 	MULTI_TRACE("Spawning moby oClass: %d\n", o_class);
 	
 	Moby* moby = spawn_moby(o_class);
@@ -110,13 +111,15 @@ Moby* mp_spawn_moby(u32 uuid, int o_class) {
 	moby->update_distance = 0xff;
 	moby->state = 1;
 	moby->alpha = 0xff;
+    moby->stateTimerMaybe = ratchet_moby->stateTimerMaybe;
+    //moby->collision = moby->pClass;
 
     if (moby->oClass == 0x47) {
         MULTI_LOG("Debug wrench stuff happening right now\n");
         load_gadget_weapon_model(&moby, -1);
     }
 
-	moby->mode_bits = 0x0;
+	moby->mode_bits = 0x10 | 0x20 | 0x400 | 0x1000 | 0x4000;
 	
 	mp_mobys[uuid] = moby;
 	
@@ -228,6 +231,7 @@ void mp_on_spawn() {
 }
 
 void mp_reset_environment() {
+    mp_delete_all_mobys();
 	memset(&mp_mobys, 0, sizeof(mp_mobys));
 
     mp_on_spawn();
@@ -258,7 +262,8 @@ void mp_receive_update() {
 		
 		if (recv > 0) {
 			memcpy(&packet_header, &recv_buffer, sizeof(packet_header));
-		
+
+            //MULTI_LOG("\r");
 			MULTI_TRACE("Received %d bytes from server\n", recv);
 
             // If a packet requires acknowledgement, it has a value in the requires_ack field.
@@ -405,10 +410,17 @@ void mp_send_update() {
 }
 
 int last_frame_count = 10000;
+int last_planet = 0;
 
 void mp_tick() {
 	MULTI_TRACE("New tick, new life\n");
-	
+
+    if (frame_count < 10) {
+        // FIXME: This is a hack to prevent crashing when changing planets.
+        MULTI_TRACE("Waiting a couple frames before we start updating multiplayer.");
+        return;
+    }
+
 	if (mp_sock <= 0) {
 		mp_connect();
 		mp_send_handshake();
@@ -434,7 +446,13 @@ void mp_tick() {
         mp_reset_environment();
     }
 
+    if (last_planet != current_planet) {
+        MULTI_LOG("Changed planets\n");
+        mp_reset_environment();
+    }
+
     last_frame_count = frame_count;
+    last_planet = current_planet;
 
     // Re-send packets that require acknowledgement
     mp_resend_unacked(mp_ack_id);

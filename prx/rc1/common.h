@@ -5,6 +5,7 @@
 
 #define MULTI_TRACE_LOG 0
 #define MULTI_LOG(msg, ...) printf("rac1multi: " msg, ##__VA_ARGS__)
+//#define MULTI_LOG(msg, ...) do {} while (false)
 #if MULTI_TRACE_LOG
 #define MULTI_TRACE(msg, ...) printf("*rac1multi: " msg, ##__VA_ARGS__)
 #else

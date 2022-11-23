@@ -88,7 +88,21 @@ void mp_rpc_spawn_moby(int (*ack_cb)(void* data, size_t len)) {
     mp_make_rpc(&buffer, ack_cb);
     header->flags = MP_PACKET_FLAG_RPC;
 
-    MULTI_LOG("Sending RPC packet %d, size: %d, payload size: %d\n", header->type, sizeof(MPPacketHeader), header->size);
+    MULTI_TRACE("Sending RPC packet %d, size: %d, payload size: %d\n", header->type, sizeof(MPPacketHeader), header->size);
 
     mp_send(header, sizeof(MPPacketHeader));
+}
+
+void mp_send_collision(u16 uuid, u16 collided_with) {
+    char packet[sizeof(MPPacketHeader) + sizeof(MPPacketMobyCollision)];
+    memset(&packet, 0, sizeof(packet));
+    MPPacketHeader* header = (MPPacketHeader*)&packet;
+    header->size = sizeof(MPPacketMobyCollision);
+    header->type = MP_PACKET_MOBY_COLLISION;
+
+    MPPacketMobyCollision* body = (MPPacketMobyCollision*)&packet[sizeof(MPPacketHeader)];
+    body->uuid = uuid;
+    body->collided_with = collided_with;
+
+    mp_send(&packet, sizeof(packet));
 }

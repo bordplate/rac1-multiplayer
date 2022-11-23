@@ -63,5 +63,7 @@ extern Moby* ratchet_moby;
 
 extern float animation_speed;
 
+extern Moby* coll_moby_out;
+
 #endif // RC1_H
 #endif // GAME_RC1

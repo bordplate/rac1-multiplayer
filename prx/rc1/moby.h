@@ -5,7 +5,7 @@
 #include <rc1/common.h>
 
 typedef struct {
-	char uuid;
+	u16 uuid;
 	char next_animation_id;
     char o_class;
 } MPMobyVars;
@@ -41,10 +41,7 @@ typedef struct {
     char field33_0x57;
     float field34_0x58;
     float field35_0x5c;
-    char field36_0x60;
-    char field37_0x61;
-    char field38_0x62;
-    char field39_0x63;
+    void* field36_0x60;
     char* field40_0x64;
     void* field41_0x68;
     void* field42_0x6c;
@@ -146,6 +143,12 @@ typedef struct {
 
 Moby* moby_spawn_hook(s32 o_class);
 void moby_update(Moby* self);
+
+//          CollMobysSphere(double param_1,vec4 *param_2,undefined8 param_3,uint flags,Moby *param_5,
+//                        undefined8 param_6)
+
+SHK_FUNCTION_DEFINE_STATIC_6(0x5e598, int, coll_mobys_sphere, float, param_1, vec4*, param_2, int, param_3, u32, flags, Moby*, param_5, int*, param_6);
+SHK_FUNCTION_DEFINE_STATIC_4(0x59e20, int, coll_sphere, vec4*, position, vec4*, param_2, int, flags, Moby*, moby);
 
 SHK_FUNCTION_DEFINE_STATIC_4(0xfddc0, void, set_moby_animation, Moby*, moby, u8, param_2, u8, param_3, double, param_4);
 SHK_FUNCTION_DEFINE_STATIC_1(0xefa28, Moby*, spawn_moby, int, o_class);

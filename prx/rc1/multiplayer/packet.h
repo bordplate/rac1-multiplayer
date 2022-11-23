@@ -4,14 +4,15 @@
 #include <lib/types.h>
 #include "multiplayer.h"
 
-#define MP_PACKET_CONNECT 		1
-#define MP_PACKET_SYN 			2
-#define MP_PACKET_ACK 			3
-#define MP_PACKET_MOBY_UPDATE 	4
-#define MP_PACKET_IDKU			5
-#define MP_PACKET_MOBY_CREATE   6
-#define MP_PACKET_DISCONNECT    7
-#define MP_PACKET_MOBY_DELETE   8
+#define MP_PACKET_CONNECT 		    1
+#define MP_PACKET_SYN 			    2
+#define MP_PACKET_ACK 			    3
+#define MP_PACKET_MOBY_UPDATE 	    4
+#define MP_PACKET_IDKU			    5
+#define MP_PACKET_MOBY_CREATE       6
+#define MP_PACKET_DISCONNECT        7
+#define MP_PACKET_MOBY_DELETE       8
+#define MP_PACKET_MOBY_COLLISION    9
 
 #define MP_PACKET_FLAG_RPC      0x1
 
@@ -40,9 +41,15 @@ typedef struct {
     u32 uuid;
 } MPPacketMobyCreate;
 
+typedef struct {
+    u16 uuid;
+    u16 collided_with;
+} MPPacketMobyCollision;
+
 MPPacketHeader mp_make_syn_packet();
 void mp_send_ack(char id, char cycle);
 void mp_send_handshake();
 void mp_rpc_spawn_moby(int (*ack_cb)(void* data, size_t len));
+void mp_send_collision(u16 uuid, u16 collided_with);
 
 #endif

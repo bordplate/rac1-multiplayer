@@ -28,3 +28,7 @@ STUB_0006544c:
 ratchet_dying:
     addr: 0x00609cf4
     replacedInstr: stdu r1, -0x210(r1)
+
+#coll_mobys_sphere:
+#    addr: 0x5e598
+#    replacedInstr: stdu r1, -0x1500(r1)

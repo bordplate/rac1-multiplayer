@@ -13,3 +13,5 @@ ratchet_moby = 0x96BD60;
 player_state = 0x96BD64;
 player_health = 0x96BF88;
 animation_speed = 0x71F410;
+
+coll_moby_out = 0xa10958;
