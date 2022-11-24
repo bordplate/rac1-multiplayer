@@ -13,8 +13,11 @@
 #define MP_PACKET_DISCONNECT        7
 #define MP_PACKET_MOBY_DELETE       8
 #define MP_PACKET_MOBY_COLLISION    9
+#define MP_PACKET_SET_STATE         10
 
 #define MP_PACKET_FLAG_RPC      0x1
+
+#define MP_COLLISION_FLAG_AGGRESSIVE 1
 
 typedef struct {
 	u16 type;
@@ -42,14 +45,34 @@ typedef struct {
 } MPPacketMobyCreate;
 
 typedef struct {
+    u32 flags;
     u16 uuid;
     u16 collided_with;
+    float x;
+    float y;
+    float z;
 } MPPacketMobyCollision;
+
+#define MP_STATE_TYPE_DAMAGE    1
+#define MP_STATE_TYPE_PLAYER    2
+#define MP_STATE_TYPE_POSITION  3
+
+typedef struct {
+    u32 state_type;
+    u32 offset;
+    u32 value;
+} MPPacketSetState;
+
+typedef struct {
+    u32 state_type;
+    u32 offset;
+    float value;
+} MPPacketSetStateFloat;
 
 MPPacketHeader mp_make_syn_packet();
 void mp_send_ack(char id, char cycle);
 void mp_send_handshake();
 void mp_rpc_spawn_moby(int (*ack_cb)(void* data, size_t len));
-void mp_send_collision(u16 uuid, u16 collided_with);
+void mp_send_collision(u16 uuid, u16 collided_with, vec4* position, bool aggressive);
 
 #endif

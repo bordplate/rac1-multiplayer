@@ -13,6 +13,8 @@
 
 #include "packet.h"
 
+#define MP_MAX_MOBYS 1024
+
 int mp_sock;
 struct sockaddr_in mp_sockaddr;
 
@@ -30,7 +32,7 @@ unsigned char mp_ack_id;
 unsigned char mp_ack_cycle;
 
 
-Moby* mp_mobys[1024];
+Moby* mp_mobys[MP_MAX_MOBYS];
 u32 mp_current_weapon_uuid;
 
 void mp_start();

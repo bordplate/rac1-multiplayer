@@ -93,7 +93,7 @@ void mp_rpc_spawn_moby(int (*ack_cb)(void* data, size_t len)) {
     mp_send(header, sizeof(MPPacketHeader));
 }
 
-void mp_send_collision(u16 uuid, u16 collided_with) {
+void mp_send_collision(u16 uuid, u16 collided_with, vec4* position, bool aggressive) {
     char packet[sizeof(MPPacketHeader) + sizeof(MPPacketMobyCollision)];
     memset(&packet, 0, sizeof(packet));
     MPPacketHeader* header = (MPPacketHeader*)&packet;
@@ -101,8 +101,19 @@ void mp_send_collision(u16 uuid, u16 collided_with) {
     header->type = MP_PACKET_MOBY_COLLISION;
 
     MPPacketMobyCollision* body = (MPPacketMobyCollision*)&packet[sizeof(MPPacketHeader)];
+    body->flags = aggressive == true ? MP_COLLISION_FLAG_AGGRESSIVE : 0;
     body->uuid = uuid;
     body->collided_with = collided_with;
+    body->x = position->x;
+    body->y = position->y;
+    body->z = position->z;
+
+    // Aggressive packets (weapon attacks, etc.) must be acked be the server.
+    // We want to be sure we don't drop any attacks.
+    // Other collision events we just blindly spam and should be fine
+    if (aggressive) {
+        mp_make_ack(&packet, 0);
+    }
 
     mp_send(&packet, sizeof(packet));
 }

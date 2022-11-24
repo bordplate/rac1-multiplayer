@@ -249,6 +249,31 @@ void mp_server_reset() {
     mp_current_weapon_uuid = 0;
 }
 
+void mp_set_state(MPPacketSetState* packet) {
+    switch(packet->state_type) {
+        case MP_STATE_TYPE_DAMAGE: {
+            player_health -= (int)packet->value;
+            break;
+        }
+        case MP_STATE_TYPE_PLAYER: {
+            transition_to_movement_state(packet->value, 1);
+            break;
+        }
+        case MP_STATE_TYPE_POSITION: {
+            if (packet->offset > 3) {
+                MULTI_LOG("Server tried to set position at invalid offset %d\n", packet->offset);
+                break;
+            }
+
+            ((float*)&player_pos)[packet->offset] = ((MPPacketSetStateFloat*)packet)->value;
+            break;
+        }
+        default: {
+            MULTI_LOG("Server asked us to set unknown state type %d\n", packet->state_type);
+        }
+    }
+}
+
 char recv_buffer[1024];
 // Receive and process updates and events from the server. Typically called once per tick.
 void mp_receive_update() {
@@ -296,11 +321,6 @@ void mp_receive_update() {
                         MULTI_LOG("Handshake complete!\n");
                     } else {
                         // Register packet as acknowledged to stop repeating the packet
-                        MULTI_LOG("Acking ID %d. Total packet size: %d. Received: %d\n", packet_header.requires_ack, sizeof(packet_header) + packet_header.size, recv);
-                        hexDump("Data", &recv_buffer, recv);
-
-                        MULTI_LOG("UUID: %d", ((MPPacketMobyCreate*)&recv_buffer[sizeof(packet_header)])->uuid);
-
                         mp_ack(&recv_buffer, sizeof(packet_header) + packet_header.size);
                     }
 					break;
@@ -316,6 +336,16 @@ void mp_receive_update() {
                 case MP_PACKET_MOBY_DELETE:
                     mp_delete_moby((MPPacketMobyCreate*)&recv_buffer[sizeof(packet_header)]);
                     break;
+                case MP_PACKET_SET_STATE: {
+                    // Server can send multiple of these messages in 1 packet to ensure the actions are performed in the right sequence.
+                    int received = 0;
+                    while (received < packet_header.size) {
+                        mp_set_state((MPPacketSetState*)&recv_buffer[sizeof(packet_header) + received]);
+
+                        received += sizeof(MPPacketSetState);
+                    }
+                    break;
+                }
 				default:
 					MULTI_LOG("Received %d bytes of unknown packet %d:\n", recv, packet_header.type);
                     MULTI_LOG("> Advertised size: %d\n", sizeof(packet_header)+packet_header.size);

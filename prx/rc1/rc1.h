@@ -29,6 +29,7 @@ extern ITEM current_weapon;
 
 SHK_FUNCTION_DEFINE_STATIC_2( 0x0efa28, void*, kalloc, void*, ptr, size_t, len);
 SHK_FUNCTION_DEFINE_STATIC_2( 0x0e0854, void*, load_gadget_weapon_model, void*, ptr, int, unk2);
+SHK_FUNCTION_DEFINE_STATIC_2( 0xb72b0, u64, transition_to_movement_state, u32, state, u32, unk2);
 //
 // Game-global variables
 //
