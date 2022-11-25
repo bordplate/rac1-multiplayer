@@ -38,5 +38,6 @@ u32 mp_current_weapon_uuid;
 void mp_start();
 void mp_tick();
 void mp_send(void* buffer, size_t len);
+Moby* mp_get_moby(int uuid);
 
 #endif

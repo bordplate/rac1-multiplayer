@@ -17,8 +17,12 @@ game_loop_start:
     replacedInstr: stdu r1, -0x80(r1)
     
 STUB_0006544c:
-    addr: 0x6544c
-    replacedInstr: ori r0, r0, 0
+    addr: 0x4f69b8
+    replacedInstr: stdu r1, -0x240(r1)
+
+authenticate_game:
+    addr: 0x64f724
+    replacedInstr: li r12, 0
     
 #game_loop_start:
 #    addr: 0x5bdbc

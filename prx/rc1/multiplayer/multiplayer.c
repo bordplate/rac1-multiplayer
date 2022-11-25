@@ -98,7 +98,7 @@ Moby* mp_spawn_moby(u16 uuid, int o_class) {
 	
 	MULTI_TRACE("Moby address: %d\n", moby);
 	
-	moby->pUpdate = (void*)0x704720;
+	moby->pUpdate = (void*)0x710ed8;
 
 	MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
     if (vars) {
@@ -111,19 +111,14 @@ Moby* mp_spawn_moby(u16 uuid, int o_class) {
 	moby->update_distance = 0xff;
 	moby->state = 1;
 	moby->alpha = 0xff;
-    moby->stateTimerMaybe = ratchet_moby->stateTimerMaybe;
-    //moby->collision = moby->pClass;
-
-    if (moby->oClass == 0x47) {
-        MULTI_LOG("Debug wrench stuff happening right now\n");
-        load_gadget_weapon_model(&moby, -1);
-    }
 
 	moby->mode_bits = 0x10 | 0x20 | 0x400 | 0x1000 | 0x4000;
 	
 	mp_mobys[uuid] = moby;
 	
 	MULTI_LOG("Spawned Moby (oClass: %d, uuid: %d)\n", o_class, uuid);
+
+    idk(moby);
 	
 	return moby;
 }
@@ -279,49 +274,46 @@ char recv_buffer[1024];
 void mp_receive_update() {
 	int recv = 0;
 	do {
-		MPPacketHeader packet_header = { 0, 0, 0, 0, 0};
-		
 		memset(&recv_buffer, 0, sizeof(recv_buffer));
 		socklen_t paddrlen = sizeof(struct sockaddr_in);
 		recv = recvfrom(mp_sock, &recv_buffer, sizeof(recv_buffer), MSG_DONTWAIT, &mp_sockaddr, &paddrlen);
 		
 		if (recv > 0) {
-			memcpy(&packet_header, &recv_buffer, sizeof(packet_header));
+			MPPacketHeader* packet_header = (MPPacketHeader*)&recv_buffer;
 
-            //MULTI_LOG("\r");
 			MULTI_TRACE("Received %d bytes from server\n", recv);
 
             // If a packet requires acknowledgement, it has a value in the requires_ack field.
             // We register that we got the packet and only process the packet if it hasn't been
             // registered already.
-            if (packet_header.requires_ack && packet_header.type != MP_PACKET_ACK) {
+            if (packet_header->requires_ack && packet_header->type != MP_PACKET_ACK) {
                 // Always acknowledge first.
-                mp_send_ack(packet_header.requires_ack, packet_header.ack_cycle);
+                mp_send_ack(packet_header->requires_ack, packet_header->ack_cycle);
 
                 // Check the table to see if we've processed this ack ID in this ack cycle.
-                if (mp_acked[packet_header.requires_ack] != packet_header.ack_cycle) {
-                    MULTI_TRACE("Acked %d, cycle: %d", packet_header.requires_ack, packet_header.ack_cycle);
+                if (mp_acked[packet_header->requires_ack] != packet_header->ack_cycle) {
+                    MULTI_TRACE("Acked %d, cycle: %d", packet_header->requires_ack, packet_header->ack_cycle);
 
                     // We haven't seen this packet before, so we add the cycle value to the acked table.
-                    mp_acked[packet_header.requires_ack] = packet_header.ack_cycle;
+                    mp_acked[packet_header->requires_ack] = packet_header->ack_cycle;
                 } else {
                     continue;
                 }
             }
 
-            if (packet_header.size+sizeof(packet_header) > recv) {
-                MULTI_LOG("We received %d but only processed %d bytes\n", recv, packet_header.size+sizeof(packet_header));
+            if (packet_header->size+sizeof(MPPacketHeader) > recv) {
+                MULTI_LOG("We received %d but only processed %d bytes\n", recv, packet_header->size+sizeof(MPPacketHeader));
             }
 
             // Process packet
-			switch(packet_header.type) {
+			switch(packet_header->type) {
 				case MP_PACKET_ACK:
-                    if (!packet_header.requires_ack) {
+                    if (!packet_header->requires_ack) {
                         handshake_complete = 1;
                         MULTI_LOG("Handshake complete!\n");
                     } else {
                         // Register packet as acknowledged to stop repeating the packet
-                        mp_ack(&recv_buffer, sizeof(packet_header) + packet_header.size);
+                        mp_ack(&recv_buffer, sizeof(MPPacketHeader) + packet_header->size);
                     }
 					break;
 				case MP_PACKET_IDKU:
@@ -330,31 +322,31 @@ void mp_receive_update() {
 					break;
 				case MP_PACKET_MOBY_UPDATE:
 					MULTI_TRACE("Updating moby\n");
-					mp_update_moby(((MPPacketMobyUpdate*)&recv_buffer[sizeof(packet_header)]));
+					mp_update_moby(((MPPacketMobyUpdate*)&recv_buffer[sizeof(MPPacketHeader)]));
 					MULTI_TRACE("Done updating moby\n");
 					break;
                 case MP_PACKET_MOBY_DELETE:
-                    mp_delete_moby((MPPacketMobyCreate*)&recv_buffer[sizeof(packet_header)]);
+                    mp_delete_moby((MPPacketMobyCreate*)&recv_buffer[sizeof(MPPacketHeader)]);
                     break;
                 case MP_PACKET_SET_STATE: {
                     // Server can send multiple of these messages in 1 packet to ensure the actions are performed in the right sequence.
                     int received = 0;
-                    while (received < packet_header.size) {
-                        mp_set_state((MPPacketSetState*)&recv_buffer[sizeof(packet_header) + received]);
+                    while (received < packet_header->size) {
+                        mp_set_state((MPPacketSetState*)&recv_buffer[sizeof(MPPacketHeader) + received]);
 
                         received += sizeof(MPPacketSetState);
                     }
                     break;
                 }
 				default:
-					MULTI_LOG("Received %d bytes of unknown packet %d:\n", recv, packet_header.type);
-                    MULTI_LOG("> Advertised size: %d\n", sizeof(packet_header)+packet_header.size);
-                    MULTI_LOG("> Ack ID: %d. Cycle: %d\n", packet_header.requires_ack, packet_header.ack_cycle);
-                    MULTI_LOG("> Flags: %d\n", packet_header.flags);
-                    if (packet_header.size > 0 && packet_header.size <= recv-sizeof(packet_header)) {
-                        hexDump("> Packet body data", &recv_buffer[sizeof(packet_header)], packet_header.size);
-                    } else if (packet_header.size <= 0 && recv-sizeof(packet_header) <= 0) {
-                        MULTI_LOG(">!Advertised packet body size is 0, but we received %d more bytes than size of header.\n", recv-sizeof(packet_header));
+					MULTI_LOG("Received %d bytes of unknown packet %d:\n", recv, packet_header->type);
+                    MULTI_LOG("> Advertised size: %d\n", sizeof(packet_header)+packet_header->size);
+                    MULTI_LOG("> Ack ID: %d. Cycle: %d\n", packet_header->requires_ack, packet_header->ack_cycle);
+                    MULTI_LOG("> Flags: %d\n", packet_header->flags);
+                    if (packet_header->size > 0 && packet_header->size <= recv-sizeof(MPPacketHeader)) {
+                        hexDump("> Packet body data", &recv_buffer[sizeof(MPPacketHeader)], packet_header->size);
+                    } else if (packet_header->size <= 0 && recv-sizeof(MPPacketHeader) <= 0) {
+                        MULTI_LOG(">!Advertised packet body size is 0, but we received %d more bytes than size of header.\n", recv-sizeof(MPPacketHeader));
                     } else {
                         MULTI_LOG(">!Received less bytes than advertised size, not printing data\n");
                     }

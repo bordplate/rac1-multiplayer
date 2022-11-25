@@ -30,6 +30,13 @@ void STUB_0006544c_hook(Moby* moby) {
 	moby_update(moby);
 }
 
+// Hook to avoid some consoles getting a "game is corrupted, restart the game" on game start
+// I think maybe it makes trophies not work?
+SHK_HOOK(void, authenticate_game);
+void authenticate_game_hook() {
+    MULTI_LOG("Game totally authenticated\n");
+}
+
 SHK_HOOK(void, wrench_update_func);
 void wrench_update_func_hook(Moby* moby) {
     // Clear the collision out ptr before calling original wrench function
@@ -54,7 +61,7 @@ void wrench_update_func_hook(Moby* moby) {
     // If this moby has UUID vars
     if (vars->uuid && vars->uuid < MP_MAX_MOBYS) {
         // Verify that ptr to MP moby with this UUID matches ptr to moby we hit
-        if (mp_mobys[vars->uuid] == hit) {
+        if (mp_get_moby(vars->uuid) == hit) {
             mp_send_collision(0, vars->uuid, &moby->position, true);
             MULTI_LOG("%d oClass %d at %08x got maybe hit by a wrench. Player state %d\n", vars->uuid, hit->oClass, hit, player_state);
         }
@@ -68,7 +75,7 @@ void rc1_init() {
 	SHK_BIND_HOOK(STUB_0006544c, STUB_0006544c_hook);  // Used as a "trampoline" to our custom Moby update func
 	SHK_BIND_HOOK(game_loop_start, game_loop_start_hook);
     SHK_BIND_HOOK(wrench_update_func, wrench_update_func_hook);
-	
+	SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
 	// Ininitalize and start multiplayer
 	mp_start();
 }

@@ -28,9 +28,9 @@ void mp_make_ack(void* packet, int (*ack_cb)(void* data, size_t len)) {
 
     // FIXME: Hacky way to allocate memory dynamically. This is allocating in the vram space now.
     unacked->data = kalloc((void*)0x90d7c8, sizeof(MPPacketHeader)+header->size);
-    memcpy(unacked->data, header, unacked->len);
-
     MULTI_LOG("After malloc 0x%08x\n", unacked->data);
+
+    memcpy(unacked->data, header, unacked->len);
 
     // Register the packet as unacknowledged
     unsigned char prev_unacked_id = mp_ack_id-1;

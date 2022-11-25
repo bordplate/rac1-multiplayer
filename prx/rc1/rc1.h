@@ -28,8 +28,10 @@ extern int game_ticks;
 extern ITEM current_weapon;
 
 SHK_FUNCTION_DEFINE_STATIC_2( 0x0efa28, void*, kalloc, void*, ptr, size_t, len);
+SHK_FUNCTION_DEFINE_STATIC_3( 0x650764, int, sys_mmapper_allocate_memory, size_t, size, u64, flags, void*, addr);
 SHK_FUNCTION_DEFINE_STATIC_2( 0x0e0854, void*, load_gadget_weapon_model, void*, ptr, int, unk2);
 SHK_FUNCTION_DEFINE_STATIC_2( 0xb72b0, u64, transition_to_movement_state, u32, state, u32, unk2);
+
 //
 // Game-global variables
 //
@@ -61,6 +63,8 @@ extern int player_state;
 extern int player_health;
 // Pointer to Ratchet moby.
 extern Moby* ratchet_moby;
+// Which player type the player is
+extern char player_type;
 
 extern float animation_speed;
 
