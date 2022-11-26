@@ -2,6 +2,8 @@
 
 #include <netex/net.h>
 
+#include <rc1/hud.h>
+
 int handshake_complete = 0;
 
 char waiting_for_weapon = 0;
@@ -86,6 +88,11 @@ void mp_connect() {
 }
 
 Moby* mp_spawn_moby(u16 uuid, int o_class) {
+    // If the main hero moby isn't spawned yet, we shouldn't try to spawn anything.
+    if (!ratchet_moby) {
+        return 0;
+    }
+
 	// Check that we're not trying to update a moby beyond our predefined moby space. 
 	if (uuid > sizeof(mp_mobys)/sizeof(mp_mobys[0])) {
 		MULTI_LOG("Tried to spawn illegal Moby UUID: %d\n", uuid);
@@ -263,6 +270,16 @@ void mp_set_state(MPPacketSetState* packet) {
             ((float*)&player_pos)[packet->offset] = ((MPPacketSetStateFloat*)packet)->value;
             break;
         }
+        case MP_STATE_TYPE_PLANET: {
+            if (current_planet != (int)packet->value && destination_planet != (int)packet->value)
+            MULTI_LOG("Going to planet %d\n", (int)packet->value);
+            seen_planets[0] = 1;
+            seen_planets[1] = 1;
+            seen_planets[packet->value] = 1;
+            *(int*)0xa10700 = 1;
+            *(int*)0xa10704 = (int)packet->value;
+            break;
+        }
         default: {
             MULTI_LOG("Server asked us to set unknown state type %d\n", packet->state_type);
         }
@@ -364,10 +381,10 @@ void mp_player_update() {
     MPPacketMobyUpdate update_packet;
     memset(&update_packet, 0, sizeof(update_packet));
     update_packet.uuid = 0;  // Player moby is always uuid 0
-    update_packet.enabled = 1;
+    update_packet.enabled = ratchet_moby != 0 ? 1 : 0;
     update_packet.o_class = 0;
     update_packet.level = (u16)current_planet;
-    update_packet.animation_id = ratchet_moby->animationID;
+    update_packet.animation_id = ratchet_moby != 0 ? ratchet_moby->animationID : 0;
     update_packet.x = player_pos.x;
     update_packet.y = player_pos.y;
     update_packet.z = player_pos.z;
@@ -433,7 +450,7 @@ void mp_send_update() {
 
 int last_frame_count = 10000;
 int last_planet = 0;
-
+SHK_FUNCTION_DEFINE_STATIC_1(0xccda0, int, show_message, char*, p1);
 void mp_tick() {
 	MULTI_TRACE("New tick, new life\n");
 
@@ -460,8 +477,8 @@ void mp_tick() {
         MULTI_LOG("Changed planets\n");
         mp_reset_environment();
     }
-	
-	// Receive state from server
+
+    // Receive state from server
 	mp_receive_update();
 	
 	MULTI_TRACE("Server sync complete\n");

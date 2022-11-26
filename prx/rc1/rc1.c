@@ -2,12 +2,26 @@
 
 #include <rc1/moby.h>
 #include "multiplayer/multiplayer.h"
+#include "hud.h"
 
 int game_ticks = 0;
+bool game_started = false;
+bool start_multiplayer = false;
+
+char* start_multiplayer_text = "\x13 MULTIPLAYER";
+char* connecting_text = "Connecting to multiplayer...";
 
 SHK_HOOK(void, game_loop_start);
 void game_loop_start_hook() {
-    if (current_planet > 0) {
+    game_started = true;
+
+    if (current_planet == 0 && ratchet_moby == 0 && !start_multiplayer) {
+        if (pressed_buttons & Square) {
+            start_multiplayer = true;
+        }
+    }
+
+    if (start_multiplayer) {
         game_ticks += 1;
 
         mp_tick();
@@ -35,6 +49,39 @@ void STUB_0006544c_hook(Moby* moby) {
 SHK_HOOK(void, authenticate_game);
 void authenticate_game_hook() {
     MULTI_LOG("Game totally authenticated\n");
+}
+
+void draw_mp_screen_elements() {
+    if (game_started) {
+        if (in_cutscene != 0) {
+            return;
+        }
+
+        if (game_state == 6 || game_state == 7) return;
+
+        char planet_text[512];
+        snprintf((char *) &planet_text, sizeof(planet_text), "Planet: %d; PType: %d; GState: %d; RMPtr: 0x%08x",
+                 current_planet, player_type, game_state, ratchet_moby);
+
+        //draw_center_medium_text(250, 10, 0xC0FFA888, planet_text, -1);
+
+        if (current_planet == 0 && ratchet_moby == 0) {
+            if (!start_multiplayer) {
+                draw_center_medium_text(251, 311, 0xD0101010, start_multiplayer_text, -1);
+                draw_center_medium_text(250, 310, 0xC0FFA888, start_multiplayer_text, -1);
+            } else {
+                draw_center_medium_text(251, 311, 0xD0101010, connecting_text, -1);
+                draw_center_medium_text(250, 310, 0xC0FFA888, connecting_text, -1);
+            }
+        }
+    }
+}
+
+SHK_HOOK(void, FUN_000784e8);
+void FUN_000784e8_hook() {
+    draw_mp_screen_elements();
+
+    SHK_CALL_HOOK(FUN_000784e8);
 }
 
 SHK_HOOK(void, wrench_update_func);
@@ -76,6 +123,7 @@ void rc1_init() {
 	SHK_BIND_HOOK(game_loop_start, game_loop_start_hook);
     SHK_BIND_HOOK(wrench_update_func, wrench_update_func_hook);
 	SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
+    SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
 	// Ininitalize and start multiplayer
 	mp_start();
 }

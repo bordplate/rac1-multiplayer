@@ -56,6 +56,7 @@ typedef struct {
 #define MP_STATE_TYPE_DAMAGE    1
 #define MP_STATE_TYPE_PLAYER    2
 #define MP_STATE_TYPE_POSITION  3
+#define MP_STATE_TYPE_PLANET    4
 
 typedef struct {
     u32 state_type;
