@@ -136,7 +136,7 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 	}
 
     if (current_planet != update_packet->level) {
-        MULTI_LOG("Server sent update packet for a moby on a different level");
+        MULTI_TRACE("Server sent update packet for a moby on a different level\n");
         return;
     }
 
@@ -450,6 +450,16 @@ void mp_tick() {
 		// Wait until next game tick to receive handshake response and start doing actual stuff 
 		return;
 	}
+
+    if (frame_count < last_frame_count) {
+        MULTI_LOG("Environment reset\n");
+        mp_reset_environment();
+    }
+
+    if (last_planet != current_planet) {
+        MULTI_LOG("Changed planets\n");
+        mp_reset_environment();
+    }
 	
 	// Receive state from server
 	mp_receive_update();
@@ -462,16 +472,6 @@ void mp_tick() {
 		// Wait until next game tick to receive handshake response and start doing actual stuff 
 		return; 
 	}
-
-    if (frame_count < last_frame_count) {
-        MULTI_LOG("Environment reset\n");
-        mp_reset_environment();
-    }
-
-    if (last_planet != current_planet) {
-        MULTI_LOG("Changed planets\n");
-        mp_reset_environment();
-    }
 
     last_frame_count = frame_count;
     last_planet = current_planet;
