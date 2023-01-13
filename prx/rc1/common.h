@@ -50,18 +50,4 @@ typedef enum ITEM {
 } ITEM;
 
 
-typedef struct {
-    float x;
-    float y;
-    float z;
-    float w;
-} vec4;
-
-typedef struct {
-    char a;
-    char b;
-    char g;
-    char r;
-} color;
-
 #endif

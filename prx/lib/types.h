@@ -29,4 +29,23 @@ typedef u16 undefined2;
 typedef u32 undefined4;
 typedef u64 undefined8;
 
+typedef struct Vec4 {
+    float x;
+    float y;
+    float z;
+    float w;
+} Vec4;
+
+typedef struct Color {
+    unsigned char a;
+    unsigned char b;
+    unsigned char g;
+    unsigned char r;
+} Color;
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+
 #endif

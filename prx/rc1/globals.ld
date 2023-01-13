@@ -19,6 +19,7 @@ animation_speed = 0x71F410;
 player_type = 0x96bd84;
 
 pressed_buttons = 0x964ae4;
+held_buttons = 0x964ae0;
 
 in_cutscene = 0xa1071c;
 

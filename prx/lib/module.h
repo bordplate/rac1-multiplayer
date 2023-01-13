@@ -1,7 +1,11 @@
 #ifndef MODULELIST_H
 #define MODULELIST_H
 
-#include "common.h"
+#include "types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Type of the function used to initialize a module.
@@ -19,8 +23,7 @@ typedef void(*ModuleShutdownFunc)();
  * @brief Runtime module flags.
  * 
  */
-typedef enum ModuleFlags
-{
+typedef enum ModuleFlags {
     MODULE_FLAG_INIT = 1 << 0,
     MODULE_FLAG_SHUTDOWN = 1 << 1,
     MODULE_FLAG_ENABLED = 1 << 2,
@@ -30,8 +33,7 @@ typedef enum ModuleFlags
  * @brief Module initialization status. Used to resolve errors.
  * 
  */
-typedef enum ModuleInitStatus
-{
+typedef enum ModuleInitStatus {
     MODULE_INIT_STATUS_ENABLED,
     MODULE_INIT_STATUS_DISABLED,
     MODULE_INIT_STATUS_DEPENDENCY_INVALID,
@@ -42,22 +44,21 @@ typedef enum ModuleInitStatus
  * @brief Describes a module.
  * 
  */
-typedef struct ModuleInfo
-{
+typedef struct ModuleInfo {
     /**
      * @brief Short name used to refer to the module.
      */
-    const char* shortName;
+    const char *shortName;
 
     /**
      * @brief Long name of the module.
      */
-    const char* longName;
+    const char *longName;
 
     /**
      * @brief Name of the setting used to enable or disable this module.
      */
-    const char* toggleSettingName;
+    const char *toggleSettingName;
 
     /**
      * @brief Function used to initialize the module.
@@ -74,7 +75,7 @@ typedef struct ModuleInfo
      * Module dependencies are loaded before the module itself, and if any of the dependencies
      * fail to load due to being disabled or due to an invalid configuration, the module won't be loaded.
      */
-    const char* dependencies[32];
+    const char *dependencies[32];
 
     /**
      * @brief Runtime flags.
@@ -95,7 +96,7 @@ u32 moduleGetModuleCount();
  * @param index The index of the module to retrieve.
  * @return ModuleInfo* 
  */
-ModuleInfo* moduleGetModuleByIndex( u32 index );
+ModuleInfo *moduleGetModuleByIndex(u32 index);
 
 /**
  * @brief Returns the module with the given (short) name.
@@ -103,7 +104,7 @@ ModuleInfo* moduleGetModuleByIndex( u32 index );
  * @param name The short name of the module.
  * @return ModuleInfo* or NULL if not found.
  */
-ModuleInfo* moduleGetModuleByName( const char* name );
+ModuleInfo *moduleGetModuleByName(const char *name);
 
 /**
  * @brief Initializes the specified module.
@@ -111,13 +112,18 @@ ModuleInfo* moduleGetModuleByName( const char* name );
  * @param module 
  * @return ModuleInitStatus 
  */
-ModuleInitStatus moduleInitModule( ModuleInfo* module );
+ModuleInitStatus moduleInitModule(ModuleInfo *module);
 
 /**
  * @brief Shut down/deinitialize the specified module.
  * 
  * @param module 
  */
-void moduleShutdownModule( ModuleInfo* module );
+void moduleShutdownModule(ModuleInfo *module);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

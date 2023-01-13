@@ -1,13 +1,21 @@
 #ifndef MOBY_H
 #define MOBY_H
 
-#include <lib/common.h>
-#include <rc1/common.h>
+#include <lib/shk.h>
+#include <lib/types.h>
+
+//#include <lib/common.h>
+//#include <rc1/common.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
-	u16 uuid;
-	char next_animation_id;
+    u16 uuid;
+    char next_animation_id;
     char o_class;
+    int animation_duration;
 } MPMobyVars;
 
 typedef struct MobySeq { /* From Deadlocked types */
@@ -27,17 +35,17 @@ typedef struct MobySeq { /* From Deadlocked types */
     undefined field13_0xd;
     undefined field14_0xe;
     undefined field15_0xf;
-    u8 frameCnt;
-    char sound;
+    u8 frame_count;
+    u8 next_seq;
     u8 trigsCnt;
     u8 pad;
-    short * trigs;
-    void * animInfo;
-    void * frameData;
+    short *trigs;
+    void *animInfo;
+    void *frameData;
 } MobySeq;
 
 typedef struct MobyClass { /* MobyClass from Deadlocked Types, probably very wrong */
-    void * packets;
+    void *packets;
     u8 pakcet_cnt_0;
     u8 packet_cnt_1;
     u8 metal_cnt;
@@ -50,13 +58,13 @@ typedef struct MobyClass { /* MobyClass from Deadlocked Types, probably very wro
     u8 sound_cnt;
     u8 lod_trans;
     u8 shadow;
-    u16* collision;
-    void * skeleton;
-    void * common_trans;
-    void * anim_joints;
-    void * gif_usage;
+    u16 *collision;
+    void *skeleton;
+    void *common_trans;
+    void *anim_joints;
+    void *gif_usage;
     float gScale;
-    void * SoundDefs;
+    void *SoundDefs;
     char bangles;
     char mip_dist;
     short corncob;
@@ -76,22 +84,26 @@ typedef struct MobyClass { /* MobyClass from Deadlocked Types, probably very wro
     undefined field36_0x3d;
     undefined field37_0x3e;
     undefined field38_0x3f;
-    struct Moby * unk_ptr;
+    struct Moby *unk_ptr;
     u32 mode_bits;
     char type;
     char mode_bits2;
-    struct MobySeq * seqs;
+    struct MobySeq *seqs;
 } MobyClass;
 
-typedef struct {
-	vec4 coll_pos;
-    vec4 position;
+#ifdef __cplusplus
+#pragma pack(push, 1)
+#endif
+
+struct Moby {
+    Vec4 coll_pos;
+    Vec4 position;
     char state;
     char group;
     char mClass;
     char alpha;
-    MobyClass* pClass;
-    void* pChain;
+    MobyClass *pClass;
+    void *pChain;
     float scale;
     char update_distance;
     char enabled;
@@ -103,24 +115,24 @@ typedef struct {
     char field22_0x3d;
     char field23_0x3e;
     char field24_0x3f;
-    vec4 rotation;
+    Vec4 rotation;
     char field26_0x50;
     char animationFrame;
-    char updateID;
+    u8 updateID;
     u8 animationID;
     float field30_0x54;
     float field34_0x58;
     float field35_0x5c;
-    void* field36_0x60;
-    char* field40_0x64;
-    void* field41_0x68;
-    void* field42_0x6c;
+    void *field36_0x60;
+    char *field40_0x64;
+    void *field41_0x68;
+    void *field42_0x6c;
     char field43_0x70;
     char field44_0x71;
     char field45_0x72;
     char field46_0x73;
-    void* pUpdate;
-    void* pVars;
+    void *pUpdate;
+    void *pVars;
     char field49_0x7c;
     char field50_0x7d;
     char field51_0x7e;
@@ -132,9 +144,9 @@ typedef struct {
     char field57_0x8d;
     char field58_0x8e;
     char field59_0x8f;
-    struct Moby* parent;
-    unsigned short* collision;
-    float* collisionMesh;
+    struct Moby *parent;
+    unsigned short *collision;
+    float *collisionMesh;
     unsigned int field63_0x9c;
     char field64_0xa0;
     char field65_0xa1;
@@ -152,7 +164,7 @@ typedef struct {
     char field77_0xb5;
     char field78_0xb6;
     char field79_0xb7;
-    struct Moby* field80_0xb8;
+    struct Moby *field80_0xb8;
     char field81_0xbc;
     char field82_0xbd;
     char field83_0xbe;
@@ -203,30 +215,60 @@ typedef struct {
     u32 field128_0xf4;
     u32 field132_0xf8;
     unsigned int field136_0xfc;
-} Moby;
 
-Moby* moby_spawn_hook(s32 o_class);
-void moby_animate(Moby* self);
-void moby_update(Moby* self);
+#ifdef __cplusplus
+    void set_animation(char animation_id, char animation_frame, u32 duration);
+    void check_collision();
+
+    static Moby* spawn(unsigned short o_class, unsigned short flags);
+#endif
+}
+#ifdef __cplusplus
+__attribute__((aligned(1)));
+
+#pragma pack(pop)
+
+#endif
+
+#ifndef __cplusplus
+typedef struct Moby Moby;
+#endif
+
+Moby *moby_spawn_hook(s32 o_class);
+
+void moby_animate(Moby *self);
+
+void moby_update(Moby *self);
 
 //          CollMobysSphere(double param_1,vec4 *param_2,undefined8 param_3,uint flags,Moby *param_5,
 //                        undefined8 param_6)
 
-SHK_FUNCTION_DEFINE_STATIC_6(0x5e598, int, coll_mobys_sphere, float, param_1, vec4*, param_2, int, param_3, u32, flags, Moby*, param_5, int*, param_6);
-SHK_FUNCTION_DEFINE_STATIC_4(0x59e20, int, coll_sphere, vec4*, position, vec4*, param_2, int, flags, Moby*, moby);
-
+SHK_FUNCTION_DEFINE_STATIC_6(0x5e598, int, coll_mobys_sphere, float, param_1, Vec4*, param_2, int, param_3, u32, flags,
+                             Moby*, param_5, int*, param_6);
+SHK_FUNCTION_DEFINE_STATIC_4(0x59e20, int, coll_sphere, Vec4*, position, Vec4*, param_2, int, flags, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_4(0xfddc0, void, set_moby_animation, Moby*, moby, u32, param_2, u32, param_3, u32, param_4);
 SHK_FUNCTION_DEFINE_STATIC_1(0xefa28, Moby*, spawn_moby, int, o_class);
 SHK_FUNCTION_DEFINE_STATIC_1(0xf31a8, int, idk, void*, p1);
 SHK_FUNCTION_DEFINE_STATIC_5(0xf1ea0, int, idk2, void*, p1, s64, p2, u64, p3, s64, p4, s64, p5);
 SHK_FUNCTION_DEFINE_STATIC_1(0xefb38, void, delete_moby, Moby*, moby);
 
+SHK_FUNCTION_DEFINE_STATIC_1(0xf0f9c, u32, FUN_000f0f9c, void*, p1);
+SHK_FUNCTION_DEFINE_STATIC_1(0x502730, double, int_to_double, int, p1);
+SHK_FUNCTION_DEFINE_STATIC_1(0xef74c, int, moby_frame_data_something, void*, p1);
+SHK_FUNCTION_DEFINE_STATIC_1(0x502730, double, long_long_to_double, u64, p1);
+SHK_FUNCTION_DEFINE_STATIC_2(0xfde80, int, FUN_000fa940, void*, p1, u32, p2);
+
 //void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, double param_4);
 
 
-int idk( void* );
-int idk2(void* p1, s64 p2, u64 p3, s64 p4, s64 p5);
+int idk(void *);
 
-int item_to_oclass(ITEM item);
+int idk2(void *p1, s64 p2, u64 p3, s64 p4, s64 p5);
+
+//int item_to_oclass(ITEM item);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

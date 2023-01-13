@@ -4,6 +4,8 @@
 
 #include <rc1/hud.h>
 
+#include "server_list.h"
+
 int handshake_complete = 0;
 
 char waiting_for_weapon = 0;
@@ -17,6 +19,10 @@ void mp_start() {
 	memset(&mp_mobys, 0, sizeof(mp_mobys));
     memset(&mp_acked, 0, sizeof(mp_acked));
     memset(&mp_unacked, 0, sizeof(mp_unacked));
+
+    mp_connection_directory_mode = 0;
+
+    game_server_last_refresh = -1;
 }
 
 void mp_send(void* buffer, size_t len) {
@@ -51,11 +57,11 @@ void mp_ack(char* packet, size_t len) {
             unacked->ack_cb(&packet[sizeof(MPPacketHeader)], header->size);
         }
 
-        MULTI_LOG("Acked message %d with size %d\n", header->type, header->size);
+        MULTI_TRACE("Acked message %d with size %d\n", header->type, header->size);
     }
 
     // FIXME: Don't know how to free data.
-    //free(unacked->data);
+    //__free((void*)0x90d7c8, unacked->data);
     unacked->data = 0;
 
     if (unacked->next_unacked) {
@@ -74,20 +80,25 @@ void mp_connect() {
 	MULTI_LOG("Starting multiplayer...\n");
 	MULTI_LOG("Opening socket...\n");
 	mp_sock = socket(AF_INET, SOCK_DGRAM, 0);
-	
+
 	if (mp_sock <= 0) {
 		MULTI_LOG("Couldn't open socket: %d\n", mp_sock);
 	}
-	
-	mp_sockaddr.sin_addr.s_addr = inet_addr("10.9.0.212");
-	mp_sockaddr.sin_port = htons(2407);
-	mp_sockaddr.sin_len = sizeof(mp_sockaddr);
-	mp_sockaddr.sin_family = AF_INET;
-	
-	MULTI_LOG("Socket opened, and ready to blast data...\n");
+
+    if (!mp_sockaddr.sin_addr.s_addr) {
+        mp_sockaddr.sin_addr.s_addr = inet_addr("10.9.0.212");
+        mp_sockaddr.sin_port = htons(2407);
+        mp_sockaddr.sin_len = sizeof(mp_sockaddr);
+        mp_sockaddr.sin_family = AF_INET;
+    }
+
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(mp_sockaddr.sin_addr), ip, INET_ADDRSTRLEN);
+
+	MULTI_LOG("Connecting to %s:%d...\n", ip, mp_sockaddr.sin_port);
 }
 
-Moby* mp_spawn_moby(u16 uuid, int o_class) {
+Moby* mp_spawn_moby(u16 uuid, int o_class, u32 flags) {
     // If the main hero moby isn't spawned yet, we shouldn't try to spawn anything.
     if (!ratchet_moby) {
         return 0;
@@ -104,8 +115,11 @@ Moby* mp_spawn_moby(u16 uuid, int o_class) {
 	Moby* moby = spawn_moby(o_class);
 	
 	MULTI_TRACE("Moby address: %d\n", moby);
-	
-	moby->pUpdate = (void*)0x710ed8;
+
+    // Set new moby's update func to our generic MP update func
+    if (!(flags & MP_MOBY_FLAG_ORIG_UDPATE_FUNC)) {
+        moby->pUpdate = (void *)0x710ed8;
+    }
 
 	MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
     if (vars) {
@@ -116,7 +130,6 @@ Moby* mp_spawn_moby(u16 uuid, int o_class) {
 	moby->enabled = 1;
 	moby->draw_distance = 0xff;
 	moby->update_distance = 0xff;
-	moby->state = 1;
 	moby->alpha = 0xff;
 
 	moby->mode_bits = 0x10 | 0x20 | 0x400 | 0x1000 | 0x4000;
@@ -152,7 +165,7 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 	if (!moby || moby->state < 0) {
 		// Spawn moby
 		MULTI_LOG("Spawning Moby (oClass: %d) at (%f, %f, %f)\n", update_packet->o_class, update_packet->x, update_packet->y, update_packet->z);
-		moby = mp_spawn_moby(update_packet->uuid, update_packet->o_class);
+		moby = mp_spawn_moby(update_packet->uuid, update_packet->o_class, update_packet->flags);
 
         if (update_packet->parent && update_packet->parent != update_packet->uuid) {
             Moby* parent_moby = mp_mobys[update_packet->uuid];
@@ -166,6 +179,10 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 		
 		if (!moby) return;
 	}
+
+    if (update_packet->flags & MP_MOBY_FLAG_NO_COLLISION) {
+        moby->collision = 0;
+    }
 	
     moby->position.x = update_packet->x;
     moby->position.y = update_packet->y;
@@ -174,7 +191,8 @@ void mp_update_moby(MPPacketMobyUpdate* update_packet) {
 
     MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
     if (vars) {
-        vars->next_animation_id = (char) update_packet->animation_id;
+        vars->next_animation_id = (char)update_packet->animation_id;
+        vars->animation_duration = (int)update_packet->animation_duration;
     }
 }
 
@@ -236,6 +254,8 @@ void mp_reset_environment() {
     mp_delete_all_mobys();
 	memset(&mp_mobys, 0, sizeof(mp_mobys));
 
+    hud_clear();
+
     mp_on_spawn();
 }
 
@@ -271,13 +291,25 @@ void mp_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_PLANET: {
-            if (current_planet != (int)packet->value && destination_planet != (int)packet->value)
-            MULTI_LOG("Going to planet %d\n", (int)packet->value);
-            seen_planets[0] = 1;
-            seen_planets[1] = 1;
-            seen_planets[packet->value] = 1;
-            *(int*)0xa10700 = 1;
-            *(int*)0xa10704 = (int)packet->value;
+            if (current_planet != (int)packet->value && destination_planet != (int)packet->value) {
+                MULTI_LOG("Going to planet %d\n", (int) packet->value);
+                seen_planets[0] = 1;
+                seen_planets[packet->value] = 1;
+                *(int *) 0xa10700 = 1;
+                *(int *) 0xa10704 = (int) packet->value;
+                *(int *) 0x969c70 = (int) packet->value;
+            }
+
+            break;
+        }
+        case MP_STATE_TYPE_ITEM: {
+            u16 give = (u16)(packet->value  >> 16);
+            u16 item = (u16)(packet->value & 0xFFFF);
+
+            if (give) {
+                unlock_item(item, 0);
+            }
+
             break;
         }
         default: {
@@ -286,16 +318,42 @@ void mp_set_state(MPPacketSetState* packet) {
     }
 }
 
+void mp_draw_text(MPPacketSetHUDText* hud_text) {
+    HUDElementText* text_element = hud_get_text_element(hud_text->id);
+
+    if (text_element && (hud_text->flags & HUDElementDelete)) {
+        hud_delete_text_element(hud_text->id);
+
+        return;
+    }
+
+    if (!text_element) {
+        text_element = hud_new_text_element(hud_text->id);
+    }
+
+    text_element->element.x = hud_text->x;
+    text_element->element.y = hud_text->y;
+    text_element->color = hud_text->color;
+    text_element->flags = hud_text->flags;
+
+    memcpy(&text_element->text, &hud_text->text, sizeof(text_element->text));
+}
+
 char recv_buffer[1024];
 // Receive and process updates and events from the server. Typically called once per tick.
 void mp_receive_update() {
-	int recv = 0;
+	long recv = 0;
 	do {
 		memset(&recv_buffer, 0, sizeof(recv_buffer));
 		socklen_t paddrlen = sizeof(struct sockaddr_in);
 		recv = recvfrom(mp_sock, &recv_buffer, sizeof(recv_buffer), MSG_DONTWAIT, &mp_sockaddr, &paddrlen);
+
+        if (recv > 0x80000000) {
+            //MULTI_LOG("recvfrom encountered error: 0x%08x\n", recv);
+            continue;
+        }
 		
-		if (recv > 0) {
+		if (recv >= sizeof(MPPacketHeader) && recv < 60000000) {
 			MPPacketHeader* packet_header = (MPPacketHeader*)&recv_buffer;
 
 			MULTI_TRACE("Received %d bytes from server\n", recv);
@@ -303,13 +361,13 @@ void mp_receive_update() {
             // If a packet requires acknowledgement, it has a value in the requires_ack field.
             // We register that we got the packet and only process the packet if it hasn't been
             // registered already.
-            if (packet_header->requires_ack && packet_header->type != MP_PACKET_ACK) {
+            if (packet_header->requires_ack > 0 && packet_header->type != MP_PACKET_ACK) {
                 // Always acknowledge first.
                 mp_send_ack(packet_header->requires_ack, packet_header->ack_cycle);
 
                 // Check the table to see if we've processed this ack ID in this ack cycle.
                 if (mp_acked[packet_header->requires_ack] != packet_header->ack_cycle) {
-                    MULTI_TRACE("Acked %d, cycle: %d", packet_header->requires_ack, packet_header->ack_cycle);
+                    MULTI_TRACE("Acked %d, cycle: %d\n", packet_header->requires_ack, packet_header->ack_cycle);
 
                     // We haven't seen this packet before, so we add the cycle value to the acked table.
                     mp_acked[packet_header->requires_ack] = packet_header->ack_cycle;
@@ -330,7 +388,7 @@ void mp_receive_update() {
                         MULTI_LOG("Handshake complete!\n");
                     } else {
                         // Register packet as acknowledged to stop repeating the packet
-                        mp_ack(&recv_buffer, sizeof(MPPacketHeader) + packet_header->size);
+                        mp_ack(recv_buffer, sizeof(MPPacketHeader) + packet_header->size);
                     }
 					break;
 				case MP_PACKET_IDKU:
@@ -355,9 +413,13 @@ void mp_receive_update() {
                     }
                     break;
                 }
+                case MP_PACKET_SET_HUD_TEXT: {
+                    mp_draw_text((MPPacketSetHUDText*)&recv_buffer[sizeof(MPPacketHeader)]);
+                    break;
+                }
 				default:
-					MULTI_LOG("Received %d bytes of unknown packet %d:\n", recv, packet_header->type);
-                    MULTI_LOG("> Advertised size: %d\n", sizeof(packet_header)+packet_header->size);
+					MULTI_LOG("Received %ld bytes of unknown packet %d:\n", recv, packet_header->type);
+                    MULTI_LOG("> Advertised size: %d\n", sizeof(MPPacketHeader)+packet_header->size);
                     MULTI_LOG("> Ack ID: %d. Cycle: %d\n", packet_header->requires_ack, packet_header->ack_cycle);
                     MULTI_LOG("> Flags: %d\n", packet_header->flags);
                     if (packet_header->size > 0 && packet_header->size <= recv-sizeof(MPPacketHeader)) {
@@ -372,6 +434,9 @@ void mp_receive_update() {
 	} while (recv > 0);
 }
 
+
+int last_game_state = 0;
+
 void mp_player_update() {
     MPPacketHeader header = { 0, 0, 0, 0, 0 };
     header.type = MP_PACKET_MOBY_UPDATE;
@@ -381,10 +446,11 @@ void mp_player_update() {
     MPPacketMobyUpdate update_packet;
     memset(&update_packet, 0, sizeof(update_packet));
     update_packet.uuid = 0;  // Player moby is always uuid 0
-    update_packet.enabled = ratchet_moby != 0 ? 1 : 0;
+    update_packet.flags |= ratchet_moby != 0 ? 1 : 0;
     update_packet.o_class = 0;
     update_packet.level = (u16)current_planet;
     update_packet.animation_id = ratchet_moby != 0 ? ratchet_moby->animationID : 0;
+    update_packet.animation_duration = player_animation_duration;
     update_packet.x = player_pos.x;
     update_packet.y = player_pos.y;
     update_packet.z = player_pos.z;
@@ -397,6 +463,21 @@ void mp_player_update() {
 
     MULTI_TRACE("Sent update packet with advertised size: %d. Actual size: %d\n", header.size, sizeof(buffer));
     mp_send(&buffer, sizeof(buffer));
+
+    // Send which buttons we're holding, if any.
+    if (held_buttons != 0 ) {
+        mp_send_controller_input(held_buttons, MP_CONTROLLER_FLAGS_HELD);
+    }
+
+    if (pressed_buttons != 0) {
+        mp_send_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED);
+    }
+
+    if (last_game_state != game_state) {
+        mp_send_state(MP_STATE_TYPE_GAME, 0, game_state);
+    }
+
+    last_game_state = game_state;
 }
 
 void mp_weapon_update() {
@@ -423,7 +504,7 @@ void mp_weapon_update() {
     MPPacketMobyUpdate update_packet;
     memset(&update_packet, 0, sizeof(update_packet));
     update_packet.uuid = mp_current_weapon_uuid;
-    update_packet.enabled = 1;
+    update_packet.flags |= 1;
     update_packet.o_class = item_to_oclass(current_weapon);
     update_packet.level = (u16)current_planet;
     update_packet.animation_id = 1;
@@ -448,21 +529,55 @@ void mp_send_update() {
     //mp_weapon_update();
 }
 
+int mp_directory_response_cb(void* data, size_t len) {
+    int index = 0;
+    int items = 0;
+
+    MULTI_LOG("Response from directory. Size: %d\n", len);
+
+    while (index < len && items < 5) {
+        MPPacketQueryResponseServer* packet = (MPPacketQueryResponseServer*)&data[index];
+
+        // Names can't be longer than 50 chars.
+        if (packet->name_length > 50) {
+            MULTI_LOG("Server name too long: %d\n", packet->name_length);
+            index += sizeof(MPPacketQueryResponseServer) + packet->name_length;
+            continue;
+        }
+
+        GameServer* server = (GameServer*)&game_servers[items];
+
+        server->ip = packet->ip;
+        server->port = packet->port;
+        server->max_players = packet->max_players;
+        server->num_players = packet->player_count;
+
+        snprintf(server->name, packet->name_length+1, "%s", &data[index+sizeof(MPPacketQueryResponseServer)]);
+
+        MULTI_LOG("Server name: %s; Port: %d; Max players: %d\n", &server->name, server->port, server->max_players);
+
+        index += sizeof(MPPacketQueryResponseServer) + packet->name_length;
+        items += 1;
+    }
+
+    num_game_servers = items;
+    should_render_server_list = 1;
+
+    return 0;
+}
+
 int last_frame_count = 10000;
 int last_planet = 0;
 SHK_FUNCTION_DEFINE_STATIC_1(0xccda0, int, show_message, char*, p1);
 void mp_tick() {
 	MULTI_TRACE("New tick, new life\n");
-
-    if (frame_count < 10) {
-        // FIXME: This is a hack to prevent crashing when changing planets.
-        MULTI_TRACE("Waiting a couple frames before we start updating multiplayer.");
-        return;
-    }
-
 	if (mp_sock <= 0) {
 		mp_connect();
-		mp_send_handshake();
+
+        // We don't send handshake to server directory.
+        if (!mp_connection_directory_mode) {
+            mp_send_handshake();
+        }
 		
 		// Wait until next game tick to receive handshake response and start doing actual stuff 
 		return;
@@ -478,23 +593,34 @@ void mp_tick() {
         mp_reset_environment();
     }
 
+    last_frame_count = frame_count;
+    last_planet = current_planet;
+
     // Receive state from server
 	mp_receive_update();
 	
 	MULTI_TRACE("Server sync complete\n");
-	
-	if (!handshake_complete) {
-		mp_send_handshake();
-		
-		// Wait until next game tick to receive handshake response and start doing actual stuff 
-		return; 
-	}
-
-    last_frame_count = frame_count;
-    last_planet = current_planet;
 
     // Re-send packets that require acknowledgement
     mp_resend_unacked(mp_ack_id);
+
+    // If we're just browsing a game server directory, we don't send update about ourselves.
+    if (mp_connection_directory_mode) {
+        // Refresh directory every 10 seconds
+        if (game_server_last_refresh < 0 || game_server_last_refresh < frame_count - (10 * 60)) {
+            mp_rpc_query_game_servers(0, &mp_directory_response_cb);
+            game_server_last_refresh = frame_count;
+        }
+
+        return;
+    }
+
+    if (!handshake_complete) {
+        mp_send_handshake();
+
+        // Wait until next game tick to receive handshake response and start doing actual stuff
+        return;
+    }
 	
 	// Send current state to server
 	// Start by sending packet header.

@@ -1,8 +1,13 @@
 
+#include "clib.h"
+#include "string.h"
 #include "module.h"
-#include "config.h"
 
 #include "../modules.inc"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 u32 moduleGetModuleCount()
 {
@@ -20,7 +25,7 @@ ModuleInfo* moduleGetModuleByName( const char* name )
     ModuleInfo* module = moduleGetModuleByIndex( 0 );
     for ( u32 i = 0; i < moduleGetModuleCount(); ++i )
     {
-        if ( stringEquals( module->shortName, name ) )
+        //if ( stringEquals( module->shortName, name ) )
             return module;
 
         module++;
@@ -41,19 +46,11 @@ ModuleInitStatus moduleInitModule( ModuleInfo* module )
     }
 
     // set init flag early to prevent infinite recursion
-    module->flags |= MODULE_FLAG_INIT;
-
-    // check if enabled
-    ConfigSetting* toggleSetting = configGetSettingByName( module->toggleSettingName );
-    if ( toggleSetting == NULL || toggleSetting->valueType != CONFIG_VALUE_TYPE_BOOL || !toggleSetting->value.boolValue )
-    {
-        printf( "module: module '%s' (%s) is not loaded because it has been disabled through the config\n", module->longName, module->shortName );
-        return MODULE_INIT_STATUS_DISABLED;
-    }
+    *(int*)&module->flags |= MODULE_FLAG_INIT;
 
     // mark as enabled for now to satisfy recursive loads
     // if an error occurs while resolving dependencies, the flag is unset
-    module->flags |= MODULE_FLAG_ENABLED;
+    *(int*)&module->flags |= MODULE_FLAG_ENABLED;
 
     // init dependencies first
     printf( "module: module '%s' (%s) loading dependencies\n", module->longName, module->shortName );
@@ -79,21 +76,21 @@ ModuleInitStatus moduleInitModule( ModuleInfo* module )
                 printf( "module: module '%s' (%s) not loaded because dependency module %s (%s) failed to load a dependency\n",
                      module->longName, module->shortName, dependencyModule->longName, dependencyModule->shortName );
 
-                module->flags &= ~MODULE_FLAG_ENABLED;
+                *(int*)&module->flags &= ~MODULE_FLAG_ENABLED;
                 return MODULE_INIT_STATUS_DEPENDENCY_DISABLED;
 
             case MODULE_INIT_STATUS_DEPENDENCY_INVALID:
                 printf( "module: module '%s' (%s) not loaded because dependency module %s (%s) failed to load a dependency\n",
                      module->longName, module->shortName, dependencyModule->longName, dependencyModule->shortName );
 
-                module->flags &= ~MODULE_FLAG_ENABLED;
+                *(int*)&module->flags &= ~MODULE_FLAG_ENABLED;
                 return MODULE_INIT_STATUS_DEPENDENCY_INVALID;
 
             case MODULE_INIT_STATUS_DISABLED:
                 printf( "module: module '%s' (%s) not loaded because dependency module %s (%s) is disabled\n",
                      module->longName, module->shortName, dependencyModule->longName, dependencyModule->shortName );
 
-                module->flags &= ~MODULE_FLAG_ENABLED;
+                *(int*)&module->flags &= ~MODULE_FLAG_ENABLED;
                 return MODULE_INIT_STATUS_DEPENDENCY_DISABLED;
 
             case MODULE_INIT_STATUS_ENABLED:
@@ -116,6 +113,10 @@ void moduleShutdownModule( ModuleInfo* module )
     {
         printf( "module: shutting down module %s (%s)\n", module->longName, module->shortName );
         if ( module->shutdown ) module->shutdown();
-        module->flags |= MODULE_FLAG_SHUTDOWN;
+        *(int*)&module->flags |= MODULE_FLAG_SHUTDOWN;
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

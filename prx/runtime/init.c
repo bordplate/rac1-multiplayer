@@ -11,6 +11,10 @@
 #include "lib/config.h"
 #include "lib/module.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // PRX initialization boilerplate
 s32 _start( void );
 SYS_MODULE_INFO( modPrx, 0, 1, 1 );
@@ -31,44 +35,37 @@ SHK_HOOK( void, _shk_prx_elf_substitute );
 #define LOADER_TRACE( msg, ... ) do {} while ( false )
 #endif
 
-void initRuntime()
-{
-    LOADER_LOG( "initialising runtime\n" );
+void initRuntime() {
+    LOADER_LOG("initialising runtime\n");
 
     // initialize pointer to prx function pointer table in elf
-    *(void**)&_shk_elf_prx_ptr_table = &_shk_prx_ptr_table;
+    *(void **) &_shk_elf_prx_ptr_table = &_shk_prx_ptr_table;
 
     // bind hook to function that was substituted (copied to the prx) to make room for the loader
-    SHK_BIND_HOOK( _shk_prx_elf_substitute, _shk_prx_elf_substitute_impl );
-    
-    LOADER_LOG( "runtime initialised\n" );
+    SHK_BIND_HOOK(_shk_prx_elf_substitute, _shk_prx_elf_substitute_impl);
+
+    LOADER_LOG("runtime initialised\n");
 }
 
-s32 _start( void )
-{
-    LOADER_LOG( "initialising\n" );
+s32 _start(void) {
+    LOADER_LOG("initialising\n");
     initRuntime();
 
-    // load config
-    LOADER_LOG( "loading config\n" );
-    configLoad( "/app_home/config.yml" );
+    LOADER_LOG("initialising modules\n");
+    for (u32 i = 0; i < moduleGetModuleCount(); ++i)
+        moduleInitModule(moduleGetModuleByIndex(i));
 
-    LOADER_LOG( "initialising modules\n" );
-    for ( u32 i = 0; i < moduleGetModuleCount(); ++i )
-        moduleInitModule( moduleGetModuleByIndex( i ) );
-    
     return SYS_PRX_START_OK;
 }
 
-s32 _stop( void )
-{
-    LOADER_LOG( "shutting down\n" );
+s32 _stop(void) {
+    LOADER_LOG("shutting down\n");
 
-    LOADER_LOG( "shutting down modules\n" );
-    for ( u32 i = 0; i < moduleGetModuleCount(); ++i )
-        moduleShutdownModule( moduleGetModuleByIndex( i ) );
+    LOADER_LOG("shutting down modules\n");
+    for (u32 i = 0; i < moduleGetModuleCount(); ++i)
+        moduleShutdownModule(moduleGetModuleByIndex(i));
 
-    LOADER_LOG( "shutdown finished\n" );
+    LOADER_LOG("shutdown finished\n");
     return SYS_PRX_STOP_OK;
 }
 
@@ -83,3 +80,7 @@ void __fini() {
 void _exit() {
     _stop();
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -34,6 +34,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdio.h>
 
 
 #ifdef __cplusplus
@@ -47,6 +48,10 @@ extern "C" {
  * \param character Character to output
  */
 void _putchar(char character);
+//#define _putchar putchar
+
+
+//#define _putchar ____putchar
 
 
 /**
@@ -112,6 +117,5 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif  // _PRINTF_H_

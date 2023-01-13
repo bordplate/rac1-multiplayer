@@ -1,14 +1,16 @@
 #include "lib/string.h"
+#include "types.h"
 
 static s32 _stringCompareIgnoreCase( const char* s1, const char* s2 )
 {
-    while ( ( *s1 ) && ( charToLower( *s1 ) == charToLower( *s2 ) ) )
-    {
-        ++s1;
-        ++s2;
-    }
-
-    return ( *( unsigned char* )s1 - *( unsigned char* )s2 );
+    //while ( ( *s1 ) && ( charToLower( *s1 ) == charToLower( *s2 ) ) )
+    //{
+    //    ++s1;
+    //    ++s2;
+    //}
+//
+    //return ( *( unsigned char* )s1 - *( unsigned char* )s2 );
+    return 0;
 }
 
 // Gets the number of characters in the string.
@@ -109,29 +111,29 @@ s32 stringFormat( char* destination, size_t destinationLength, const char* forma
 // The method returns -1 if the character or string is not found in this instance.
 s32 stringIndexOfEx( const char* s, const char* s2, bool ignoreCase )
 {
-    u32 sLen = stringGetLength( s );
-    u32 s2Len = stringGetLength( s2 );
-
-    for ( u32 i = 0; i < sLen; ++i )
-    {
-        if ( i + s2Len > sLen )
-            break;
-
-        bool matches;
-        for ( u32 j = 0; j < s2Len; ++j )
-        {
-            if ( ignoreCase )
-                matches = charToLower( s[ i + j ] ) == charToLower( s2[ j ] );
-            else
-                matches = s[ i + j ] == s2[ j ];
-
-            if ( !matches )
-                break;
-        }
-
-        if ( matches )
-            return i;
-    }
+    //u32 sLen = stringGetLength( s );
+    //u32 s2Len = stringGetLength( s2 );
+//
+    //for ( u32 i = 0; i < sLen; ++i )
+    //{
+    //    if ( i + s2Len > sLen )
+    //        break;
+//
+    //    bool matches;
+    //    for ( u32 j = 0; j < s2Len; ++j )
+    //    {
+    //        if ( ignoreCase )
+    //            matches = charToLower( s[ i + j ] ) == charToLower( s2[ j ] );
+    //        else
+    //            matches = s[ i + j ] == s2[ j ];
+//
+    //        if ( !matches )
+    //            break;
+    //    }
+//
+    //    if ( matches )
+    //        return i;
+    //}
 
     return -1;
 }
@@ -269,32 +271,32 @@ char* stringJoinArray( char* destination, size_t destinationLength, const char* 
 
 size_t stringLastIndexOfEx( const char* s, const char* s2, bool ignoreCase )
 {
-    size_t sLen = stringGetLength( s );
-    size_t s2Len = stringGetLength( s2 );
-    if ( s2Len > sLen )
-        return -1;
-
-    size_t startIndex = sLen - s2Len;
-    for ( size_t i = startIndex; i >= 0; --i )
-    {
-        if ( i + s2Len > sLen )
-            break;
-
-        bool matches;
-        for ( u32 j = 0; j < s2Len; ++j )
-        {
-            if ( ignoreCase )
-                matches = charToLower( s[ i + j ] ) == charToLower( s2[ j ] );
-            else
-                matches = s[ i + j ] == s2[ j ];
-
-            if ( !matches )
-                break;
-        }
-
-        if ( matches )
-            return i;
-    }
+    //size_t sLen = stringGetLength( s );
+    //size_t s2Len = stringGetLength( s2 );
+    //if ( s2Len > sLen )
+    //    return -1;
+//
+    //size_t startIndex = sLen - s2Len;
+    //for ( size_t i = startIndex; i >= 0; --i )
+    //{
+    //    if ( i + s2Len > sLen )
+    //        break;
+//
+    //    bool matches;
+    //    for ( u32 j = 0; j < s2Len; ++j )
+    //    {
+    //        if ( ignoreCase )
+    //            matches = charToLower( s[ i + j ] ) == charToLower( s2[ j ] );
+    //        else
+    //            matches = s[ i + j ] == s2[ j ];
+//
+    //        if ( !matches )
+    //            break;
+    //    }
+//
+    //    if ( matches )
+    //        return i;
+    //}
 
     return -1;
 }
@@ -306,34 +308,36 @@ size_t stringLastIndexOf( const char* s, const char* s2 )
 
 char* stringTrimLeft( char* destination, size_t destinationLength, const char* source )
 {
-    // count whitespace chars on the left
-    u32 sourceLength = stringGetLength( source );
-    u32 wsCount = 0;
-    for ( u32 i = 0; i < sourceLength; ++i )
-    {
-        if ( charIsWhitespace( source[ i ] ) )
-            wsCount++;
-        else
-            break;
-    }
-
-    return stringSubstring( destination, destinationLength, source, wsCount );
+    //// count whitespace chars on the left
+    //u32 sourceLength = stringGetLength( source );
+    //u32 wsCount = 0;
+    //for ( u32 i = 0; i < sourceLength; ++i )
+    //{
+    //    if ( charIsWhitespace( source[ i ] ) )
+    //        wsCount++;
+    //    else
+    //        break;
+    //}
+//
+    //return stringSubstring( destination, destinationLength, source, wsCount );
+    return 0;
 }
 
 char* stringTrimRight( char* destination, size_t destinationLength, const char* source )
 {
-    // count whitespace chars on the right
-    u32 sourceLength = stringGetLength( source );
-    u32 wsCount = 0;
-    for ( u32 i = sourceLength - 1; i >= 0; --i )
-    {
-        if ( charIsWhitespace( source[ i ] ) )
-            wsCount++;
-        else
-            break;
-    }
-
-    return stringSubstringEx( destination, destinationLength, source, 0, sourceLength - wsCount );
+    //// count whitespace chars on the right
+    //u32 sourceLength = stringGetLength( source );
+    //u32 wsCount = 0;
+    //for ( u32 i = sourceLength - 1; i >= 0; --i )
+    //{
+    //    if ( charIsWhitespace( source[ i ] ) )
+    //        wsCount++;
+    //    else
+    //        break;
+    //}
+//
+    //return stringSubstringEx( destination, destinationLength, source, 0, sourceLength - wsCount );
+    return 0;
 }
 
 char* stringTrim( char* destination, size_t destinationLength, const char* source )
@@ -416,26 +420,26 @@ char* stringSubstring( char* destination, size_t destinationLength, const char* 
 // Returns a copy of this string converted to lowercase.
 char* stringToLower( char* destination, size_t destinationLength, const char* source )
 {
-    u32 sourceLength = stringGetLength( source );
-    assert( destinationLength >= sourceLength + 1 );
-
-    for ( u32 i = 0; i < sourceLength; ++i )
-        destination[ i ] = charToLower( source[ i ] );
-
-    destination[ sourceLength ] = 0;
+    //u32 sourceLength = stringGetLength( source );
+    //assert( destinationLength >= sourceLength + 1 );
+//
+    //for ( u32 i = 0; i < sourceLength; ++i )
+    //    destination[ i ] = charToLower( source[ i ] );
+//
+    //destination[ sourceLength ] = 0;
     return destination;
 }
 
 // // Returns a copy of this string converted to uppercase.
 char* stringToUpper( char* destination, size_t destinationLength, const char* source )
 {
-    u32 sourceLength = stringGetLength( source );
-    assert( destinationLength >= sourceLength + 1 );
-
-    for ( u32 i = 0; i < sourceLength; ++i )
-        destination[ i ] = charToUpper( source[ i ] );
-
-    destination[ sourceLength ] = 0;
+    //u32 sourceLength = stringGetLength( source );
+    //assert( destinationLength >= sourceLength + 1 );
+//
+    //for ( u32 i = 0; i < sourceLength; ++i )
+    //    destination[ i ] = charToUpper( source[ i ] );
+//
+    //destination[ sourceLength ] = 0;
     return destination;
 }
 

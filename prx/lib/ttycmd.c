@@ -19,8 +19,8 @@ static const char* readTtyLine()
     memoryClear( buffer, sizeof( buffer ) );
     u32 bytesRead;
     int err = sys_tty_read( SYS_TTYP_USER1, buffer, sizeof( buffer ), &bytesRead );
-    assert( err == CELL_OK );
-    assert( bytesRead < sizeof( buffer ) );
+    //assert( err == CELL_OK );
+    //assert( bytesRead < sizeof( buffer ) );
     return (const char*)buffer;
 }
 
@@ -116,28 +116,27 @@ static void printCmdShortHelp( TtyCmd* helpCmd )
     if ( helpCmd->description != NULL ) printf( "\t\t%s\n", helpCmd->description );
 }
 
-static TtyCmd sBuiltinCmds[];
 
 static void printCmdListShortHelp()
 {
     // print short help text for all commands
-    TTY_LOG( "commands:\n" );
+   //TTY_LOG( "commands:\n" );
 
-    TtyCmd* helpCmd = sCommands;
-    while ( helpCmd->name != NULL )
-    {
-        printCmdShortHelp( helpCmd );    
-        ++helpCmd;
-    }
+   //TtyCmd* helpCmd = sCommands;
+   //while ( helpCmd->name != NULL )
+   //{
+   //    printCmdShortHelp( helpCmd );
+   //    ++helpCmd;
+   //}
 
-    TTY_LOG( "\n" );
-    TTY_LOG( "builtin commands:\n" );
-    helpCmd = sBuiltinCmds;
-    while ( helpCmd->name != NULL )
-    {
-        printCmdShortHelp( helpCmd );    
-        ++helpCmd;
-    }
+   //TTY_LOG( "\n" );
+   //TTY_LOG( "builtin commands:\n" );
+   //helpCmd = sBuiltinCmds;
+   //while ( helpCmd->name != NULL )
+   //{
+   //    printCmdShortHelp( helpCmd );
+   //    ++helpCmd;
+   //}
 }
 
 static TtyCmdStatus helpCmd( TtyCmd* cmd, const char** args, u32 argc, char** error )
@@ -187,7 +186,7 @@ static TtyCmdStatus helpCmd( TtyCmd* cmd, const char** args, u32 argc, char** er
     TTY_CMD( helpCmd, name, "Displays the command help text", TTY_CMD_FLAG_NONE, \
         TTY_CMD_PARAM( "command", "The command to display info over", TTY_CMD_PARAM_FLAG_OPTIONAL, TTY_CMD_PARAM_TYPE_STRING ) )
 
-static TtyCmd sBuiltinCmds[] = 
+static TtyCmd sBuiltinCmds[] =
 {
     HELP_CMD( "help" ),
     HELP_CMD( "-h" ),
@@ -215,7 +214,7 @@ static bool processCmd( TtyCmd* cmds, const char* command, const char** args, u3
     }
 
     TTY_TRACE( "running cmd handler\n" );
-    assert( cmd->handler );
+    //assert( cmd->handler );
 
     char* error;
     TtyCmdStatus status = cmd->handler( cmd, args, argc, &error );

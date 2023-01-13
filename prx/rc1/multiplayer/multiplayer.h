@@ -2,7 +2,7 @@
 #define MULTIPLAYER_H
 
 #include <rc1/rc1.h>
-#include <rc1/moby.h>
+#include <rc1/Moby.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -31,11 +31,14 @@ mp_unacked_metadata mp_unacked[256];
 unsigned char mp_ack_id;
 unsigned char mp_ack_cycle;
 
+char mp_connection_directory_mode;
+
 
 Moby* mp_mobys[MP_MAX_MOBYS];
 u32 mp_current_weapon_uuid;
 
 void mp_start();
+void mp_reset_environment();
 void mp_tick();
 void mp_send(void* buffer, size_t len);
 Moby* mp_get_moby(int uuid);

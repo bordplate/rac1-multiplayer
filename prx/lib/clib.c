@@ -444,11 +444,11 @@ double pow( double x, double y )
 
 void _Assert( const char* pCond, const char* pFile, s32 line )
 {
-    printf( "%s:%d assertion failed! %s\n", pFile, line, pCond );
+    //printf( "%s:%d assertion failed! %s\n", pFile, line, pCond );
 }
 
 // for printf implementation
-void _putchar( char c )
+/*extern "C"*/ void _putchar( char c )
 {
     static u8 buffer[1024];
     static s32 bufferIndex = 0;

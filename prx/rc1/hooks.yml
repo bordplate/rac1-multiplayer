@@ -4,26 +4,30 @@ _shk_prx_elf_substitute:
     addr: 0x5F7140
     emitTrampoline: no
 
-game_loop_start:
-    addr: 0x0fc168
-    replacedInstr: stdu r1, -0x80(r1)
-    
-STUB_0006544c:
-    addr: 0x4f69b8
-    replacedInstr: stdu r1, -0x240(r1)
+#game_loop_intro_start:
+#    addr: 0x11020
+#    replacedInstr: stdu r1, -0xc0(r1)
 
-authenticate_game:
-    addr: 0x64f724
-    replacedInstr: li r12, 0
+#game_loop_start:
+#    addr: 0x0fc168
+#    replacedInstr: stdu r1, -0x80(r1)
 
-ratchet_dying:
-    addr: 0x00609cf4
-    replacedInstr: stdu r1, -0x210(r1)
+#STUB_0006544c:
+#    addr: 0x4f69b8
+#    replacedInstr: stdu r1, -0x240(r1)
 
-wrench_update_func:
-    addr: 0x42c150
-    replacedInstr: stdu r1, -0x2a0(r1)
+#authenticate_game:
+#    addr: 0x5046b0
+#    replacedInstr: stdu r1, -0x90(r1)
 
-FUN_000784e8:
-    addr: 0x68560
-    replacedInstr: stdu r1, -0x70(r1)
+#ratchet_dying:
+#    addr: 0x00609cf4
+#    replacedInstr: stdu r1, -0x210(r1)
+#
+#wrench_update_func:
+#    addr: 0x42c150
+#    replacedInstr: stdu r1, -0x2a0(r1)
+#
+#FUN_000784e8:
+#    addr: 0x68560
+#    replacedInstr: stdu r1, -0x70(r1)

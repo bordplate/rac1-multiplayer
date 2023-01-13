@@ -1,7 +1,10 @@
 #ifndef TTYCMD_H
 #define TTYCMD_H
 
-#include "lib/common.h"
+#include "clib.h"
+#include "types.h"
+#include "string.h"
+#include "utils.h"
 
 /**
  * @brief The TTY command handler function result status type.

@@ -28,6 +28,10 @@ void _Assert( const char* pCond, const char* pFile, int line );
 // string.h
 #define RAND_MAX 32767
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void* malloc(size_t len);
 extern void free(void* ptr);
 
@@ -60,6 +64,11 @@ double pow( double x, double y );
 
 // stdio.h
 void _putchar( char c );
+
+#ifdef __cplusplus
+}
+#endif
+
 #include "external/printf/printf.h"
 //extern void printf(const char* format, ...);
 
