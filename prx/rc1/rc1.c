@@ -10,55 +10,53 @@ extern "C" {
 
 //char *start_multiplayer_text = "\x13 MULTIPLAYER";
 //char *connecting_text = "Connecting to multiplayer...";
-//
-//void game_tick() {
-//    //_c_game_tick();
-//}
-//
-//SHK_HOOK(void, game_loop_start);
-//void game_loop_start_hook() {
-//    //if (current_planet != 0 || ratchet_moby != 0) {
-//    //    game_tick();
-//    //}
-//
-//    return SHK_CALL_HOOK(game_loop_start);
-//}
-//
-//SHK_HOOK(void, game_loop_intro_start);
-//void game_loop_intro_start_hook() {
-//    //game_tick();
-//
-//    return SHK_CALL_HOOK(game_loop_intro_start);
-//}
-//
+
+void game_tick() {
+    _c_game_tick();
+}
+
+SHK_HOOK(void, game_loop_start);
+void game_loop_start_hook() {
+    if (current_planet != 0 || ratchet_moby != 0) {
+        game_tick();
+    }
+
+    return SHK_CALL_HOOK(game_loop_start);
+}
+
+SHK_HOOK(void, game_loop_intro_start);
+void game_loop_intro_start_hook() {
+    game_tick();
+
+    return SHK_CALL_HOOK(game_loop_intro_start);
+}
+
 //SHK_HOOK(void, ratchet_dying);
 //void ratchet_dying_hook() {
 //    SHK_CALL_HOOK(ratchet_dying);
 //
 //    //MULTI_LOG("Dying...\n");
 //}
-//
-//SHK_HOOK(void, STUB_0006544c);
-//void STUB_0006544c_hook(Moby *moby) {
-//    //_c_moby_update(moby);
-//}
-//
-//// Hook to avoid some consoles getting a "game is corrupted, restart the game" on game start
-//// I think maybe it makes trophies not work?
-////SHK_HOOK(void, authenticate_game);
-////void authenticate_game_hook() {
-////    MULTI_LOG("Game totally authenticated\n");
-////
-////    SHK_CALL_HOOK(authenticate_game)
-////}
-//
-//SHK_HOOK(void, FUN_000784e8);
-//void FUN_000784e8_hook() {
-//    //_c_game_render();
-//
-//    SHK_CALL_HOOK(FUN_000784e8);
-//}
-//
+
+SHK_HOOK(void, STUB_0006544c);
+void STUB_0006544c_hook(Moby *moby) {
+    _c_moby_update(moby);
+}
+
+// Hook to avoid some consoles getting a "game is corrupted, restart the game" on game start
+// I think maybe it makes trophies not work?
+SHK_HOOK(void, authenticate_game);
+void authenticate_game_hook() {
+    MULTI_LOG("Game totally authenticated\n");
+}
+
+SHK_HOOK(void, FUN_000784e8);
+void FUN_000784e8_hook() {
+    _c_game_render();
+
+    SHK_CALL_HOOK(FUN_000784e8);
+}
+
 //SHK_HOOK(void, wrench_update_func, Moby *);
 //void wrench_update_func_hook(Moby *moby) {
 //    // Clear the collision out ptr before calling original wrench function
@@ -91,17 +89,17 @@ extern "C" {
 //}
 
 void rc1_init() {
-    //MULTI_LOG("Multiplayer initializing.\n");
+    MULTI_LOG("Multiplayer initializing.\n");
 
-    //init_memory_allocator(memory_area, sizeof(memory_area));
+    init_memory_allocator(memory_area, sizeof(memory_area));
 
     //SHK_BIND_HOOK(ratchet_dying, ratchet_dying_hook);
-    //SHK_BIND_HOOK(STUB_0006544c, STUB_0006544c_hook);  // Used as a "trampoline" to our custom Moby update func
-    //SHK_BIND_HOOK(game_loop_start, game_loop_start_hook);
-    //SHK_BIND_HOOK(game_loop_intro_start, game_loop_intro_start_hook);
+    SHK_BIND_HOOK(STUB_0006544c, STUB_0006544c_hook);  // Used as a "trampoline" to our custom Moby update func
+    SHK_BIND_HOOK(game_loop_start, game_loop_start_hook);
+    SHK_BIND_HOOK(game_loop_intro_start, game_loop_intro_start_hook);
     //SHK_BIND_HOOK(wrench_update_func, wrench_update_func_hook);
-    ////SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
-    //SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
+    SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
+    SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
     //SHK_BIND_HOOK(FUN_000850f8, FUN_000850f8_hook);
 
     // Ininitalize and start multiplayer

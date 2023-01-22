@@ -8,6 +8,7 @@ PPU-ca24b3c7b5db4bf8e8b9699fc1cbca8341855556:
     Patch Version: 1.0
     Patch:
       - [ be32, 0x650CB4, 0x9f18429d ] # replace _sys_process_at_Exitspawn with sys_prx_start_module
+      - [ be32, 0x6506d4, 0x84bb6774 ] # replace sys_prx_exitspawn_with_level with sys_prx_get_module_info
 
       # bin2rpcs3patch begin shk_elf_loader_RC1
       # bin2rpcs3patch end

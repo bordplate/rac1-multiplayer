@@ -10,7 +10,7 @@
 
 Packet::Packet(size_t body_len) {
     this->header = (MPPacketHeader*)allocate_memory(sizeof(MPPacketHeader) + body_len);
-    memset(this->header, 0, sizeof(MPPacketHeader) + body_len + 1);
+    memset(this->header, 0, sizeof(MPPacketHeader) + body_len);
 
     this->header->size = body_len;
 

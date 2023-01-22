@@ -7,5 +7,7 @@
 #include <lib/memory.h>
 
 GameServer::~GameServer() {
-    free_memory(this->name);
+    if (this->name) {
+        delete this->name;
+    }
 }

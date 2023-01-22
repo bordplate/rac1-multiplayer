@@ -5,11 +5,12 @@
 #ifndef RAC1_MULTIPLAYER_GAMESERVER_H
 #define RAC1_MULTIPLAYER_GAMESERVER_H
 
+#include <lib/string.h>
 
 struct GameServer {
     int ip;
     unsigned short port;
-    char* name;
+    String* name;
     int num_players;
     int max_players;
 

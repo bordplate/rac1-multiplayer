@@ -45,7 +45,8 @@ SHKGENARGS = \
 	--toc $(TOC) --hook_shared_text_range $(HOOK_SHARED_TEXT_BEGIN_ADDR) $(HOOK_SHARED_TEXT_END_ADDR) \
 	--hook_shared_data_range $(HOOK_SHARED_DATA_BEGIN_ADDR) $(HOOK_SHARED_DATA_END_ADDR) --patch_file "$(PATCH_FILE)" $(HOOKSARG) --hooks_file $(HOOKS_FILES) \
 	--game $(GAME) --loader_inject_addr $(LOADER_INJECT_ADDR) --loader_text_range $(LOADER_START_ADDR) $(LOADER_END_ADDR) \
-	--sys_prx_load_module_addr $(LOADER_SYS_PRX_MODULE_LOAD_ADDR) --sys_prx_start_module_addr $(LOADER_SYS_PRX_MODULE_START_ADDR) --sce_np_drm_is_available2_addr $(LOADER_SCE_NP_DRM_IS_AVAILABLE_ADDR)
+	--sys_prx_load_module_addr $(LOADER_SYS_PRX_MODULE_LOAD_ADDR) --sys_prx_start_module_addr $(LOADER_SYS_PRX_MODULE_START_ADDR) --sce_np_drm_is_available2_addr $(LOADER_SCE_NP_DRM_IS_AVAILABLE_ADDR) \
+	--SYS_PRX_MODULE_INFO_ADDR $(LOADER_SYS_PRX_MODULE_INFO_ADDR) --SYS_PRX_REGISTER_LIBRARY $(LOADER_SYS_PRX_REGISTER_LIBRARY)
 
 all:
 # generate build files

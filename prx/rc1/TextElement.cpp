@@ -18,7 +18,9 @@ TextElement::TextElement(int x, int y, const char* text) {
 }
 
 TextElement::~TextElement() {
-    delete text;
+    if (text) {
+        delete text;
+    }
 }
 
 void TextElement::render() {

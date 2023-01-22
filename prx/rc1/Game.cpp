@@ -109,9 +109,11 @@ int Game::query_servers_callback(void* data, size_t len) {
 
         snprintf(server_name, packet->name_length+1, "%s", &((char*)data)[index+sizeof(MPPacketQueryResponseServer)]);
 
-        server->name = server_name;
+        server->name = new String(server_name);
 
-        Logger::debug("Server name: %s; Port: %d; Max players: %d", server->name, server->port, server->max_players);
+        free_memory(server_name);
+
+        Logger::debug("Server name: %s; Port: %d; Max players: %d", server->name->c_str(), server->port, server->max_players);
 
         index += sizeof(MPPacketQueryResponseServer) + packet->name_length;
         items += 1;

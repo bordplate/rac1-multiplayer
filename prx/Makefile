@@ -9,12 +9,6 @@ TMP_DIR = $(BUILD_DIR)$(PATH_SEP)tmp
 -include ../os.mk
 include $(TMP_DIR)/shk_prx.gen.mk
 
-GCC_PPU_CXXFLAGS += \
-	-mprx-with-runtime \
-	-fno-rtti \
-	-fuse-cxa-atexit \
-	-ffunction-sections \
-	-fdata-sections
 
 GAME = RC1
 EXE_SUFFIX = .exe
@@ -31,23 +25,22 @@ PPU_PRX_LDFLAGS  += \
 	-Wl,--start-group \
 	-lsyscall \
 	-llv2_stub \
-	-lsupc++ \
 	-lc_stub \
 	-lstdc++ \
 	-lm_stub \
 	-lnet_stub \
 	-lsysutil_stub \
+	-Map=$(BIN_DIR)/mod.map \
 	-Wl,--end-group
 CCFLAGSsss = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CFILES) rc1/multiplayer/Client.cpp $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)/mod.map -lnet_stub -lsysutil_stub
-CCFLAGSss = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) lib/ttycmd.c lib/utils.c lib/string.c lib/clib.c lib/external/printf/printf.c lib/memory.c runtime/init.c lib/module.c rc1/rc1.c $(CPPFILES) $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)/mod.map $(PPU_PRX_LDFLAGS)
-CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CPPFILES) lib/memory.c lib/utils.c lib/clib.c runtime/init.c lib/external/printf/printf.c lib/module.c rc1/rc1.c $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -Wa,-mregnames -fno-exceptions -fno-builtin -Xlinker -Map=$(BIN_DIR)/mod.map $(PPU_PRX_LDFLAGS)
+CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CPPFILES) lib/memory.c lib/utils.c lib/clib.c lib/external/printf/printf.c lib/module.c rc1/rc1.c $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -fno-exceptions -fno-rtti -Wa,-mregnames $(PPU_PRX_LDFLAGS)
 SCETOOL = $(WINE) $(PS3_SDK)/Tools/tool/scetool.exe
 
 elf:
 	$(CC) $(CCFLAGS) -nostartfiles -relocatable -o $(BIN_DIR)/mod.elf
 
 prx:
-	$(CC) -mprx $(CCFLAGS) -zgenprx -zgc-sections -s -o $(BIN_DIR)/mod.prx
+	$(CC) $(CCFLAGS) -s -o $(BIN_DIR)/mod.prx -mprx-with-runtime -zgenprx -zlevel=all
 	$(WINE) $(PS3_SDK)/host-win32/bin/ppu-lv2-prx-fixup.exe --stub-fix-only $(BIN_DIR)/mod.prx
 
 preprocessed:

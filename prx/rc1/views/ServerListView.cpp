@@ -43,7 +43,7 @@ void ServerListView::on_load() {
         for (int i = 0; i < servers_.size(); i++) {
             GameServer* server = servers_[i];
 
-            Logger::trace("Adding server '%s'[%d]", server->name, i);
+            Logger::trace("Adding server '%s'[%d]", server->name->c_str(), i);
 
             if (server) {
                 // Calculate the Y coordinate for the element
@@ -57,7 +57,7 @@ void ServerListView::on_load() {
                 element->color.b = (i == selected_server_) ? 0 : element->color.b;
 
                 // Set the element's text
-                element->text->setf("%s (%d/%d)", server->name, server->num_players, server->max_players);
+                element->text->setf("%s (%d/%d)", server->name->c_str(), server->num_players, server->max_players);
 
                 this->servers_elements_.push_back(element);
                 this->add_element(element);
@@ -96,7 +96,7 @@ void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
         char ip[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &server->ip, ip, INET_ADDRSTRLEN);
 
-        Logger::info("Selected server '%s'", server->name);
+        Logger::info("Selected server '%s'", server->name->c_str());
 
         Game::shared().connect_to(ip, server->port);
     }

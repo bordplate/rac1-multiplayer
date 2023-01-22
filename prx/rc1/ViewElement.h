@@ -10,6 +10,8 @@ struct ViewElement {
     int x;
     int y;
 
+    virtual ~ViewElement() {};
+
     virtual void render() = 0;
 };
 

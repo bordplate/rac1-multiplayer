@@ -12,12 +12,13 @@ extern "C" {
 #endif
 
 struct memory_block {
-    size_t size;
+    void* self_address;
     int is_allocated;
+    size_t size;
     struct memory_block *next;
 };
 
-extern char *memory_area[1000000];
+extern char *memory_area[100000];
 
 void init_memory_allocator(void *start, size_t size);
 void *allocate_memory(size_t size);

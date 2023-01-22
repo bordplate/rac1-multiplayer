@@ -261,6 +261,8 @@ def main():
     parser.add_argument( '--sys_prx_load_module_addr', type=hexInt, required=True, help='address of sys_prx_load_module')
     parser.add_argument( '--sys_prx_start_module_addr', type=hexInt, required=True, help='address of sys_prx_start_module')
     parser.add_argument( '--sce_np_drm_is_available2_addr', type=hexInt, required=True, help='address of sce_np_drm_is_available2_addr')
+    parser.add_argument( '--SYS_PRX_MODULE_INFO_ADDR', type=hexInt, required=True, help='address of SYS_PRX_MODULE_INFO_ADDR')
+    parser.add_argument( '--SYS_PRX_REGISTER_LIBRARY', type=hexInt, required=True, help='address of SYS_PRX_REGISTER_LIBRARY')
     parser.add_argument( '--toc', type=hexInt, required=True, help='default TOC (r2) address of the functions to patch' )
     parser.add_argument( '--hook_shared_text_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared code for hooking is stored when injected' )
     parser.add_argument( '--hook_shared_data_range', type=hexInt, required=True, nargs="+", help='start/end address(es) at which shared data for hooking is stored when injected' )
@@ -289,6 +291,8 @@ def main():
         writeLdSymbol( f, ".sys_prx_load_module", hex( args.sys_prx_load_module_addr ) )
         writeLdSymbol( f, ".sys_prx_start_module", hex( args.sys_prx_start_module_addr ) )
         writeLdSymbol( f, ".sceNpDrmIsAvailable2", hex( args.sce_np_drm_is_available2_addr ) )
+        writeLdSymbol( f, ".sys_prx_get_module_info", hex( args.SYS_PRX_MODULE_INFO_ADDR ) )
+        writeLdSymbol( f, ".sys_prx_register_library", hex( args.SYS_PRX_REGISTER_LIBRARY ) )
         writeLdSectionsBegin( f )
         for section in loaderSections:
             writeLdSection( f, section.name, section.addr )

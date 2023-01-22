@@ -36,13 +36,13 @@ public:
         va_start(args, format);
 
         // Determine the length of the formatted string
-        size_t length = 0; //vsnprintf(nullptr, 0, format, args);
+        size_t length = vsnprintf(nullptr, 0, format, args);
 
         // Allocate a buffer for the formatted string
         char* buffer = new char[length + 1];
 
         // Print the formatted string into the buffer
-        //vsnprintf(buffer, length + 1, format, args);
+        vsnprintf(buffer, length + 1, format, args);
 
         // Set the value of the string using the buffer
         set(buffer);

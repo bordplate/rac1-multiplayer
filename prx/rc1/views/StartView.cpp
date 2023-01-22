@@ -17,7 +17,7 @@ const char* start_multiplayer_str = "\x13 Start multiplayer";
 const char* connecting_str = "Loading servers...";
 
 StartView::~StartView() {
-    delete label_;
+
 }
 
 void StartView::on_load() {

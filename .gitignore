@@ -1,9 +1,13 @@
 *.7z
+*.prx
+*.sprx
+
 
 # remove userconfigs but keep templates
 userconfig*
 !*.template.mk
 
+.idea/**
 .clangd
 compile_commands.json*
 .cache/*
