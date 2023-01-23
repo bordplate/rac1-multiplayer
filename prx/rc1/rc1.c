@@ -57,36 +57,36 @@ void FUN_000784e8_hook() {
     SHK_CALL_HOOK(FUN_000784e8);
 }
 
-//SHK_HOOK(void, wrench_update_func, Moby *);
-//void wrench_update_func_hook(Moby *moby) {
-//    // Clear the collision out ptr before calling original wrench function
-//    //coll_moby_out = 0;
+SHK_HOOK(void, wrench_update_func, Moby *);
+void wrench_update_func_hook(Moby *moby) {
+    // Clear the collision out ptr before calling original wrench function
+    //coll_moby_out = 0;
+
+    SHK_CALL_HOOK(wrench_update_func, moby);
+
+    // If coll_moby_out has a value, the wrench has "attacked" something
+    //if (!coll_moby_out) {
+    //    return;
+    //}
 //
-//    SHK_CALL_HOOK(wrench_update_func, moby);
+    //// Figure out what moby we hit and if we need to tell the server about it
+    //Moby* hit = coll_moby_out;
+    //if (!hit->pVars) {
+    //    // If we don't have pVars, this isn't something the server needs to know about
+    //    return;
+    //}
 //
-//    // If coll_moby_out has a value, the wrench has "attacked" something
-//    //if (!coll_moby_out) {
-//    //    return;
-//    //}
-////
-//    //// Figure out what moby we hit and if we need to tell the server about it
-//    //Moby* hit = coll_moby_out;
-//    //if (!hit->pVars) {
-//    //    // If we don't have pVars, this isn't something the server needs to know about
-//    //    return;
-//    //}
-////
-//    //MPMobyVars* vars = (MPMobyVars*)hit->pVars;
-////
-//    //// If this moby has UUID vars
-//    //if (vars->uuid && vars->uuid < MP_MAX_MOBYS) {
-//    //    // Verify that ptr to MP moby with this UUID matches ptr to moby we hit
-//    //    if (mp_get_moby(vars->uuid) == hit) {
-//    //        mp_send_collision(0, vars->uuid, &moby->position, true);
-//    //        MULTI_LOG("%d oClass %d at %08x got maybe hit by a wrench. Player state %d\n", vars->uuid, hit->oClass, hit, player_state);
-//    //    }
-//    //}
-//}
+    //MPMobyVars* vars = (MPMobyVars*)hit->pVars;
+//
+    //// If this moby has UUID vars
+    //if (vars->uuid && vars->uuid < MP_MAX_MOBYS) {
+    //    // Verify that ptr to MP moby with this UUID matches ptr to moby we hit
+    //    if (mp_get_moby(vars->uuid) == hit) {
+    //        mp_send_collision(0, vars->uuid, &moby->position, true);
+    //        MULTI_LOG("%d oClass %d at %08x got maybe hit by a wrench. Player state %d\n", vars->uuid, hit->oClass, hit, player_state);
+    //    }
+    //}
+}
 
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
@@ -97,7 +97,7 @@ void rc1_init() {
     SHK_BIND_HOOK(STUB_0006544c, STUB_0006544c_hook);  // Used as a "trampoline" to our custom Moby update func
     SHK_BIND_HOOK(game_loop_start, game_loop_start_hook);
     SHK_BIND_HOOK(game_loop_intro_start, game_loop_intro_start_hook);
-    //SHK_BIND_HOOK(wrench_update_func, wrench_update_func_hook);
+    SHK_BIND_HOOK(wrench_update_func, wrench_update_func_hook);
     SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
     SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
     //SHK_BIND_HOOK(FUN_000850f8, FUN_000850f8_hook);

@@ -23,10 +23,10 @@ authenticate_game:
 #ratchet_dying:
 #    addr: 0x00609cf4
 #    replacedInstr: stdu r1, -0x210(r1)
-#
-#wrench_update_func:
-#    addr: 0x42c150
-#    replacedInstr: stdu r1, -0x2a0(r1)
+
+wrench_update_func:
+    addr: 0x42c150
+    replacedInstr: stdu r1, -0x2a0(r1)
 
 FUN_000784e8:
     addr: 0x68560

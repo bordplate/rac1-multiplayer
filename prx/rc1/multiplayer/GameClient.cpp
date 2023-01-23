@@ -151,18 +151,13 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
     Logger::trace("Updating text element at %p", element);
 
     element->x = packet->x;
-
-    Logger::trace("Before setting y");
-
     element->y = packet->y;
-
-    Logger::trace("Before setting color");
 
     element->color = packet->color;
 
     Logger::trace("Before setting text");
 
-    //element->text->set(packet->text);
+    element->text->set(packet->text);
 
     Logger::trace("Done updating the text element");
 }
