@@ -20,8 +20,7 @@ struct memory_canary {
     char l;
 };
 
-
-char* memory_area[10000];
+char* memory_area[100000];
 struct memory_block* head;
 
 void init_memory_allocator(void* start, size_t size) {

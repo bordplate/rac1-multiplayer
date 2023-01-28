@@ -17,7 +17,8 @@ Packet::Packet(size_t body_len) {
     this->len = sizeof(MPPacketHeader) + body_len;
     this->retain_after_send = false;
 
-    this->body = &((char*)this->header)[sizeof(MPPacketHeader)];
+    //this->body = &((char*)this->header)[sizeof(MPPacketHeader)];
+    this->body = ((char*)this->header) + sizeof(MPPacketHeader);
 }
 
 Packet::~Packet() {

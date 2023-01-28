@@ -82,8 +82,6 @@ struct MPPacketHeader {
     unsigned char ack_cycle;
 };
 
-#ifdef __cplusplus
-
 struct Packet {
     MPPacketHeader* header;
     void* body;
@@ -97,8 +95,6 @@ struct Packet {
     static Packet* make_ack_packet(unsigned char id, unsigned char cycle);
     static Packet* make_query_directory_packet(int directory_id);
 };
-
-#endif
 
 struct MPPacketMobyUpdate {
     u16 uuid;

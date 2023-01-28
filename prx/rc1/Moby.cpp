@@ -98,11 +98,14 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags) {
     moby->update_distance = 0xff;
     moby->alpha = 0xff;
 
-    moby->mode_bits = 0x10 | 0x20 | 0x400 | 0x1000 | 0x4000;
+    // Used to set flag 0x1000 here as well, but setting flag 0x1000 makes it so that
+    // the first 4 bytes of pVars are checked when using weapons and wrench and that crashes
+    // on console when the address doesn't make sense. Does not crash in RPCS3 for whatever reason. 
+    moby->mode_bits = 0x10 | 0x20 | 0x400 | 0x4000;
 
     Logger::info("Spawned Moby (oClass: %d)", o_class);
 
-    idk(moby);
+    //idk(moby);
 
     return moby;
 }

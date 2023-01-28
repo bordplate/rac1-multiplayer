@@ -18,13 +18,12 @@ Client::Client(char* ip, int port) {
 
     sockaddr_.sin_addr.s_addr = inet_addr(ip);
     sockaddr_.sin_port = htons(port);
-    sockaddr_.sin_len = sizeof(sockaddr_);
     sockaddr_.sin_family = AF_INET;
 }
 
 void Client::connect() {
     Logger::debug("Starting client");
-    sockfd_ = socket(AF_INET, SOCK_DGRAM, 0);
+    sockfd_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (sockfd_ <= 0) {
         Logger::critical("Couldn't open socket: %d", sockfd_);
@@ -41,7 +40,7 @@ void Client::connect() {
 
 void Client::send(Packet* packet) {
     if (sockfd_) {
-        sendto(sockfd_, (void*)packet->header, packet->len, MSG_DONTWAIT, (const struct sockaddr*)&sockaddr_, sizeof(struct sockaddr_in));
+        sendto(sockfd_, packet->header, packet->len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
     }
 
     if (!packet->retain_after_send) {

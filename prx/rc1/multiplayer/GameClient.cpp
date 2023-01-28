@@ -42,7 +42,7 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
 
         MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
 
-        hexDump("MOBY:", moby, sizeof(Moby));
+        //hexDump("MOBY:", moby, sizeof(Moby));
 
         Logger::trace("Bulbulbul 0x%08x", vars);
         if (vars) {
@@ -158,8 +158,6 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
     Logger::trace("Before setting text");
 
     element->text->set(packet->text);
-
-    Logger::trace("Done updating the text element");
 }
 
 bool GameClient::update(MPPacketHeader *header, void *packet_data) {

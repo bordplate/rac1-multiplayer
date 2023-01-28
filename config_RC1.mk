@@ -10,8 +10,6 @@ LOADER_START_ADDR 					= 0x5F7150 # 0x5F7140 + 4 + align16
 LOADER_END_ADDR 					= 0x5F7350 # LOADER_START_ADDR + 0x500
 LOADER_SYS_PRX_MODULE_LOAD_ADDR 	= 0x650544 # cellPrxForUser sys_prx_load_module
 LOADER_SYS_PRX_MODULE_START_ADDR 	= 0x6506a4 # cellPrxForUser _sys_process_at_Exitspawn 0x96328741
-LOADER_SYS_PRX_MODULE_INFO_ADDR 	= 0x6506c4 # cellPrxForUser sys_prx_exitspawn_with_level
-LOADER_SYS_PRX_REGISTER_LIBRARY 	= 0x650604
 LOADER_SCE_NP_DRM_IS_AVAILABLE_ADDR	= 0x64fe84 # sceNp sceNpDrmIsAvailable2
 
 # 1414 instructions, around ~375 hooks

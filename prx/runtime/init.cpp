@@ -40,8 +40,6 @@ extern "C" void __cxa_pure_virtual() { while (1); }
 extern "C" void initRuntime() {
     LOADER_LOG("initialising runtime\n");
 
-    //*(int*)0 = 1;
-
     // initialize pointer to prx function pointer table in elf
     *(void **) &_shk_elf_prx_ptr_table = &_shk_prx_ptr_table;
 

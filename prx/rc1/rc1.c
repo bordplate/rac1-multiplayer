@@ -21,14 +21,14 @@ void game_loop_start_hook() {
         game_tick();
     }
 
-    return SHK_CALL_HOOK(game_loop_start);
+    SHK_CALL_HOOK(game_loop_start);
 }
 
 SHK_HOOK(void, game_loop_intro_start);
 void game_loop_intro_start_hook() {
     game_tick();
 
-    return SHK_CALL_HOOK(game_loop_intro_start);
+    SHK_CALL_HOOK(game_loop_intro_start);
 }
 
 //SHK_HOOK(void, ratchet_dying);
