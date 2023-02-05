@@ -21,6 +21,8 @@ struct GameClient : public Client {
     GameClient(char* ip, int port) : Client(ip, port) { mobys_.reserve(MAX_MP_MOBYS); };
 
     void update_moby(MPPacketMobyUpdate* packet);
+    void moby_delete(MPPacketMobyCreate* packet);
+    void moby_delete_all();
     void update_set_state(MPPacketSetState* packet);
     void update_set_text(MPPacketSetHUDText* packet);
     bool update(MPPacketHeader* header, void* packet_data);

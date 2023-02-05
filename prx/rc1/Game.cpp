@@ -15,7 +15,7 @@
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
 // Maybe better to just have it here anyway. Idk.
-LogLevel Logger::log_level_ = Trace;
+LogLevel Logger::log_level_ = Debug;
 
 ServerQueryCallback Game::server_query_callback_ = NULL;
 

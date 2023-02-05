@@ -75,6 +75,23 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     }
 }
 
+void GameClient::moby_delete(MPPacketMobyCreate* packet) {
+    Moby* moby = mobys_[packet->uuid];
+    if (!moby || moby->state < 0) {
+        MULTI_LOG("Not deleting moby %d @ 0x%08x\n", packet->uuid, moby);
+        return;
+    }
+
+    MULTI_LOG("Deleting moby %d\n", packet->uuid);
+
+    delete_moby(moby);
+    mobys_[packet->uuid] = 0;
+}
+
+void GameClient::moby_delete_all() {
+
+}
+
 void GameClient::update_set_state(MPPacketSetState* packet) {
     switch(packet->state_type) {
         case MP_STATE_TYPE_DAMAGE: {
@@ -167,7 +184,7 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
             Logger::trace("Done updating moby");
             break;
         case MP_PACKET_MOBY_DELETE:
-            //mp_delete_moby((MPPacketMobyCreate*)packet_data);
+            moby_delete((MPPacketMobyCreate*)packet_data);
             break;
         case MP_PACKET_SET_STATE: {
             // Server can send multiple of these messages in 1 packet to ensure the actions are performed in the right sequence.

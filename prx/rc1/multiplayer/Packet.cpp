@@ -95,3 +95,30 @@ Packet* Packet::make_controller_input(CONTROLLER_INPUT inputs, u16 flags) {
 
     return packet;
 }
+
+Packet* Packet::make_collision(u16 uuid, u16 collided_with, Vec4* position, bool aggressive) {
+    Packet* packet = new Packet(sizeof(MPPacketMobyCollision));
+    MPPacketHeader* header = (MPPacketHeader*)packet->header;
+    header->size = sizeof(MPPacketMobyCollision);
+    header->type = MP_PACKET_MOBY_COLLISION;
+
+    MPPacketMobyCollision* body = (MPPacketMobyCollision*)packet->body;
+    body->flags = aggressive == true ? MP_COLLISION_FLAG_AGGRESSIVE : 0;
+    body->uuid = uuid;
+    body->collided_with = collided_with;
+    body->x = position->x;
+    body->y = position->y;
+    body->z = position->z;
+
+    // Aggressive packets (weapon attacks, etc.) must be acked be the server.
+    // We want to be sure we don't drop any attacks.
+    // Other collision events we just blindly spam and should be fine
+    if (aggressive) {
+        Client* client = Game::shared().client();
+        if (client) {
+            client->make_ack(packet, nullptr);
+        }
+    }
+
+    return packet;
+}

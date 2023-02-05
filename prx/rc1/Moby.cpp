@@ -1,5 +1,7 @@
 #include "Moby.h"
 
+#include "Game.h"
+
 #include "rc1.h"
 #include "multiplayer/packet.h"
 
@@ -65,8 +67,9 @@ void Moby::check_collision() {
 
     if (success > 0 && coll_moby_out != 0) {
         if (coll_moby_out->oClass == 0) {
-            //mp_send_collision(vars->uuid, 0, &self->position, false);
-            //MULTI_TRACE("Collision with ratchet! 0x%08x : 0x%08x : 0x%08x\n", coll_moby_out, ratchet_moby, self);
+            if (Game::shared().client()) {
+                Game::shared().client()->send(Packet::make_collision(vars->uuid, 0, &this->position, false));
+            }
         }
     }
 }
