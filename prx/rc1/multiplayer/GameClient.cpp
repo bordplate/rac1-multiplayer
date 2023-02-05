@@ -16,16 +16,16 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     }
 
     if (ticks_ < 60 * 1) {
-        Logger::debug("Waiting a little before spawning moby. Tick: %d", ticks_);
+        Logger::trace("Waiting a little before spawning moby. Tick: %d", ticks_);
         return;
     }
 
     if (game_state != PlayerControl) {
-        Logger::debug("Moby not updating because game state %d", game_state);
+        Logger::trace("Moby not updating because game state %d", game_state);
+        return;
     }
 
     if (current_planet != packet->level) {
-        Logger::trace("Server sent update packet for a moby on a different level");
         return;
     }
 
@@ -38,13 +38,8 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
 
         mobys_[packet->uuid] = moby;
 
-        Logger::trace("Blahblabh");
-
         MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
 
-        //hexDump("MOBY:", moby, sizeof(Moby));
-
-        Logger::trace("Bulbulbul 0x%08x", vars);
         if (vars) {
             vars->uuid = packet->uuid;
             vars->o_class = packet->o_class;
@@ -61,16 +56,12 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
             }
         }
 
-        Logger::trace("Bririrbir");
-
         if (!moby) return;
     }
 
     if (packet->flags & MP_MOBY_FLAG_NO_COLLISION) {
         moby->collision = 0;
     }
-
-    Logger::trace("Briririr");
 
     moby->position.x = packet->x;
     moby->position.y = packet->y;
@@ -82,8 +73,6 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
         vars->next_animation_id = (char)packet->animation_id;
         vars->animation_duration = (int)packet->animation_duration;
     }
-
-    Logger::trace("Burkburk");
 }
 
 void GameClient::update_set_state(MPPacketSetState* packet) {

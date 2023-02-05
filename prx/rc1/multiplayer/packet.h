@@ -1,6 +1,8 @@
 #ifndef PACKET_H
 #define PACKET_H
 
+#include <rc1/rc1.h>
+
 /*
 +-------------------+
 |  MPPacketHeader   |
@@ -94,6 +96,7 @@ struct Packet {
     static Packet* make_handshake_packet();
     static Packet* make_ack_packet(unsigned char id, unsigned char cycle);
     static Packet* make_query_directory_packet(int directory_id);
+    static Packet* make_controller_input(CONTROLLER_INPUT inputs, u16 flags);
 };
 
 struct MPPacketMobyUpdate {

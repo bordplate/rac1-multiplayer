@@ -4,9 +4,10 @@
 
 #include "packet.h"
 
-#include <lib/clib.h>
-#include <lib/memory.h>
-#include <lib/logger.h>
+#include <rc1/rc1.h>
+#include <rc1/Game.h>
+
+#include "Client.h"
 
 Packet::Packet(size_t body_len) {
     this->header = (MPPacketHeader*)allocate_memory(sizeof(MPPacketHeader) + body_len);
@@ -62,22 +63,35 @@ Packet* Packet::make_query_directory_packet(int directory_id) {
     return packet;
 }
 
-//Packet* Packet::make_moby_update_packet(unsigned short uuid) {
-//    Packet* packet = new Packet(sizeof(MPPacketMobyUpdate));
-//
-//    packet->header->type = MP_PACKET_MOBY_UPDATE;
-//
-//    MPPacketMobyUpdate* payload = (MPPacketMobyUpdate*)packet->body;
-//    payload->uuid = 0;  // Player moby is always uuid 0
-//    payload->flags |= ratchet_moby != 0 ? 1 : 0;
-//    payload->o_class = 0;
-//    payload->level = (u16)current_planet;
-//    payload->animation_id = ratchet_moby != 0 ? ratchet_moby->animationID : 0;
-//    payload->animation_duration = player_animation_duration;
-//    payload->x = player_pos.x;
-//    payload->y = player_pos.y;
-//    payload->z = player_pos.z;
-//    payload->rotation = player_rot.z;
-//
-//    return packet;
-//}
+/**
+ * Makes a packet containing controller input data.
+ *
+ * @param inputs The controller input data to be sent.
+ * @param flags The flags for the input data.
+ */
+Packet* Packet::make_controller_input(CONTROLLER_INPUT inputs, u16 flags) {
+    Packet* packet = new Packet(sizeof(MPPacketControllerInput));
+
+    // Get a pointer to the header part of the packet
+    MPPacketHeader* header = (MPPacketHeader*)packet->header;
+    // Set the type of the packet
+    header->type = MP_PACKET_CONTROLLER_INPUT;
+
+    // Get a pointer to the body of the packet
+    MPPacketControllerInput* body = (MPPacketControllerInput*)packet->body;
+    // Set the controller input data in the packet
+    body->input = inputs;
+    // Set the flags in the packet
+    body->flags = flags;
+
+    // If the input is a press (not a hold), set the packet to require an acknowledgement
+    if (flags & MP_CONTROLLER_FLAGS_PRESSED) {
+        //mp_make_ack(&packet, 0);
+        Client* client = Game::shared().client();
+        if (client) {
+            client->make_ack(packet, nullptr);
+        }
+    }
+
+    return packet;
+}

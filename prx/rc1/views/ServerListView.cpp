@@ -89,6 +89,16 @@ void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
         update_server_list();
     }
 
+    if (input & Square) {
+
+    }
+
+    if (input & Triangle) {
+        // Setting game_state to Menu should make the main MP game loop delete this view and present
+        //  the relevant StartView.
+        game_state = Menu;
+    }
+
     if (input & Cross) {
         GameServer* server = servers_[selected_server_];
 

@@ -20,7 +20,7 @@ struct memory_canary {
     char l;
 };
 
-char* memory_area[100000];
+char* memory_area[1000000];
 struct memory_block* head;
 
 void init_memory_allocator(void* start, size_t size) {
@@ -37,7 +37,7 @@ void *allocate_memory(size_t size) {
     size = ((size + word_size - 1) & ~(word_size - 1)) + sizeof(struct memory_canary);
 
 #ifdef __cplusplus
-    //Logger::trace("Allocating memory of size %d", size);
+    Logger::trace("Allocating memory of size %d", size);
 #endif
 
     // Iterate through the blocks and find the best fit

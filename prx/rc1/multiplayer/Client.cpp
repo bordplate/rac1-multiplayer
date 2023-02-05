@@ -104,11 +104,14 @@ void Client::make_rpc(Packet *packet, AckCallback callback) {
 }
 
 void Client::ack(char* packet, size_t len) {
+    Logger::trace("Yeaheay");
     MPPacketHeader* header = (MPPacketHeader*)packet;
 
     unsigned char ack_id = header->requires_ack;
 
     MPUnacked* unacked = &unacked_[ack_id];
+
+    Logger::trace("Wowowo");
 
     if (unacked->data) {
         // If the ack packet has data, call the event handler for this packet

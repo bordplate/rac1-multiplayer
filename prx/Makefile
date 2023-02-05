@@ -37,9 +37,10 @@ CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CPPFI
 SCETOOL = $(WINE) $(PS3_SDK)/Tools/tool/scetool.exe
 
 elf:
-	$(CC) $(CCFLAGS) -nostartfiles -relocatable -o $(BIN_DIR)/mod.elf
+	$(CC) $(CCFLAGS) -nostartfiles -Wl,-relocatable -o $(BIN_DIR)/mod.elf
 
 prx:
+	#$(CC) $(CCFLAGS) -nostartfiles -Wl,-relocatable -o $(BIN_DIR)/mod.elf
 	$(CC) $(CCFLAGS) -s -o $(BIN_DIR)/mod.prx -mprx-with-runtime -zgenprx -zlevel=all
 	$(WINE) $(PS3_SDK)/host-win32/bin/ppu-lv2-prx-fixup.exe --stub-fix-only $(BIN_DIR)/mod.prx
 

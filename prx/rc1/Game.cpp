@@ -15,7 +15,7 @@
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
 // Maybe better to just have it here anyway. Idk.
-LogLevel Logger::log_level_ = Debug;
+LogLevel Logger::log_level_ = Trace;
 
 ServerQueryCallback Game::server_query_callback_ = NULL;
 
@@ -24,11 +24,15 @@ void Game::on_tick() {
         client_->on_tick();
     }
 
-    // Pass inputs to the current view
-    if (current_view) {
-        if (pressed_buttons) {
+    // Pass inputs to the current view and send to server
+    if (pressed_buttons) {
+        if (current_view) {
             Logger::debug("Pressed buttons (%08X) sent to view", pressed_buttons);
             current_view->on_pressed_buttons(pressed_buttons);
+        }
+
+        if (client_ && client_->connected()) {
+            client_->send(Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED));
         }
     }
 
