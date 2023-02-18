@@ -43,6 +43,7 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
         if (vars) {
             vars->uuid = packet->uuid;
             vars->o_class = packet->o_class;
+            vars->sig = 0x4542;
         }
 
 

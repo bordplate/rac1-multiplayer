@@ -68,7 +68,7 @@ void Moby::check_collision() {
     if (success > 0 && coll_moby_out != 0) {
         if (coll_moby_out->oClass == 0) {
             if (Game::shared().client()) {
-                Game::shared().client()->send(Packet::make_collision(vars->uuid, 0, &this->position, false));
+                Game::shared().client()->send(Packet::make_collision(0, vars->uuid, &this->position, false));
             }
         }
     }
@@ -87,7 +87,7 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags) {
     Logger::debug("Moby address: %p; pUpdate: 0x%08x; pVars: 0x%08x; sizeof(moby): 0x%x", moby, (void**)&moby->field43_0x70, moby->pUpdate, sizeof(Moby));
 
     if ((int)moby->pVars < -1) {
-        Logger::error("Moby spawned with invalid pVars: %d. Allocating pVars from custom allocator", (int)moby->pVars);
+        Logger::error("Moby spawned with invalid pVars: %d. Allocating pVars from custom allocator", (int) moby->pVars);
         moby->pVars = allocate_memory(0x80);
     }
 

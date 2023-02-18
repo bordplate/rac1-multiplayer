@@ -4,6 +4,9 @@
 #include <lib/memory.h>
 #include <netex/net.h>
 
+#include <rc1/Game.h>
+#include "multiplayer/packet.h"
+
 #include "bridging.h"
 
 extern "C" {
@@ -60,32 +63,30 @@ void FUN_000784e8_hook() {
 SHK_HOOK(void, wrench_update_func, Moby *);
 void wrench_update_func_hook(Moby *moby) {
     // Clear the collision out ptr before calling original wrench function
-    //coll_moby_out = 0;
+    coll_moby_out = 0;
 
     SHK_CALL_HOOK(wrench_update_func, moby);
 
     // If coll_moby_out has a value, the wrench has "attacked" something
-    //if (!coll_moby_out) {
-    //    return;
-    //}
-//
-    //// Figure out what moby we hit and if we need to tell the server about it
-    //Moby* hit = coll_moby_out;
-    //if (!hit->pVars) {
-    //    // If we don't have pVars, this isn't something the server needs to know about
-    //    return;
-    //}
-//
-    //MPMobyVars* vars = (MPMobyVars*)hit->pVars;
-//
-    //// If this moby has UUID vars
-    //if (vars->uuid && vars->uuid < MP_MAX_MOBYS) {
-    //    // Verify that ptr to MP moby with this UUID matches ptr to moby we hit
-    //    if (mp_get_moby(vars->uuid) == hit) {
-    //        mp_send_collision(0, vars->uuid, &moby->position, true);
-    //        MULTI_LOG("%d oClass %d at %08x got maybe hit by a wrench. Player state %d\n", vars->uuid, hit->oClass, hit, player_state);
-    //    }
-    //}
+    if (!coll_moby_out) {
+        return;
+    }
+
+    // Figure out what moby we hit and if we need to tell the server about it
+    Moby* hit = coll_moby_out;
+    if (!hit->pVars) {
+        // If we don't have pVars, this isn't something the server needs to know about
+        return;
+    }
+
+    MPMobyVars* vars = (MPMobyVars*)hit->pVars;
+
+    // If this moby has UUID vars
+    if (vars->uuid && vars->sig == 0x4542) {
+        if (Game::shared().client()) {
+            Game::shared().client()->send(Packet::make_collision(0, vars->uuid, &hit->position, true));
+        }
+    }
 }
 
 void rc1_init() {

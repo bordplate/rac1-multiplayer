@@ -16,6 +16,7 @@ typedef struct {
     char next_animation_id;
     char o_class;
     int animation_duration;
+    u16 sig;
 } MPMobyVars;
 
 typedef struct MobySeq { /* From Deadlocked types */
