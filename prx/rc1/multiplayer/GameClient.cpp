@@ -90,7 +90,15 @@ void GameClient::moby_delete(MPPacketMobyCreate* packet) {
 }
 
 void GameClient::moby_delete_all() {
+    for(int i = 0; i <= mobys_.size(); i++) {
+        Moby* moby = mobys_[i];
 
+        if (moby) {
+            delete_moby(moby);
+
+            mobys_[i] = 0;
+        }
+    }
 }
 
 void GameClient::update_set_state(MPPacketSetState* packet) {
