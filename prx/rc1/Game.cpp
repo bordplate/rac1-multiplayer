@@ -53,6 +53,11 @@ void Game::on_tick() {
 }
 
 void Game::on_render() {
+    // If loading, we shouldn't render anything;
+    if (game_state == 6) {
+        return;
+    }
+
     if (current_view) {
         current_view->render();
     }

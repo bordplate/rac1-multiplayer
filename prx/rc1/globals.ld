@@ -3,6 +3,7 @@ current_weapon = 0x969c7c;
 game_state = 0xA10708;
 frame_count = 0xA10710;
 
+should_load_destination_planet = 0xa10700;
 current_planet = 0x969C70;
 destination_planet = 0xa10704;
 seen_planets = 0x96ca20;

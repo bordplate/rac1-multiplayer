@@ -61,6 +61,9 @@ enum CONTROLLER_INPUT {
 // Game-global variables
 //
 
+// If the game should start loading the planet sepcified in `destination_planet`
+extern bool should_load_destination_planet;
+
 // The currently loaded planet.
 extern int current_planet;
 
