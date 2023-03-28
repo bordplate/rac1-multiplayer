@@ -103,10 +103,6 @@ void rc1_init() {
     SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
     //SHK_BIND_HOOK(FUN_000850f8, FUN_000850f8_hook);
 
-    // Ininitalize and start multiplayer
-    //mp_start();
-    //hud_init();
-
     sys_net_initialize_network();
 }
 

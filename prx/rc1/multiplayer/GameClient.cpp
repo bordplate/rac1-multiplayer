@@ -43,6 +43,9 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
         if (vars) {
             vars->uuid = packet->uuid;
             vars->o_class = packet->o_class;
+
+            // Add a signature to the pVars so that we can identify this as a MPMoby later.
+            // Bad way to do it, but yolo
             vars->sig = 0x4542;
         }
 
