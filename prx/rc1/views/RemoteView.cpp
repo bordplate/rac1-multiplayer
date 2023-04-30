@@ -4,13 +4,19 @@
 
 #include "RemoteView.h"
 
+/**
+ * Gets an element for the given ID if it exists, otherwise creates a new element with that ID.
+ *
+ * @param id
+ * @return
+ */
 TextElement* RemoteView::get_element(int id) {
     Logger::trace("Getting text element for remote view. ID: %d", id);
     if (id > 1024) {
         return nullptr;
     }
 
-    if (id > text_elements_.capacity()) {
+    if (id >= text_elements_.capacity()) {
         Logger::trace("Updating text element capacity to: %d", id + 1);
         text_elements_.resize(id + 1);
     }
@@ -33,7 +39,8 @@ void RemoteView::delete_element(int id) {
     }
 
     TextElement* element = text_elements_[id];
-    if (element) {
+    if (element != nullptr) {
+        this->remove_element(element);
         delete element;
         text_elements_[id] = nullptr;
     }
