@@ -18,7 +18,7 @@ struct memory_block {
     struct memory_block *next;
 };
 
-extern char *memory_area[1000000];
+extern char *memory_area[2000000];
 
 void init_memory_allocator(void *start, size_t size);
 void *allocate_memory(size_t size);
