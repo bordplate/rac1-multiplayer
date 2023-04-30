@@ -39,6 +39,7 @@ public:
     virtual void on_tick();
     virtual void receive();
     virtual void connect();
+    virtual void reset();
 
     bool connected() { return connected_; }
     bool handshake_complete() { return handshake_complete_; }

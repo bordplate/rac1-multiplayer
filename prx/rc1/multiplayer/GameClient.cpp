@@ -8,6 +8,14 @@
 
 #include "../Player.h"
 
+void GameClient::reset() {
+    connection_complete_ = false;
+
+    moby_delete_all();
+
+    Client::reset();
+}
+
 void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     // Check that we're not trying to update a moby beyond our predefined moby space.
     if (packet->uuid > mobys_.capacity()) {
@@ -240,6 +248,11 @@ void GameClient::on_tick() {
 
         // Wait until next game tick to receive handshake response and start doing actual stuff
         return;
+    }
+
+    if (!connection_complete_) {
+        send(Packet::make_connect_packet(""));
+        connection_complete_ = true;
     }
 
     Player::shared().on_tick();

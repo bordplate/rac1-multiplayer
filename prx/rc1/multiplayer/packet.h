@@ -98,6 +98,11 @@ struct Packet {
     static Packet* make_query_directory_packet(int directory_id);
     static Packet* make_controller_input(CONTROLLER_INPUT inputs, u16 flags);
     static Packet* make_collision(u16 uuid, u16 collided_with, Vec4* position, bool aggressive);
+    static Packet* make_connect_packet(String nickname);
+};
+
+struct MPPacketConnect {
+    u16 nick_length;
 };
 
 struct MPPacketMobyUpdate {

@@ -38,6 +38,13 @@ void Client::connect() {
     connected_ = true;
 }
 
+void Client::reset() {
+    handshake_complete_ = false;
+    connected_ = false;
+
+    connect();
+}
+
 void Client::send(Packet* packet) {
     if (sockfd_) {
         sendto(sockfd_, packet->header, packet->len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
@@ -183,8 +190,8 @@ bool Client::update(MPPacketHeader* header, void* packet_data) {
             return false;
         }
         case MP_PACKET_IDKU: {
-            handshake_complete_ = false;
-            //mp_server_reset();
+            reset();
+
             return false;
         }
     }
