@@ -25,6 +25,15 @@ void View::add_element(ViewElement* element) {
     this->elements_.push_back(element);
 }
 
+void View::remove_element(ViewElement* element) {
+    for (int i = 0; i < this->elements_.size(); i++) {
+        if (element == this->elements_[i]) {
+            this->elements_[i] = nullptr;
+            delete element;
+        }
+    }
+}
+
 // Free any elements on screen
 View::~View() {
     for (int i = 0; i < this->elements_.size(); i++) {

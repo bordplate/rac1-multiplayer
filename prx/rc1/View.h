@@ -28,6 +28,7 @@ public:
     virtual void on_pressed_buttons(CONTROLLER_INPUT input);
 
     void add_element(ViewElement* element);
+    void remove_element(ViewElement *element);
 private:
     Vector<ViewElement*> elements_;
 };
