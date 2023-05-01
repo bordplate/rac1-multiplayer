@@ -40,6 +40,7 @@ public:
     virtual void receive();
     virtual void connect();
     virtual void reset();
+    virtual void disconnect();
 
     bool connected() { return connected_; }
     bool handshake_complete() { return handshake_complete_; }

@@ -38,6 +38,13 @@ void Client::connect() {
     connected_ = true;
 }
 
+void Client::disconnect() {
+    send(Packet::make_disconnect_packet());
+
+    connected_ = false;
+    handshake_complete_ = false;
+}
+
 void Client::reset() {
     handshake_complete_ = false;
     connected_ = false;

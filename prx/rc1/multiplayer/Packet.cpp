@@ -141,3 +141,10 @@ Packet* Packet::make_connect_packet(String nickname) {
 
     return packet;
 }
+
+Packet* Packet::make_disconnect_packet() {
+    Packet* packet = new Packet(0);
+    packet->header->type = MP_PACKET_DISCONNECT;
+
+    return packet;
+}

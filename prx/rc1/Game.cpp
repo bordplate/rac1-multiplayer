@@ -161,3 +161,9 @@ extern "C" void _c_game_tick() {
 extern "C" void _c_game_render() {
     Game::shared().on_render();
 }
+
+extern "C" void _c_game_quit() {
+    if (Game::shared().client()) {
+        Game::shared().client()->disconnect();
+    }
+}

@@ -49,8 +49,11 @@ extern "C" void initRuntime() {
     LOADER_LOG("runtime initialised\n");
 }
 
+extern "C" void _c_game_quit();
 extern "C" s32 _stop(void) {
     LOADER_LOG("shutting down\n");
+
+    _c_game_quit();
 
     LOADER_LOG("shutting down modules\n");
     for (u32 i = 0; i < moduleGetModuleCount(); ++i)
