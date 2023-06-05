@@ -192,7 +192,9 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
     }
 
     // Don't update if handshake isn't complete
-    if (!handshake_complete()) {
+    // We also wait a couple of frames after spawning to mitigate an unknown crash that occurs sometimes when we spawn
+    //  mobys too quickly after spawn
+    if (!handshake_complete() || frame_count <= 10) {
         return false;
     }
 
