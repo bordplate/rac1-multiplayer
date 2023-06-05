@@ -12,7 +12,7 @@ class Vector {
 public:
     // Constructors
     Vector() : data_(0), size_(0), capacity_(0) {}
-    Vector(int size) : Vector() { resize(size); }
+    Vector(int size) : data_(0), size_(0), capacity_(0) { reserve(size); }
 
     // Destructor
     ~Vector() { delete[] data_; }
