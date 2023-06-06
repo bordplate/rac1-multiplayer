@@ -9,8 +9,8 @@ game_loop_intro_start:
     replacedInstr: stdu r1, -0xc0(r1)
 
 game_loop_start:
-    addr: 0x0fc168
-    replacedInstr: stdu r1, -0x80(r1)
+    addr: 0x502d80
+    replacedInstr: stdu r1, -0x70(r1)
 
 STUB_0006544c:
     addr: 0x4f69b8
