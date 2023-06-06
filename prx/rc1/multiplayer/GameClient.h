@@ -18,7 +18,7 @@
 #define MAX_MP_MOBYS 1024
 
 struct GameClient : public Client {
-    GameClient(char* ip, int port) : Client(ip, port) { mobys_.reserve(MAX_MP_MOBYS); connection_complete_ = false; };
+    GameClient(char* ip, int port);
 
     void update_moby(MPPacketMobyUpdate* packet);
     void moby_delete(MPPacketMobyCreate* packet);

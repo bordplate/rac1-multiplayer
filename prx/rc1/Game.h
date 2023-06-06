@@ -27,6 +27,8 @@ public:
     void on_tick();
     void on_render();
 
+    void before_player_spawn();
+
     Client* client();
 
     static int query_servers_callback(void* data, size_t len);

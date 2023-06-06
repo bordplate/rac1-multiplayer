@@ -16,6 +16,8 @@ void cpp_start();
 void _c_game_tick();
 void _c_game_render();
 
+void _c_on_respawn();
+
 void _c_moby_update(Moby* moby);
 
 #ifdef __cplusplus

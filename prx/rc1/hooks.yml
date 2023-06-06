@@ -20,6 +20,10 @@ authenticate_game:
     addr: 0x5046b0
     replacedInstr: stdu r1, -0x90(r1)
 
+on_respawn:
+    addr: 0x7f018
+    replacedInstr: stdu r1, -0xb0(r1)
+
 #ratchet_dying:
 #    addr: 0x00609cf4
 #    replacedInstr: stdu r1, -0x210(r1)

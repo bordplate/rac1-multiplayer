@@ -8,6 +8,16 @@
 
 #include "../Player.h"
 
+GameClient::GameClient(char *ip, int port) : Client(ip, port) {
+    mobys_.resize(MAX_MP_MOBYS);
+
+    for(int i = 0; i <= mobys_.capacity(); i++) {
+        mobys_[i] = nullptr;
+    }
+
+    connection_complete_ = false;
+}
+
 void GameClient::reset() {
     connection_complete_ = false;
 
@@ -39,9 +49,19 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
 
     Moby* moby = mobys_[packet->uuid];
 
-    if (!moby || moby->state < 0) {
+    if (moby && moby->state > 0 && moby->oClass != packet->o_class) {
+        Logger::error("[%d] Incoming o_class %d did not match o_class %d for existing moby", packet->uuid, packet->o_class, moby->oClass);
+        if (((MPMobyVars*)moby->pVars)->sig != 0x4542) {
+            Logger::debug("Signature also doesn't match a MP moby");
+        }
+        delete_moby(moby);
+        mobys_[packet->uuid] = nullptr;
+        moby = nullptr;
+    }
+
+    if (!moby) {
         // Spawn moby
-        Logger::info("Spawning Moby (oClass: %d) at (%f, %f, %f)\n", packet->o_class, packet->x, packet->y, packet->z);
+        Logger::info("[%d] Spawning Moby (oClass: %d) at (%f, %f, %f)", packet->uuid, packet->o_class, packet->x, packet->y, packet->z);
         moby = Moby::spawn(packet->o_class, packet->flags);
 
         mobys_[packet->uuid] = moby;
@@ -90,25 +110,25 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
 void GameClient::moby_delete(MPPacketMobyCreate* packet) {
     Moby* moby = mobys_[packet->uuid];
     if (!moby || moby->state < 0) {
-        MULTI_LOG("Not deleting moby %d @ 0x%08x\n", packet->uuid, moby);
+        mobys_[packet->uuid] = 0;
+        Logger::debug("Already deleted moby %d @ 0x%08x", packet->uuid, moby);
         return;
     }
 
-    MULTI_LOG("Deleting moby %d\n", packet->uuid);
+    Logger::debug("Deleting moby %d", packet->uuid);
 
     delete_moby(moby);
-    mobys_[packet->uuid] = 0;
+    mobys_[packet->uuid] = nullptr;
 }
 
 void GameClient::moby_delete_all() {
     for(int i = 0; i <= mobys_.size(); i++) {
         Moby* moby = mobys_[i];
-
-        if (moby) {
+        if (moby != nullptr && moby->state > 0) {
             delete_moby(moby);
-
-            mobys_[i] = 0;
         }
+
+        mobys_[i] = nullptr;
     }
 }
 

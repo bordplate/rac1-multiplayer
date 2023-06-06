@@ -52,6 +52,12 @@ void Game::on_tick() {
     return;
 }
 
+void Game::before_player_spawn() {
+    Logger::debug("Player spawn");
+
+    ((GameClient*)client())->moby_delete_all();
+}
+
 void Game::on_render() {
     // If loading, we shouldn't render anything;
     if (game_state == 6) {
@@ -166,4 +172,8 @@ extern "C" void _c_game_quit() {
     if (Game::shared().client()) {
         Game::shared().client()->disconnect();
     }
+}
+
+extern "C" void _c_on_respawn() {
+    Game::shared().before_player_spawn();
 }

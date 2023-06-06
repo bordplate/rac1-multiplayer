@@ -34,6 +34,13 @@ void game_loop_intro_start_hook() {
     SHK_CALL_HOOK(game_loop_intro_start);
 }
 
+SHK_HOOK(void, on_respawn);
+void on_respawn_hook() {
+    _c_on_respawn();
+
+    SHK_CALL_HOOK(on_respawn);
+}
+
 //SHK_HOOK(void, ratchet_dying);
 //void ratchet_dying_hook() {
 //    SHK_CALL_HOOK(ratchet_dying);
@@ -101,6 +108,7 @@ void rc1_init() {
     SHK_BIND_HOOK(wrench_update_func, wrench_update_func_hook);
     SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
     SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
+    SHK_BIND_HOOK(on_respawn, on_respawn_hook);
     //SHK_BIND_HOOK(FUN_000850f8, FUN_000850f8_hook);
 
     sys_net_initialize_network();
