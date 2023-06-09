@@ -76,30 +76,15 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_CONTROLLER_FLAGS_PRESSED 1
 #define MP_CONTROLLER_FLAGS_HELD 2
 
+#pragma pack(push, 1)
+
 struct MPPacketHeader {
     u16 type;
     u16 flags;
     u32 size;
+    u64 timeSent;
     unsigned char requires_ack;
     unsigned char ack_cycle;
-};
-
-struct Packet {
-    MPPacketHeader* header;
-    void* body;
-    size_t len;
-    bool retain_after_send;
-
-    Packet(size_t body_len);
-    ~Packet();
-
-    static Packet* make_handshake_packet();
-    static Packet* make_ack_packet(unsigned char id, unsigned char cycle);
-    static Packet* make_query_directory_packet(int directory_id);
-    static Packet* make_controller_input(CONTROLLER_INPUT inputs, u16 flags);
-    static Packet* make_collision(u16 uuid, u16 collided_with, Vec4* position, bool aggressive);
-    static Packet* make_connect_packet(String nickname);
-    static Packet* make_disconnect_packet();
 };
 
 struct MPPacketConnect {
@@ -192,17 +177,25 @@ typedef struct {
 
 #ifndef __cplusplus
 
-#include "multiplayer.h"
+#pragma pack(pop)
 
-MPPacketHeader mp_make_syn_packet();
-void mp_send_ack(unsigned char id, unsigned char cycle);
-void mp_send_handshake();
-void mp_rpc_spawn_moby(int (*ack_cb)(void* data, size_t len));
-void mp_send_collision(u16 uuid, u16 collided_with, Vec4* position, bool aggressive);
-void mp_rpc_query_game_servers(u32 directory_id, int (*ack_cb)(void* data, size_t len));
-void mp_send_controller_input(CONTROLLER_INPUT inputs, u16 flags);
-void mp_send_state(u32 type, u32 offset, u32 value);
+struct Packet {
+    MPPacketHeader* header;
+    void* body;
+    size_t len;
+    bool retain_after_send;
 
-#endif  // __cplusplus
+    Packet(size_t body_len);
+    ~Packet();
+
+    static Packet* make_handshake_packet();
+    static Packet* make_ack_packet(unsigned char id, unsigned char cycle);
+    static Packet* make_query_directory_packet(int directory_id);
+    static Packet* make_controller_input(CONTROLLER_INPUT inputs, u16 flags);
+    static Packet* make_collision(u16 uuid, u16 collided_with, Vec4* position, bool aggressive);
+    static Packet* make_connect_packet(String nickname);
+    static Packet* make_disconnect_packet();
+    static Packet* make_time_request_packet();
+};
 
 #endif

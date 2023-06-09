@@ -10,6 +10,11 @@
 #include <lib/clib.h>
 #include <lib/logger.h>
 #include <lib/memory.h>
+#include <sys/sys_time.h>
+
+uint64_t get_time() {
+    return sys_time_get_system_time() / 1000;
+}
 
 Client::Client(char* ip, int port) {
     Logger::debug("New client for %s:%d", ip, port);
@@ -53,6 +58,8 @@ void Client::reset() {
 }
 
 void Client::send(Packet* packet) {
+    packet->header->timeSent = get_time();
+
     if (sockfd_) {
         sendto(sockfd_, packet->header, packet->len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
     }
