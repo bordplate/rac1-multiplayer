@@ -25,6 +25,10 @@ Client::Client(char* ip, int port) {
     sockaddr_.sin_addr.s_addr = inet_addr(ip);
     sockaddr_.sin_port = htons(port);
     sockaddr_.sin_family = AF_INET;
+
+    estimated_offset = 0;
+    last_sync_time = 0;
+    has_first_time_sync = false;
 }
 
 void Client::connect() {
@@ -128,22 +132,8 @@ void Client::ack(char* packet, size_t len) {
         unacked->ack_cb(&packet[sizeof(MPPacketHeader)], header->size, unacked->extra);
 
         Logger::trace("Acked message %d with size %d", header->type, header->size);
-
-        delete unacked->data;
     } else {
         Logger::trace("Acked packet type %d:%d without data", header->type, header->size);
-    }
-
-    unacked->data = 0;
-
-    if (unacked->next_unacked) {
-        MPUnacked* next_unacked = &unacked_[unacked->next_unacked];
-
-        if (next_unacked->data == 0 && next_unacked->next_unacked != 0) {
-            unacked->next_unacked = next_unacked->next_unacked;
-        } else if (next_unacked->data == 0 && next_unacked->next_unacked == 0) {
-            unacked->next_unacked = 0;
-        }
     }
 }
 
