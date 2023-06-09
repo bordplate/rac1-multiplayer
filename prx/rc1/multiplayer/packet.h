@@ -55,22 +55,23 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_SYN                2
 #define MP_PACKET_ACK                3
 #define MP_PACKET_MOBY_UPDATE        4
-#define MP_PACKET_IDKU                5
-#define MP_PACKET_MOBY_CREATE       6
-#define MP_PACKET_DISCONNECT        7
-#define MP_PACKET_MOBY_DELETE       8
-#define MP_PACKET_MOBY_COLLISION    9
-#define MP_PACKET_SET_STATE         10
-#define MP_PACKET_SET_HUD_TEXT      11
+#define MP_PACKET_IDKU               5
+#define MP_PACKET_MOBY_CREATE        6
+#define MP_PACKET_DISCONNECT         7
+#define MP_PACKET_MOBY_DELETE        8
+#define MP_PACKET_MOBY_COLLISION     9
+#define MP_PACKET_SET_STATE          10
+#define MP_PACKET_SET_HUD_TEXT       11
 #define MP_PACKET_QUERY_GAME_SERVERS 12
-#define MP_PACKET_CONTROLLER_INPUT 13
+#define MP_PACKET_CONTROLLER_INPUT   13
+#define MP_PACKET_TIME_SYNC          14
 
-#define MP_PACKET_FLAG_RPC      0x1
+#define MP_PACKET_FLAG_RPC           0x1
 
 #define MP_COLLISION_FLAG_AGGRESSIVE 1
 
-#define MP_MOBY_FLAG_ACTIVE         0x1
-#define MP_MOBY_FLAG_NO_COLLISION   0x2
+#define MP_MOBY_FLAG_ACTIVE           0x1
+#define MP_MOBY_FLAG_NO_COLLISION     0x2
 #define MP_MOBY_FLAG_ORIG_UDPATE_FUNC 0x4
 
 #define MP_CONTROLLER_FLAGS_PRESSED 1

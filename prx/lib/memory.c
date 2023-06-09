@@ -20,7 +20,11 @@ struct memory_canary {
     char l;
 };
 
-char* memory_area[2000000];
+char memory_area[1000000];
+int used_memory = 0;
+int allocations = 0;
+int num_allocated = 0;
+int frees = 0;
 struct memory_block* head;
 
 void init_memory_allocator(void* start, size_t size) {
@@ -50,7 +54,8 @@ void *allocate_memory(size_t size) {
             }
         }
 
-        if ((unsigned int)current->next < 0x01000000 && (unsigned int)current->next > 0) {
+        if (current->next != 0 &&
+                ((unsigned int)current->next < (unsigned int)memory_area || (unsigned int)current->next > (unsigned int)memory_area + sizeof(memory_area))) {
 #ifdef __cplusplus
             Logger::error("next memory block at potentially invalid address: 0x%08x (current: 0x%08x:%d)", current->next, current, current->size);
 #endif
@@ -90,8 +95,12 @@ void *allocate_memory(size_t size) {
             }
         }
 
+        used_memory += best_fit->size;
+        allocations += 1;
+        num_allocated += 1;
+
 #ifdef __cplusplus
-        Logger::trace("Allocated memory of size %d at 0x%08x", size, (void *)((unsigned long)best_fit + sizeof(struct memory_block)));
+        Logger::trace("Allocated memory of size %d at 0x%08x. Num objs: %d. Used memory: %d. Num allocations: %d, frees: %d", best_fit->size, (void *)((unsigned long)best_fit + sizeof(struct memory_block)), num_allocated, used_memory, allocations, frees);
 #endif
 
         void* ptr = (void *)((unsigned long)best_fit + sizeof(struct memory_block));
@@ -127,14 +136,14 @@ void free_memory(void *ptr) {
     int canary_sum = canary->i + canary->j + canary->k + canary->l;
     if (canary_sum != 11+22+33+44) {
 #ifdef __cplusplus
-        Logger::error("Canary overwritten at 0x%08x:%d; next: 0x%p\", ptr, current->size, current->next");
+        Logger::error("Canary overwritten at 0x%08x:%d; next: 0x%p", ptr, current->size, current->next);
         hexDump("> Memory data", &ptr, current->size);
 #endif
     }
 
     if (current->self_address != ptr) {
 #ifdef __cplusplus
-        Logger::error("Free possibly called on invalid object at 0x%08x:%d; next: 0x%p\", ptr, current->size, current->next");
+        Logger::error("Free possibly called on invalid object at 0x%08x:%d; next: 0x%p", ptr, current->size, current->next);
         hexDump("> Memory data", &ptr, current->size);
 #endif
     }
@@ -146,10 +155,14 @@ void free_memory(void *ptr) {
 #endif
     }
 
+    used_memory -= current->size;
+    frees += 1;
+    num_allocated -= 1;
+
     current->is_allocated = 0;
 
 #ifdef __cplusplus
-    Logger::trace("Freed memory at 0x%08x:%d; next: 0x%p", ptr, current->size, current->next);
+    Logger::trace("Freed memory at 0x%08x:%d; next: 0x%p. Num objs: %d. Used memory: %d. Num allocs: %d, frees: %d", ptr, current->size, current->next, num_allocated, used_memory, allocations, frees);
 #endif
 }
 

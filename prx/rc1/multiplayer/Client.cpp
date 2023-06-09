@@ -220,6 +220,11 @@ void Client::receive() {
         if (received_ >= sizeof(MPPacketHeader) && received_ < 60000000) {
             MPPacketHeader* packet_header = (MPPacketHeader*)&recv_buffer;
 
+            if (received_ < sizeof(MPPacketHeader) + packet_header->size) {
+                Logger::error("Received only partial packet. Expected size: %d. Actual size: %d", sizeof(MPPacketHeader) + packet_header->size, received_);
+                return;
+            }
+
             this->update(packet_header, &(recv_buffer[sizeof(MPPacketHeader)]));
         }
     } while (received_ > 0);

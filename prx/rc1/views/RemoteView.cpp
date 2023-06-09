@@ -41,7 +41,7 @@ void RemoteView::delete_element(int id) {
     TextElement* element = text_elements_[id];
     if (element != nullptr) {
         this->remove_element(element);
-        delete element;
+
         text_elements_[id] = nullptr;
     }
 }
