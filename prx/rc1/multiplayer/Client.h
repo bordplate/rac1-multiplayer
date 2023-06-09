@@ -14,12 +14,15 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-typedef int (*AckCallback)(void* data, size_t len);
+typedef int (*AckCallback)(void* data, size_t len, void* extra);
+typedef int (*SelfRefAckCallback)(void* self, void* data, size_t len);
 
 struct MPUnacked {
     Packet* data;
     AckCallback ack_cb;
     size_t len;
+    bool acked;
+    void* extra;
     unsigned char next_unacked;
 };
 
@@ -29,8 +32,10 @@ public:
 
     virtual bool update(MPPacketHeader* header, void* packet_data);
 
-    void make_ack(Packet* packet, AckCallback callback);
+    void make_ack(Packet* packet, AckCallback callback, void* extra);
+    void make_ack(Packet* packet, AckCallback callback) { make_ack(packet, callback, nullptr); }
     void make_rpc(Packet* packet, AckCallback callback);
+    void make_self_referencing_rpc(Packet* packet, AckCallback callback);
 
     void send(Packet* packet);
     void send_handshake();

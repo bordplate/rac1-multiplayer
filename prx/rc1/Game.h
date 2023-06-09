@@ -31,7 +31,7 @@ public:
 
     Client* client();
 
-    static int query_servers_callback(void* data, size_t len);
+    static int query_servers_callback(void* data, size_t len, void* extra);
     void connect_to(char* ip, int port);
     void query_servers(int directory_id, ServerQueryCallback callback);
 private:

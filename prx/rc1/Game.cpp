@@ -89,7 +89,7 @@ Client* Game::client() {
     return client_;
 }
 
-int Game::query_servers_callback(void* data, size_t len) {
+int Game::query_servers_callback(void* data, size_t len, void* extra) {
     if (!server_query_callback_) {
         Logger::error("Directory query callback, but server_query_callback_ not set. Bailing on unnecessary work");
 

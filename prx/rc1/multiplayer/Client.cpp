@@ -20,6 +20,7 @@ Client::Client(char* ip, int port) {
     Logger::debug("New client for %s:%d", ip, port);
 
     memset(&sockaddr_, 0, sizeof(sockaddr_));
+    memset(&unacked_, 0, sizeof(unacked_));
 
     sockaddr_.sin_addr.s_addr = inet_addr(ip);
     sockaddr_.sin_port = htons(port);
@@ -64,9 +65,7 @@ void Client::send(Packet* packet) {
         sendto(sockfd_, packet->header, packet->len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
     }
 
-    if (!packet->retain_after_send) {
-        delete packet;
-    }
+    delete packet;
 }
 
 /**
@@ -75,7 +74,7 @@ void Client::send(Packet* packet) {
  *
  * @param packet
  */
-void Client::make_ack(Packet* packet, AckCallback callback) {
+void Client::make_ack(Packet* packet, AckCallback callback, void* extra) {
     // Handle overflows and first run
     do {
         if (ack_id_++ == 0) {
@@ -88,35 +87,16 @@ void Client::make_ack(Packet* packet, AckCallback callback) {
     packet->header->requires_ack = ack_id_;
     packet->header->ack_cycle = ack_cycle_;
 
-    MPUnacked* unacked = &unacked_[ack_id_];
+    MPUnacked* unacked = &(unacked_[ack_id_]);
+    memset(unacked, 0, sizeof(MPUnacked));
 
-    if (callback) {
-        // Retain the packet after it's been sent so we can reference and delete it when calling the ack callback.
-        packet->retain_after_send = true;
+    unacked->acked = false;
 
+    if (packet->header->flags & MP_PACKET_FLAG_RPC) {
         unacked->ack_cb = callback;
         unacked->len = packet->len;
-
-        unacked->data = packet;
+        unacked->extra = extra;
     }
-
-    // Register the packet as unacknowledged
-    unsigned char prev_unacked_id = ack_id_-1;
-    MPUnacked* prev_unacked = &unacked_[prev_unacked_id];
-
-    while (true) {
-        if (!prev_unacked->data && prev_unacked->next_unacked) {
-            prev_unacked_id = prev_unacked->next_unacked;
-            prev_unacked = &unacked_[prev_unacked_id];
-        } else if (!prev_unacked->data && !prev_unacked->next_unacked) {
-            prev_unacked_id = 0;
-            break;
-        } else {
-            break;
-        }
-    }
-
-    unacked->next_unacked = prev_unacked_id;
 }
 
 void Client::make_rpc(Packet *packet, AckCallback callback) {
@@ -124,21 +104,28 @@ void Client::make_rpc(Packet *packet, AckCallback callback) {
     make_ack(packet, callback);
 }
 
+void Client::make_self_referencing_rpc(Packet* packet, AckCallback callback) {
+    packet->header->flags = MP_PACKET_FLAG_RPC;
+    make_ack(packet, callback, this);
+}
+
 void Client::ack(char* packet, size_t len) {
-    Logger::trace("Yeaheay");
     MPPacketHeader* header = (MPPacketHeader*)packet;
 
     unsigned char ack_id = header->requires_ack;
 
-    MPUnacked* unacked = &unacked_[ack_id];
+    MPUnacked* unacked = &(unacked_[ack_id]);
 
-    Logger::trace("Wowowo");
+    if (unacked->acked) {
+        Logger::debug("Discarding already acked packet");
+        return;
+    }
 
-    if (unacked->data) {
-        // If the ack packet has data, call the event handler for this packet
-        if (header->size > 0 && unacked->ack_cb) {
-            unacked->ack_cb(&packet[sizeof(MPPacketHeader)], header->size);
-        }
+    unacked->acked = true;
+
+    // If the ack packet has data, call the event handler for this packet
+    if (header->size > 0 && unacked->ack_cb) {
+        unacked->ack_cb(&packet[sizeof(MPPacketHeader)], header->size, unacked->extra);
 
         Logger::trace("Acked message %d with size %d", header->type, header->size);
 
