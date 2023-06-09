@@ -148,7 +148,15 @@ void Client::send_ack(unsigned char id, unsigned char cycle) {
 }
 
 bool Client::update(MPPacketHeader* header, void* packet_data) {
-    Logger::trace("Processing a received packet with type %d", header->type);
+    //Logger::trace("Processing a received packet with type %d", header->type);
+
+    // If the packet was sent more than 5 seconds ago, we discard this packet and start to process next packet to
+    //   increase performance if the operating system receive buffer is full.
+    uint64_t difference = server_time_difference(header->timeSent);
+    if (difference > estimated_offset*4 && header->type != MP_PACKET_ACK) {
+        Logger::debug("Discarding stale packet sent %lu ms ago, offset: %lu", difference, estimated_offset);
+        return false;
+    }
 
     // If a packet requires acknowledgement, it has a value in the requires_ack field.
     // We register that we got the packet and only process the packet if it hasn't been
@@ -217,8 +225,59 @@ void Client::receive() {
     } while (received_ > 0);
 }
 
+void Client::request_server_time() {
+    Logger::debug("Requesting server time");
+
+    Packet* time_request_packet = Packet::make_time_request_packet();
+    make_self_referencing_rpc(time_request_packet, (AckCallback)&server_time_response_callback);
+    send(time_request_packet);
+}
+
+int Client::server_time_response_callback(void* data, size_t len, void* extra) {
+    MPPacketTimeResponse* timeResponsePacket = (MPPacketTimeResponse*)data;
+    Client* self = (Client*)extra;
+
+    self->calculate_offset(timeResponsePacket->client_send_time, timeResponsePacket->server_receive_time);
+
+    return 0;
+}
+
+void Client::calculate_offset(uint64_t client_send_time, uint64_t server_receive_time) {
+    uint64_t now = get_time();
+    latency = (now - client_send_time) / 2;
+    estimated_offset = (server_receive_time + latency) - now;
+
+    has_first_time_sync = true;
+
+    Logger::debug("Server time offset: %lu, latency: %lu", estimated_offset, latency);
+}
+
+uint64_t Client::get_estimated_server_time() {
+    return (get_time()) + estimated_offset;
+}
+
+void Client::set_offset(uint64_t offset) {
+    estimated_offset = offset;
+}
+
+uint64_t Client::server_time_difference(uint64_t time) {
+    if (!has_first_time_sync) {
+        return 0;
+    }
+
+    return get_estimated_server_time() - time;
+}
+
 void Client::on_tick() {
     if (sockfd_ > 0) {
         this->receive();
+    }
+
+    // Sync time with the server every sync_interval milliseconds
+    if ((get_time()) - last_sync_time > sync_interval) {
+        Logger::trace("Time to get time from server");
+        request_server_time();
+        last_sync_time = (get_time());
+        Logger::trace("The time to get time from server is over.");
     }
 }

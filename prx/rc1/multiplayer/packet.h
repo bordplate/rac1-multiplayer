@@ -175,7 +175,10 @@ typedef struct {
     u16 flags;
 } MPPacketControllerInput;
 
-#ifndef __cplusplus
+typedef struct {
+    uint64_t client_send_time;
+    uint64_t server_receive_time;
+} MPPacketTimeResponse;
 
 #pragma pack(pop)
 

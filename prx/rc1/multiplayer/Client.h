@@ -47,6 +47,9 @@ public:
     virtual void reset();
     virtual void disconnect();
 
+    void calculate_offset(uint64_t client_send_time, uint64_t server_receive_time);
+    uint64_t server_time_difference(uint64_t time);
+
     bool connected() { return connected_; }
     bool handshake_complete() { return handshake_complete_; }
     long received() { return received_; }
@@ -61,10 +64,21 @@ private:
     unsigned char ack_id_;
     unsigned char ack_cycle_;
 
+    uint64_t estimated_offset;
+    uint64_t latency;
+    uint64_t last_sync_time;
+    static const uint64_t sync_interval = 5000; // Sync every 5 seconds
+    bool has_first_time_sync;
+
     bool connected_;
     bool handshake_complete_;
 
     void ack(char* packet, size_t len);
+
+    void request_server_time();
+    static int server_time_response_callback(void* data, size_t len, void* extra);
+    uint64_t get_estimated_server_time();
+    void set_offset(uint64_t offset);
 };
 
 
