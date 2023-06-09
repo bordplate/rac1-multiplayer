@@ -74,26 +74,17 @@ void Moby::check_collision() {
     }
 }
 
-Moby* Moby::spawn(unsigned short o_class, unsigned short flags) {
+Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBits) {
     // If the main hero moby isn't spawned in, we shouldn't try to spawn anything else either.
     if (!ratchet_moby) {
-        return 0;
+        return nullptr;
     }
 
     Moby* moby = spawn_moby(o_class);
 
-    Moby* pMoby = moby;
-
-    Logger::debug("Moby address: %p; pUpdate: 0x%08x; pVars: 0x%08x; sizeof(moby): 0x%x", moby, (void**)&moby->field43_0x70, moby->pUpdate, sizeof(Moby));
-
-    if ((int)moby->pVars < -1) {
+    if ((int)moby->pVars == nullptr) {
         Logger::error("Moby spawned with invalid pVars: %d. Allocating pVars from custom allocator", (int) moby->pVars);
         moby->pVars = allocate_memory(0x80);
-    }
-
-    // Set new moby's update func to our generic MP update func
-    if (!(flags & MP_MOBY_FLAG_ORIG_UDPATE_FUNC)) {
-        moby->pUpdate = (void *)0x710ed8;
     }
 
     moby->enabled = 1;
@@ -103,12 +94,10 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags) {
 
     // Used to set flag 0x1000 here as well, but setting flag 0x1000 makes it so that
     // the first 4 bytes of pVars are checked when using weapons and wrench and that crashes
-    // on console when the address doesn't make sense. Does not crash in RPCS3 for whatever reason. 
-    moby->mode_bits = 0x10 | 0x20 | 0x400 | 0x4000;
+    // on console when the address doesn't make sense. Does not crash in RPCS3 for whatever reason.
+    moby->mode_bits = modeBits;
 
     Logger::info("Spawned Moby (oClass: %d)", o_class);
-
-    //idk(moby);
 
     return moby;
 }

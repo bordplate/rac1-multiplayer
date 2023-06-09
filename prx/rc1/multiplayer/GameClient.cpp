@@ -7,6 +7,7 @@
 #include <rc1/Game.h>
 
 #include "../Player.h"
+#include "MPMoby.h"
 
 GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     mobys_.resize(MAX_MP_MOBYS);
@@ -62,21 +63,15 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     if (!moby) {
         // Spawn moby
         Logger::info("[%d] Spawning Moby (oClass: %d) at (%f, %f, %f)", packet->uuid, packet->o_class, packet->x, packet->y, packet->z);
-        moby = Moby::spawn(packet->o_class, packet->flags);
 
-        mobys_[packet->uuid] = moby;
-
-        MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
-
-        if (vars) {
-            vars->uuid = packet->uuid;
-            vars->o_class = packet->o_class;
-
-            // Add a signature to the pVars so that we can identify this as a MPMoby later.
-            // Bad way to do it, but yolo
-            vars->sig = 0x4542;
+        if (packet->flags & MP_MOBY_FLAG_ORIG_UDPATE_FUNC) {
+            Logger::debug("Spawned with original update function");
+            moby = Moby::spawn(packet->o_class, packet->flags, packet->modeBits);
+        } else {
+            moby = (Moby*)MPMoby::spawn(packet->uuid, packet->o_class, packet->flags, packet->modeBits);
         }
 
+        mobys_[packet->uuid] = moby;
 
         if (packet->parent && packet->parent != packet->uuid) {
             Moby* parent_moby = mobys_[packet->uuid];
@@ -92,18 +87,26 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     }
 
     if (packet->flags & MP_MOBY_FLAG_NO_COLLISION) {
-        moby->collision = 0;
+        moby->collision = nullptr;
     }
 
     moby->position.x = packet->x;
     moby->position.y = packet->y;
     moby->position.z = packet->z;
-    moby->rotation.z = packet->rotation;
+    moby->rotation.x = packet->rotX;
+    moby->rotation.y = packet->rotY;
+    moby->rotation.z = packet->rotZ;
+    moby->scale = packet->scale;
 
-    MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
-    if (vars) {
-        vars->next_animation_id = (char)packet->animation_id;
-        vars->animation_duration = (int)packet->animation_duration;
+    moby->alpha = packet->alpha;
+
+    // If this moby uses our custom update func, we can update pVars.
+    if (!(packet->flags & MP_MOBY_FLAG_ORIG_UDPATE_FUNC)) {
+        MPMobyVars *vars = (MPMobyVars *) (moby->pVars);
+        if (vars) {
+            vars->next_animation_id = (char) packet->animation_id;
+            vars->animation_duration = (int) packet->animation_duration;
+        }
     }
 }
 
@@ -221,9 +224,7 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
     // Process packet
     switch(header->type) {
         case MP_PACKET_MOBY_UPDATE:
-            Logger::trace("Updating moby");
             update_moby((MPPacketMobyUpdate*)packet_data);
-            Logger::trace("Done updating moby");
             break;
         case MP_PACKET_MOBY_DELETE:
             moby_delete((MPPacketMobyCreate*)packet_data);

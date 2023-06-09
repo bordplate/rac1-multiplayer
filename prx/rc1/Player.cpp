@@ -28,7 +28,11 @@ void Player::on_tick() {
     payload->x = player_pos.x;
     payload->y = player_pos.y;
     payload->z = player_pos.z;
-    payload->rotation = player_rot.z;
+    payload->rotX = player_rot.x;
+    payload->rotX = player_rot.y;
+    payload->rotZ = player_rot.z;
+    payload->scale = ratchet_moby->scale;
+    payload->alpha = ratchet_moby->alpha;
 
     Logger::trace("Sent update packet");
     Game::shared().client()->send(packet);

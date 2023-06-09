@@ -94,8 +94,6 @@ struct MPPacketConnect {
 struct MPPacketMobyUpdate {
     u16 uuid;
     u16 parent;
-    u8 team;
-    u8 reserved;
     u16 flags;
     u16 o_class;
     u16 level;
@@ -104,7 +102,13 @@ struct MPPacketMobyUpdate {
     float x;
     float y;
     float z;
-    float rotation;
+    float rotX;
+    float rotY;
+    float rotZ;
+    float scale;
+    char alpha;
+    u8 padding;
+    u16 modeBits;
 };
 
 typedef struct {

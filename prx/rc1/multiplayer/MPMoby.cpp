@@ -17,6 +17,27 @@ void MPMoby::update() {
     }
 }
 
+MPMoby* MPMoby::spawn(unsigned short uuid, unsigned short o_class, unsigned short flags, uint16_t modeBits) {
+    MPMoby* moby = (MPMoby*)Moby::spawn(o_class, flags, modeBits);
+
+    // Set update function to MPMoby::update()
+    moby->pUpdate = (void *)0x710ed8;
+
+    // Set Moby variables
+    MPMobyVars* vars = (MPMobyVars*)(moby->pVars);
+
+    if (vars) {
+        vars->uuid = uuid;
+        vars->o_class = o_class;
+
+        // Add a signature to the pVars so that we can identify this as a MPMoby later.
+        // Bad way to do it, but yolo
+        vars->sig = 0x4542;
+    }
+
+    return moby;
+}
+
 extern "C" void _c_moby_update(Moby* moby) {
     ((MPMoby*)moby)->update();
 }

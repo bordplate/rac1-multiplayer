@@ -10,6 +10,8 @@
 struct MPMoby : public Moby {
 public:
     void update();
+
+    static MPMoby* spawn(uint16_t uuid, unsigned short o_class, unsigned short flags, uint16_t modeBits);
 };
 
 

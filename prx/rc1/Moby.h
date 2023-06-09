@@ -221,7 +221,7 @@ struct Moby {
     void set_animation(char animation_id, char animation_frame, u32 duration);
     void check_collision();
 
-    static Moby* spawn(unsigned short o_class, unsigned short flags);
+    static Moby* spawn(unsigned short o_class, unsigned short flags, uint16_t modeBits);
 #endif
 }
 #ifdef __cplusplus
