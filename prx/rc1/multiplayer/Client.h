@@ -47,6 +47,8 @@ public:
     virtual void reset();
     virtual void disconnect();
 
+    uint64_t latency;
+
     void calculate_offset(uint64_t client_send_time, uint64_t server_receive_time);
     uint64_t server_time_difference(uint64_t time);
 
@@ -65,7 +67,6 @@ private:
     unsigned char ack_cycle_;
 
     uint64_t estimated_offset;
-    uint64_t latency;
     uint64_t last_sync_time;
     static const uint64_t sync_interval = 5000; // Sync every 5 seconds
     bool has_first_time_sync;

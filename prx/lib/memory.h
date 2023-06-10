@@ -19,6 +19,10 @@ struct memory_block {
 };
 
 extern char memory_area[1000000];
+extern int used_memory;
+extern int allocations;
+extern int num_allocated;
+extern int frees;
 
 void init_memory_allocator(void *start, size_t size);
 void *allocate_memory(size_t size);

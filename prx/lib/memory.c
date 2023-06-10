@@ -25,6 +25,7 @@ int used_memory = 0;
 int allocations = 0;
 int num_allocated = 0;
 int frees = 0;
+
 struct memory_block* head;
 
 void init_memory_allocator(void* start, size_t size) {

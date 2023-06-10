@@ -14,8 +14,13 @@ struct RemoteView : public View {
     TextElement* get_element(int id);
     void delete_element(int id);
 
+    void on_load();
+    void render();
 private:
     Vector<TextElement*> text_elements_;
+
+    TextElement* ping_text_;
+    TextElement* memory_info_text_;
 };
 
 

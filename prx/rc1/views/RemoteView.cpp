@@ -3,6 +3,22 @@
 //
 
 #include "RemoteView.h"
+#include <rc1/Game.h>
+
+void RemoteView::on_load() {
+    memory_info_text_ = new TextElement(80, 0, "<memory>");
+    ping_text_ = new TextElement(0, 20, "<ping>");
+
+    add_element(memory_info_text_);
+    add_element(ping_text_);
+}
+
+void RemoteView::render() {
+    memory_info_text_->text->setf("mem: %d/%d (%d)", used_memory, sizeof(memory_area), num_allocated);
+    ping_text_->text->setf("ping: %lu", Game::shared().client()->latency*2);
+
+    View::render();
+}
 
 /**
  * Gets an element for the given ID if it exists, otherwise creates a new element with that ID.
