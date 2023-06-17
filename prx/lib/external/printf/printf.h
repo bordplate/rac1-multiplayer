@@ -92,6 +92,11 @@ int sprintf_(char* buffer, const char* format, ...);
 int  snprintf_(char* buffer, size_t count, const char* format, ...);
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
 
+#ifndef __GRR_ATOI
+#define __GRR_ATOI
+int __atoi(const char* str);
+#endif
+
 
 /**
  * Tiny vprintf implementation

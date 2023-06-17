@@ -175,6 +175,15 @@ static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
   return (unsigned int)(s - str);
 }
 
+// internal secure wcslen
+// \return The length of the wide string (excluding the terminating 0) limited by 'maxsize'
+static inline size_t _wcsnlen_s(const wchar_t* wstr, size_t maxsize)
+{
+    const wchar_t* s;
+    for (s = wstr; *s && maxsize--; ++s);
+    return (size_t)(s - wstr);
+}
+
 
 // internal test if char is a digit (0-9)
 // \return true if char is a digit
@@ -192,6 +201,30 @@ static unsigned int _atoi(const char** str)
     i = i * 10U + (unsigned int)(*((*str)++) - '0');
   }
   return i;
+}
+
+int __atoi(const char* str) {
+    int res = 0;
+    int sign = 1;
+    int i = 0;
+
+    // If it's negative, change sign
+    if (str[0] == '-') {
+        sign = -1;
+        i++; // start from next character
+    }
+
+    // Traverse through all other characters
+    for (; str[i] != '\0'; ++i) {
+        // if the character is not numeric, break from the loop
+        if (str[i] < '0' || str[i] > '9')
+            break;
+
+        // Shift previous number to left and add current number to get the total value
+        res = res * 10 + str[i] - '0';
+    }
+
+    return sign * res;
 }
 
 
@@ -572,6 +605,21 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 #endif  // PRINTF_SUPPORT_EXPONENTIAL
 #endif  // PRINTF_SUPPORT_FLOAT
 
+#define MB_CUR_MAX 2
+
+int wctomb(char *s, wchar_t wchar) {
+    if (wchar < 0x80) {
+        s[0] = wchar;
+        return 1;
+    } else if (wchar < 0x800) {
+        s[0] = 0xC0 | ((wchar >> 6) & 0x1F);
+        s[1] = 0x80 | (wchar & 0x3F);
+        return 2;
+    } else {
+        // wchar contains an invalid Unicode code point
+        return -1;
+    }
+}
 
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va)
@@ -818,6 +866,41 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         format++;
         break;
       }
+
+        case 'S' : {
+            const wchar_t* p = va_arg(va, wchar_t*);
+            size_t l = _wcsnlen_s(p, precision ? precision : (size_t)-1);
+            // pre padding
+            if (flags & FLAGS_PRECISION) {
+                l = (l < precision ? l : precision);
+            }
+            if (!(flags & FLAGS_LEFT)) {
+                while (l++ < width) {
+                    out(' ', buffer, idx++, maxlen);
+                }
+            }
+            // string output
+            while ((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--)) {
+                // Convert wide character to multibyte character here,
+                // then output each byte of the converted multibyte character
+                char multibyte[MB_CUR_MAX];
+                int length = wctomb(multibyte, *p);
+                if (length > 0) {
+                    for (int i = 0; i < length; i++) {
+                        out(multibyte[i], buffer, idx++, maxlen);
+                    }
+                }
+                p++;
+            }
+            // post padding
+            if (flags & FLAGS_LEFT) {
+                while (l++ < width) {
+                    out(' ', buffer, idx++, maxlen);
+                }
+            }
+            format++;
+            break;
+        }
 
       case 'p' : {
         width = sizeof(void*) * 2U;

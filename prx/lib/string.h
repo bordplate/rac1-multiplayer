@@ -10,6 +10,7 @@
 #ifdef __cplusplus
 
 #include "logger.h"
+#include "vector.h"
 
 class String {
 private:
@@ -21,6 +22,16 @@ public:
     String() : m_str(nullptr), m_length(0) { set(""); }
     String(const char* str) : m_str(nullptr), m_length(0) { set(str); }
     String(const String& other) : m_str(nullptr), m_length(0) { set(other.m_str); }
+
+    // Static method for formatting
+    static String format(const char* format, ...) {
+        va_list args;
+        va_start(args, format);
+        String string = String();
+        string.setf_args(format, args);
+        va_end(args);
+        return string;
+    }
     ~String() { delete[] m_str; }
 
     // Modifiers
@@ -35,6 +46,12 @@ public:
         va_list args;
         va_start(args, format);
 
+        setf_args(format, args);
+
+        va_end(args);
+    }
+
+    void setf_args(const char* format, va_list args) {
         // Determine the length of the formatted string
         size_t length = vsnprintf(nullptr, 0, format, args);
 
@@ -49,12 +66,47 @@ public:
 
         // Clean up
         delete[] buffer;
-        va_end(args);
     }
 
     // Accessors
     size_t length() const { return m_length; }
     const char* c_str() const { return m_str; }
+
+    Vector<String> split(const char* delimiter) {
+        Vector<String> splits;
+        size_t start = 0;
+        size_t end = 0;
+        size_t del_len = strlen(delimiter);
+
+        while (end <= m_length) {
+            if (strncmp(m_str + end, delimiter, del_len) == 0 || end == m_length) {
+                size_t length = end - start;
+                char* substr = new char[length + 1];
+                strncpy(substr, m_str + start, length);
+                substr[length] = '\0';
+                splits.push_back(String(substr));
+                delete[] substr;
+                start = end + del_len;
+                end = start;
+            } else {
+                ++end;
+            }
+        }
+
+        return splits;
+    }
+
+    String slice(int start_index, int end_index) {
+        size_t length = end_index - start_index;
+        char* substr = new char[end_index - start_index + 1];
+        strncpy(substr, m_str + start_index, length);
+        substr[length] = '\0';
+
+        String slice_string = String(substr);
+        delete[] substr;
+
+        return slice_string;
+    }
 
     // Operators
     String& operator=(const String& other) {
@@ -67,13 +119,41 @@ public:
         return *this;
     }
 
+    // Operator for concatenation with another String object
+    String& operator+=(const String& other) {
+        size_t new_length = m_length + other.m_length;
+        char* new_str = new char[new_length + 1];
+        strcpy(new_str, m_str);
+        strcat(new_str, other.m_str);
+
+        delete[] m_str;
+        m_str = new_str;
+        m_length = new_length;
+
+        return *this;
+    }
+
+    // Operator for concatenation with a C-style string
+    String& operator+=(const char* other) {
+        String other_str(other);
+        return *this += other_str;
+    }
+
+    // Operator for concatenation of two String objects, returning a new String
     String operator+(const String& other) const {
-        String result;
-        result.m_length = m_length + other.m_length;
-        result.m_str = new char[result.m_length + 1];
-        strcpy(result.m_str, m_str);
-        strcat(result.m_str, other.m_str);
+        String result(*this);
+        result += other;
         return result;
+    }
+
+    // Operator for concatenation of a String object and a C-style string, returning a new String
+    String operator+(const char* other) const {
+        String other_str(other);
+        return *this + other_str;
+    }
+
+    bool operator==(const String& other) {
+        return strcmp(this->c_str(), other.c_str()) == 0;
     }
 
     char& operator[](size_t index) {
