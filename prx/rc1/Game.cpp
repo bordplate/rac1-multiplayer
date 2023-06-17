@@ -147,12 +147,19 @@ int Game::query_servers_callback(void* data, size_t len, void* extra) {
         server_query_callback_(servers);
     }
 
+    delete servers;
+
+    Client* client = Game::shared().client();
+    client->disconnect();
+    delete client;
+    Game::shared().client_ = nullptr;
+
     return 0;
 }
 
 void Game::query_servers(int directory_id, ServerQueryCallback callback) {
-    client_ = new DirectoryClient("127.0.0.1", 2407);
-    client_->connect();
+    client_ = new DirectoryClient("10.9.0.2", 2407);
+    client_->_connect();
 
     server_query_callback_ = callback;
     ((DirectoryClient*)client_)->query_directory(directory_id, (AckCallback)&query_servers_callback);
@@ -160,7 +167,7 @@ void Game::query_servers(int directory_id, ServerQueryCallback callback) {
 
 void Game::connect_to(char* ip, int port) {
     client_ = new GameClient(ip, port);
-    client_->connect();
+    client_->_connect();
 
     delete current_view;
     current_view = 0;

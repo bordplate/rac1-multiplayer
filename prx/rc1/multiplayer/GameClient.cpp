@@ -280,8 +280,10 @@ void GameClient::on_tick() {
     }
 
     if (!connection_complete_) {
-        send(Packet::make_connect_packet(""));
+        String* nickname = new String("name");
+        send(Packet::make_connect_packet(nickname));
         connection_complete_ = true;
+        delete nickname;
     }
 
     Player::shared().on_tick();

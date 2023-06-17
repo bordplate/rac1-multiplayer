@@ -14,7 +14,7 @@ ServerListView::ServerListView(Vector<GameServer*>* servers) {
 }
 
 ServerListView::~ServerListView() {
-    delete &servers_;
+
 }
 
 void ServerListView::render() {

@@ -123,16 +123,16 @@ Packet* Packet::make_collision(u16 uuid, u16 collided_with, Vec4* position, bool
     return packet;
 }
 
-Packet* Packet::make_connect_packet(String nickname) {
-    Packet* packet = new Packet(sizeof(MPPacketConnect) + nickname.length());
+Packet* Packet::make_connect_packet(String* nickname) {
+    Packet* packet = new Packet(sizeof(MPPacketConnect) + nickname->length());
     MPPacketHeader* header = (MPPacketHeader*)packet->header;
-    header->size = sizeof(MPPacketConnect) + nickname.length();
+    header->size = sizeof(MPPacketConnect) + nickname->length();
     header->type = MP_PACKET_CONNECT;
 
     MPPacketConnect *body = (MPPacketConnect*)packet->body;
-    body->nick_length = nickname.length();
+    body->nick_length = nickname->length();
 
-    memcpy(&packet->body + sizeof(body->nick_length), nickname.c_str(), nickname.length());
+    memcpy(&packet->body + sizeof(body->nick_length), nickname->c_str(), nickname->length());
 
     Client* client = Game::shared().client();
     if (client) {
