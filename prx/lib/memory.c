@@ -77,7 +77,7 @@ void *allocate_memory(size_t size) {
 #endif
 
             struct memory_block *new_block = (struct memory_block *)((char *)best_fit + sizeof(struct memory_block) + size);
-            new_block->size = remaining_size;
+            new_block->size = remaining_size - sizeof(struct memory_block);
             new_block->is_allocated = 0;
             new_block->next = best_fit->next;
             best_fit->next = new_block;
@@ -96,7 +96,7 @@ void *allocate_memory(size_t size) {
             }
         }
 
-        used_memory += best_fit->size;
+        used_memory += best_fit->size + sizeof(struct memory_block);
         allocations += 1;
         num_allocated += 1;
 
@@ -156,7 +156,7 @@ void free_memory(void *ptr) {
 #endif
     }
 
-    used_memory -= current->size;
+    used_memory -= current->size + sizeof(struct memory_block);
     frees += 1;
     num_allocated -= 1;
 
@@ -180,5 +180,18 @@ void operator delete(void* pointer) {
 
     return;
 }
+
+void* operator new[](size_t size) {
+    void* pointer = allocate_memory(size);
+
+    return pointer;
+}
+
+void operator delete[](void* pointer) {
+    free_memory(pointer);
+
+    return;
+}
+
 #endif
 

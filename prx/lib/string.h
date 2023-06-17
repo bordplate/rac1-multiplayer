@@ -18,7 +18,7 @@ private:
 
 public:
     // Constructors
-    String() : m_str(nullptr), m_length(0) {}
+    String() : m_str(nullptr), m_length(0) { set(""); }
     String(const char* str) : m_str(nullptr), m_length(0) { set(str); }
     String(const String& other) : m_str(nullptr), m_length(0) { set(other.m_str); }
     ~String() { delete[] m_str; }
