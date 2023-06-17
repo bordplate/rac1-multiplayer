@@ -14,6 +14,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+#define SEND_BUFFER_SIZE 1024
+#define RECV_BUFFER_SIZE 1024
+
 typedef int (*AckCallback)(void* data, size_t len, void* extra);
 typedef int (*SelfRefAckCallback)(void* self, void* data, size_t len);
 
@@ -38,12 +41,13 @@ public:
     void make_self_referencing_rpc(Packet* packet, AckCallback callback);
 
     void send(Packet* packet);
+    void flush();
     void send_handshake();
     void send_ack(unsigned char id, unsigned char cycle);
 
     virtual void on_tick();
     virtual void receive();
-    virtual void connect();
+    virtual void _connect();
     virtual void reset();
     virtual void disconnect();
 
@@ -58,8 +62,11 @@ public:
 private:
     int sockfd_;
     struct sockaddr_in sockaddr_;
-    char recv_buffer[1024];
+    char recv_buffer[RECV_BUFFER_SIZE];
     long received_;
+
+    char send_buffer[SEND_BUFFER_SIZE];
+    size_t send_buffer_len;
 
     unsigned char acked_[256];
     MPUnacked unacked_[256];

@@ -21,6 +21,25 @@ public:
     T &operator[](int index) { return data_[index]; }
     const T &operator[](int index) const { return data_[index]; }
 
+    // Copy assignment
+    Vector& operator=(const Vector& other) {
+        if (this != &other) {
+            delete[] data_;
+
+            data_ = 0;
+            size_ = 0;
+            capacity_ = 0;
+
+            reserve(other.capacity_);
+            for (int i = 0; i < other.size_; i++) {
+                data_[i] = other.data_[i];
+            }
+            size_ = other.size_;
+        }
+
+        return *this;
+    }
+
     // Iterators
     T *begin() { return data_; }
     const T *begin() const { return data_; }

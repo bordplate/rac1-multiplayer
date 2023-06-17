@@ -49,6 +49,10 @@ void Game::on_tick() {
         }
     }
 
+    if (client_) {
+        client_->flush();
+    }
+
     return;
 }
 

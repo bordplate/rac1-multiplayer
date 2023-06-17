@@ -29,13 +29,14 @@ Client::Client(char* ip, int port) {
     estimated_offset = 0;
     last_sync_time = 0;
     has_first_time_sync = false;
+    send_buffer_len = 0;
 }
 
-void Client::connect() {
+void Client::_connect() {
     Logger::debug("Starting client");
-    sockfd_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    sockfd_ = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if (sockfd_ <= 0) {
+    if (sockfd_ < 0) {
         Logger::critical("Couldn't open socket: %d", sockfd_);
         return;
     }
@@ -51,25 +52,46 @@ void Client::connect() {
 void Client::disconnect() {
     send(Packet::make_disconnect_packet());
 
+    socketclose(sockfd_);
+
     connected_ = false;
     handshake_complete_ = false;
+    sockfd_ = 0;
 }
 
 void Client::reset() {
     handshake_complete_ = false;
     connected_ = false;
 
-    connect();
+    _connect();
 }
 
 void Client::send(Packet* packet) {
     packet->header->timeSent = get_time();
 
-    if (sockfd_) {
-        sendto(sockfd_, packet->header, packet->len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
+    // Calculate the total size of the packet.
+    size_t packet_size = packet->len;
+
+    // Check if we have enough space in the buffer.
+    if (send_buffer_len + packet_size > sizeof(send_buffer)) {
+        // Not enough space, send the buffer now.
+        flush();
     }
 
+    // Copy the packet data into the buffer.
+    memcpy(send_buffer + send_buffer_len, packet->header, sizeof(MPPacketHeader));
+    send_buffer_len += sizeof(MPPacketHeader);
+    memcpy(send_buffer + send_buffer_len, packet->body, packet->header->size);
+    send_buffer_len += packet->header->size;
+
     delete packet;
+}
+
+void Client::flush() {
+    if (sockfd_ && send_buffer_len > 0) {
+        sendto(sockfd_, send_buffer, send_buffer_len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
+        send_buffer_len = 0;
+    }
 }
 
 /**
@@ -217,15 +239,13 @@ void Client::receive() {
             continue;
         }
 
-        if (received_ >= sizeof(MPPacketHeader) && received_ < 60000000) {
-            MPPacketHeader* packet_header = (MPPacketHeader*)&recv_buffer;
+        int index = 0;
+        while (index < received_ && received_ - index >= sizeof(MPPacketHeader)) {
+            MPPacketHeader *packet_header = (MPPacketHeader *) &recv_buffer[index];
 
-            if (received_ < sizeof(MPPacketHeader) + packet_header->size) {
-                Logger::error("Received only partial packet. Expected size: %d. Actual size: %d", sizeof(MPPacketHeader) + packet_header->size, received_);
-                return;
-            }
+            this->update(packet_header, &(recv_buffer[index + sizeof(MPPacketHeader)]));
 
-            this->update(packet_header, &(recv_buffer[sizeof(MPPacketHeader)]));
+            index += sizeof(MPPacketHeader) + packet_header->size;
         }
     } while (received_ > 0);
 }
@@ -276,13 +296,13 @@ uint64_t Client::server_time_difference(uint64_t time) {
 void Client::on_tick() {
     if (sockfd_ > 0) {
         this->receive();
-    }
 
-    // Sync time with the server every sync_interval milliseconds
-    if ((get_time()) - last_sync_time > sync_interval) {
-        Logger::trace("Time to get time from server");
-        request_server_time();
-        last_sync_time = (get_time());
-        Logger::trace("The time to get time from server is over.");
+        // Sync time with the server every sync_interval milliseconds
+        if (get_time() - last_sync_time > sync_interval) {
+            Logger::trace("Time to get time from server");
+            request_server_time();
+            last_sync_time = get_time();
+            Logger::trace("The time to get time from server is over.");
+        }
     }
 }
