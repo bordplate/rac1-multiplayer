@@ -65,6 +65,9 @@ void Game::before_player_spawn() {
 void Game::on_render() {
     // If loading, we shouldn't render anything;
     if (game_state == 6) {
+        if (Game::shared().client()) {
+            Game::shared().client()->drop_receive();
+        }
         return;
     }
 

@@ -250,6 +250,26 @@ void Client::receive() {
     } while (received_ > 0);
 }
 
+void Client::drop_receive() {
+    do {
+        memset(&recv_buffer, 0, sizeof(recv_buffer));
+        socklen_t paddrlen = sizeof(struct sockaddr_in);
+
+        sockaddr _sockaddr;
+        _sockaddr.sa_family = AF_INET;
+
+        received_ = recv(sockfd_, &recv_buffer, sizeof(recv_buffer), MSG_DONTWAIT);
+
+        // Anything above this value means an error message
+        if (received_ > 0x80000000) {
+            if (received_ != 0x80010223) {  // Just means there was no data available.
+                Logger::error("recvfrom encountered error: 0x%08x", received_);
+            }
+            continue;
+        }
+    } while (received_ > 0);
+}
+
 void Client::request_server_time() {
     Logger::debug("Requesting server time");
 

@@ -50,6 +50,7 @@ public:
     virtual void _connect();
     virtual void reset();
     virtual void disconnect();
+    virtual void drop_receive();
 
     uint64_t latency;
 
