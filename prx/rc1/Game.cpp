@@ -59,7 +59,7 @@ void Game::on_tick() {
 void Game::before_player_spawn() {
     Logger::debug("Player spawn");
 
-    ((GameClient*)client())->moby_delete_all();
+    ((GameClient*)client())->moby_clear_all();
 }
 
 void Game::on_render() {

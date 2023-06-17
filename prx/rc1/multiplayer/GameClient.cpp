@@ -124,10 +124,16 @@ void GameClient::moby_delete(MPPacketMobyCreate* packet) {
     mobys_[packet->uuid] = nullptr;
 }
 
+void GameClient::moby_clear_all() {
+    for(int i = 0; i <= mobys_.size(); i++) {
+        mobys_[i] = nullptr;
+    }
+}
+
 void GameClient::moby_delete_all() {
     for(int i = 0; i <= mobys_.size(); i++) {
         Moby* moby = mobys_[i];
-        if (moby != nullptr && moby->state > 0) {
+        if (moby != nullptr && moby->state >= 0) {
             delete_moby(moby);
         }
 
