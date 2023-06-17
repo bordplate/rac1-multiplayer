@@ -11,6 +11,8 @@
 #include "../TextElement.h"
 #include "../multiplayer/GameServer.h"
 
+#include "../Input.h"
+
 struct ServerListView : public View {
     ServerListView(Vector<GameServer*>* servers);
     ~ServerListView();
@@ -24,9 +26,15 @@ private:
     Vector<GameServer*> servers_;
     Vector<TextElement*> servers_elements_;
 
+    TextElement* username_label_;
+
     int selected_server_;
 
+    Input username_input_;
+
     void update_server_list();
+
+    static int username_input_callback(Input* input, void* userdata);
 };
 
 

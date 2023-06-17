@@ -15,7 +15,7 @@ void RemoteView::on_load() {
 
 void RemoteView::render() {
     memory_info_text_->text->setf("mem: %d/%d (%d)", used_memory, sizeof(memory_area), num_allocated);
-    ping_text_->text->setf("ping: %lu", Game::shared().client()->latency*2);
+    ping_text_->text->setf("ping: %lu", Game::shared().client()->latency_ * 2);
 
     View::render();
 }
@@ -32,16 +32,16 @@ TextElement* RemoteView::get_element(int id) {
         return nullptr;
     }
 
-    if (id >= text_elements_.capacity()) {
+    if (id+1 >= text_elements_.capacity()) {
         Logger::trace("Updating text element capacity to: %d", id + 1);
         text_elements_.resize(id + 1);
     }
 
     if (!text_elements_[id]) {
         Logger::trace("Making new text element for remote view. ID: %d", id);
-        TextElement* element = new TextElement(0, 0, "<?>");
-        this->add_element(element);
-        text_elements_[id] = element;
+        text_elements_[id] = new TextElement(0, 0, "<?>");
+        this->add_element(text_elements_[id]);
+        //text_elements_[id] = element;
     }
 
     return text_elements_[id];

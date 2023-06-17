@@ -6,6 +6,10 @@
 
 #include "../Game.h"
 #include "../TextElement.h"
+#include "../Input.h"
+
+#include "../PersistentStorage.h"
+
 
 #include <lib/logger.h>
 
@@ -19,6 +23,8 @@ ServerListView::~ServerListView() {
 
 void ServerListView::render() {
     View::render();
+
+    username_input_.check_callback();
 }
 
 void ServerListView::update_server_list() {
@@ -35,7 +41,20 @@ void ServerListView::update_server_list() {
 void ServerListView::on_load() {
     View::on_load();
 
-    this->add_element(new TextElement(120, 390, "\x13 Change nickname"));
+    username_input_.set_callback(username_input_callback, this);
+
+    PersistentStorage storage = PersistentStorage("settings.conf");
+    String username = storage.get_string("username");
+
+    String label = username.length() > 0 ? String::format("\x13 %s", username.c_str()) : "\x13 Change nickname";
+
+    if (username.length() <= 0) {
+        username_input_.activate();
+    }
+
+    username_label_ = new TextElement(120, 390, label.c_str());
+
+    this->add_element(username_label_);
     this->add_element(new TextElement(380, 390, "\x12 Back"));
 
     // Make the server list
@@ -90,7 +109,7 @@ void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
     }
 
     if (input & Square) {
-
+        username_input_.activate();
     }
 
     if (input & Triangle) {
@@ -110,4 +129,15 @@ void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
 
         Game::shared().connect_to(ip, server->port);
     }
+}
+
+int ServerListView::username_input_callback(Input *input, void *userdata) {
+    ServerListView* self = (ServerListView*)userdata;
+
+    self->username_label_->text->setf("\x13 %s", input->input_text.c_str());
+
+    PersistentStorage storage = PersistentStorage("settings.conf");
+    storage.set("username", input->input_text);
+
+    return 0;
 }
