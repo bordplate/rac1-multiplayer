@@ -99,6 +99,9 @@ extern int player_health;
 // Which player type the player is
 extern char player_type;
 
+extern Vec3 camera_pos;
+extern Vec3 camera_rot;
+
 extern int player_animation_duration;
 
 extern enum CONTROLLER_INPUT pressed_buttons;

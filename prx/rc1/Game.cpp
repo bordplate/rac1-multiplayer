@@ -12,6 +12,8 @@
 
 #include "views/StartView.h"
 
+#include "Player.h"
+
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
 // Maybe better to just have it here anyway. Idk.
@@ -57,6 +59,7 @@ void Game::on_tick() {
 }
 
 void Game::before_player_spawn() {
+    Player::shared().on_respawned();
     Logger::debug("Player spawn");
 
     ((GameClient*)client())->moby_clear_all();

@@ -36,9 +36,8 @@ void game_loop_intro_start_hook() {
 
 SHK_HOOK(void, on_respawn);
 void on_respawn_hook() {
-    _c_on_respawn();
-
     SHK_CALL_HOOK(on_respawn);
+    _c_on_respawn();
 }
 
 //SHK_HOOK(void, ratchet_dying);

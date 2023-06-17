@@ -65,6 +65,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_QUERY_GAME_SERVERS 12
 #define MP_PACKET_CONTROLLER_INPUT   13
 #define MP_PACKET_TIME_SYNC          14
+#define MP_PACKET_PLAYER_RESPAWNED   15
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -136,6 +137,7 @@ typedef struct {
 #define MP_STATE_TYPE_PLANET    4
 #define MP_STATE_TYPE_GAME      5
 #define MP_STATE_TYPE_ITEM      6
+#define MP_STATE_TYPE_SET_RESPAWN 7
 
 typedef struct {
     u32 state_type;
@@ -204,6 +206,7 @@ struct Packet {
     static Packet* make_connect_packet(String* nickname);
     static Packet* make_disconnect_packet();
     static Packet* make_time_request_packet();
+    static Packet* make_player_respawned_packet();
 };
 
 #endif

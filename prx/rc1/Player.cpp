@@ -14,6 +14,22 @@ void Player::on_tick() {
         return;
     }
 
+    if (dead) {
+        if (use_respawn_position) {
+            player_pos.x = respawn_position.x;
+            player_pos.y = respawn_position.y;
+            player_pos.z = respawn_position.z;
+            player_rot.z = respawn_rotation.z;
+
+            camera_pos.x = respawn_position.x;
+            camera_pos.y = respawn_position.y;
+            camera_pos.z = respawn_position.z;
+            camera_rot.z = respawn_rotation.z;
+        }
+
+        dead = false;
+    }
+
     Packet* packet = new Packet(sizeof(MPPacketMobyUpdate));
 
     packet->header->type = MP_PACKET_MOBY_UPDATE;
@@ -51,4 +67,16 @@ void Player::on_tick() {
     //}
 
     //last_game_state = game_state;
+}
+
+void Player::on_respawned() {
+    if (Game::shared().client()) {
+        Client* client = Game::shared().client();
+
+        Packet* respawned_packet = Packet::make_player_respawned_packet();
+        client->make_ack(respawned_packet, nullptr);
+        client->send(respawned_packet);
+    }
+
+    dead = true;
 }

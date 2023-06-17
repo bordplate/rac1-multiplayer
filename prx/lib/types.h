@@ -36,6 +36,12 @@ typedef struct Vec4 {
     float w;
 } Vec4;
 
+typedef struct Vec3 {
+    float x;
+    float y;
+    float z;
+} Vec3;
+
 typedef struct Color {
     unsigned char a;
     unsigned char b;

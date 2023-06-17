@@ -155,3 +155,10 @@ Packet* Packet::make_time_request_packet() {
 
     return packet;
 }
+
+Packet* Packet::make_player_respawned_packet() {
+    Packet* packet = new Packet(0);
+    packet->header->type = MP_PACKET_PLAYER_RESPAWNED;
+
+    return packet;
+}

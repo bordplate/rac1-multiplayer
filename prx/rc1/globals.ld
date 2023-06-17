@@ -19,6 +19,9 @@ player_health = 0x96BF88;
 animation_speed = 0x71F410;
 player_type = 0x96bd84;
 
+camera_pos = 0x951500;
+camera_rot = 0x95150c;
+
 pressed_buttons = 0x964ae4;
 held_buttons = 0x964ae0;
 

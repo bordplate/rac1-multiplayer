@@ -182,6 +182,16 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
 
             break;
         }
+        case MP_STATE_TYPE_SET_RESPAWN:  {
+            Logger::debug("Setting respawn %d to %f", packet->offset, ((MPPacketSetStateFloat*)packet)->value);
+            if (packet->offset < 3) {
+                ((float*)&Player::shared().respawn_position)[packet->offset] = ((MPPacketSetStateFloat*)packet)->value;
+            } else if (packet->offset < 6) {
+                ((float*)&Player::shared().respawn_rotation)[packet->offset-3] = ((MPPacketSetStateFloat*)packet)->value;
+            }
+            Player::shared().use_respawn_position = true;
+            break;
+        }
         default: {
             Logger::error("Server asked us to set unknown state type %d", packet->state_type);
         }
@@ -239,7 +249,8 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
             // Server can send multiple of these messages in 1 packet to ensure the actions are performed in the right sequence.
             int recvd = 0;
             while (recvd < header->size) {
-                update_set_state((MPPacketSetState*)packet_data);
+                MPPacketSetState* state_data = (MPPacketSetState*)((char*)packet_data + recvd);
+                update_set_state(state_data);
 
                 recvd += sizeof(MPPacketSetState);
             }
