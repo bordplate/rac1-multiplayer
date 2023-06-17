@@ -114,7 +114,7 @@ void rc1_init() {
 }
 
 void rc1_shutdown() {
-
+    sys_net_finalize_network();
 }
 
 };
