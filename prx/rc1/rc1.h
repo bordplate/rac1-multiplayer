@@ -111,6 +111,10 @@ extern int in_cutscene;
 
 extern float animation_speed;
 
+extern int user_option_camera_left_right_movement;
+extern int user_option_camera_up_down_movement;
+extern int user_option_camera_rotation_speed;
+
 #ifdef __cplusplus
 // Pointer to Ratchet moby.
 extern Moby *ratchet_moby;

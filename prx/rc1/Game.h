@@ -35,12 +35,21 @@ public:
     void connect_to(char* ip, int port);
     void query_servers(int directory_id, ServerQueryCallback callback);
 private:
-    Game() {}
+    Game() {
+        previous_user_option_camera_left_right_movement = -1;
+        previous_user_option_camera_up_down_movement = -1;
+        previous_user_option_camera_rotation_speed = -1;
+    }
     Game(Game const&);
 
     View* current_view;
 
     Client* client_;
+
+    int previous_user_option_camera_left_right_movement;
+    int previous_user_option_camera_up_down_movement;
+    int previous_user_option_camera_rotation_speed;
+    bool restored_camera_options_;
 
     static ServerQueryCallback server_query_callback_;
 };

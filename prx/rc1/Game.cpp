@@ -13,6 +13,7 @@
 #include "views/StartView.h"
 
 #include "Player.h"
+#include "PersistentStorage.h"
 
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
@@ -24,6 +25,26 @@ ServerQueryCallback Game::server_query_callback_ = NULL;
 void Game::on_tick() {
     if (client_) {
         client_->on_tick();
+    }
+
+    if (previous_user_option_camera_left_right_movement == -1) {
+        previous_user_option_camera_left_right_movement = user_option_camera_left_right_movement;
+        previous_user_option_camera_up_down_movement = user_option_camera_up_down_movement;
+        previous_user_option_camera_rotation_speed = user_option_camera_rotation_speed;
+    }
+
+    if (previous_user_option_camera_left_right_movement != user_option_camera_left_right_movement ||
+    previous_user_option_camera_up_down_movement != user_option_camera_up_down_movement ||
+    previous_user_option_camera_rotation_speed != user_option_camera_rotation_speed) {
+        previous_user_option_camera_left_right_movement = user_option_camera_left_right_movement;
+        previous_user_option_camera_up_down_movement = user_option_camera_up_down_movement;
+        previous_user_option_camera_rotation_speed = user_option_camera_rotation_speed;
+
+        PersistentStorage storage = PersistentStorage("settings.conf");
+
+        storage.set("user_option_camera_left_right_movement", user_option_camera_left_right_movement);
+        storage.set("user_option_camera_up_down_movement", user_option_camera_up_down_movement);
+        storage.set("user_option_camera_rotation_speed", user_option_camera_rotation_speed);
     }
 
     // Pass inputs to the current view and send to server
@@ -59,10 +80,24 @@ void Game::on_tick() {
 }
 
 void Game::before_player_spawn() {
-    Player::shared().on_respawned();
-    Logger::debug("Player spawn");
+    if (client_ && client_->connected()) {
+        Player::shared().on_respawned();
+        Logger::debug("Player spawn");
 
-    ((GameClient*)client())->moby_clear_all();
+        if (!restored_camera_options_) {
+            PersistentStorage storage = PersistentStorage("settings.conf");
+            if (storage.index_of("user_option_camera_left_right_movement") >= 0)
+                user_option_camera_left_right_movement = storage.get_int("user_option_camera_left_right_movement");
+            if (storage.index_of("user_option_camera_up_down_movement") >= 0)
+                user_option_camera_up_down_movement = storage.get_int("user_option_camera_up_down_movement");
+            if (storage.index_of("user_option_camera_rotation_speed") >= 0)
+                user_option_camera_rotation_speed = storage.get_int("user_option_camera_rotation_speed");
+
+            restored_camera_options_ = true;
+        }
+
+        ((GameClient *) client())->moby_clear_all();
+    }
 }
 
 void Game::on_render() {

@@ -28,3 +28,7 @@ held_buttons = 0x964ae0;
 in_cutscene = 0xa1071c;
 
 coll_moby_out = 0xa10958;
+
+user_option_camera_left_right_movement = 0x71fb38;
+user_option_camera_up_down_movement = 0x71fb3c;
+user_option_camera_rotation_speed = 0x71fb40;
