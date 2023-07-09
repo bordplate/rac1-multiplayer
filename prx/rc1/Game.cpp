@@ -196,7 +196,7 @@ int Game::query_servers_callback(void* data, size_t len, void* extra) {
 }
 
 void Game::query_servers(int directory_id, ServerQueryCallback callback) {
-    client_ = new DirectoryClient("10.9.0.2", 2407);
+    client_ = new DirectoryClient("172.104.144.15", 2407);
     client_->_connect();
 
     server_query_callback_ = callback;
