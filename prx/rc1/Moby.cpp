@@ -9,46 +9,7 @@
 
 void Moby::set_animation(char animation_id, char animation_frame, u32 duration)
 {
-    int seq_idx;
-    u8 seq_frame_count;
-    char frame_count;
-    u32 uVar6;
-    double dVar7;
-    float frame_rate;
-
-    seq_idx = animation_id << 2;
-    seq_frame_count = this->pClass->seqs[seq_idx].frame_count;
-    frame_count = seq_frame_count - 1;
-
-    // Handle a few special cases
-    if (this->updateID != 0xff || this->field36_0x60 != 0 || this->field40_0x64 != NULL) {
-        uVar6 = FUN_000f0f9c(this);
-        if (uVar6 != -1) {
-            // Do some stuff with the moby
-            this->field26_0x50 = (u8)uVar6;
-        }
-    }
-
-    // Set the moby's animation
-    this->animationFrame = frame_count + (animation_frame - frame_count);
-    this->animationID = animation_id;
-
-    // Do something with the moby's frame data
-    moby_frame_data_something(this);
-
-    // Calculate the animation frame rate
-    frame_rate = 1e+07;
-    if (duration != 0) {
-        dVar7 = int_to_double(duration);
-        frame_rate = (float)(1.0 / dVar7);
-    }
-    this->field35_0x5c = frame_rate;
-
-    // Set some other moby fields
-    this->field34_0x58 = 1.0;
-    this->field30_0x54 = 0.0;
-    this->field43_0x70 = this->field43_0x70 & 0xfd;
-    this->field49_0x7c = this->pClass->seqs[seq_idx].next_seq;
+    return set_moby_animation(this, animation_id, animation_frame, duration);
 }
 
 void Moby::check_collision() {
