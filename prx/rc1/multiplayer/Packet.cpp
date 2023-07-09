@@ -2,7 +2,7 @@
 // Created by Vetle Hjelle on 29/12/2022.
 //
 
-#include "packet.h"
+#include "Packet.h"
 
 #include <rc1/rc1.h>
 #include <rc1/Game.h>

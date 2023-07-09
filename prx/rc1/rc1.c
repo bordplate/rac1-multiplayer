@@ -5,7 +5,7 @@
 #include <netex/net.h>
 
 #include <rc1/Game.h>
-#include "multiplayer/packet.h"
+#include "multiplayer/Packet.h"
 
 #include "bridging.h"
 

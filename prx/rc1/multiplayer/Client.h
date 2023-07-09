@@ -5,7 +5,7 @@
 #ifndef PS3_CKIT_CLIENT_H
 #define PS3_CKIT_CLIENT_H
 
-#include "packet.h"
+#include "Packet.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>

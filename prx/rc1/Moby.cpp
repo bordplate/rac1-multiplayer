@@ -3,7 +3,7 @@
 #include "Game.h"
 
 #include "rc1.h"
-#include "multiplayer/packet.h"
+#include "multiplayer/Packet.h"
 
 #include <lib/logger.h>
 
