@@ -162,7 +162,7 @@ int Game::query_servers_callback(void* data, size_t len, void* extra) {
 
     Logger::debug("Response from directory. Size: %d", len);
 
-    while (index < len && items < 5) {
+    while (index < len && items < 10) {
         MPPacketQueryResponseServer* packet = (MPPacketQueryResponseServer*)&((char*)data)[index];
 
         // Names can't be longer than 50 chars.
