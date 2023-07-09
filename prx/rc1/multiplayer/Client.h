@@ -27,6 +27,7 @@ struct MPUnacked {
     bool acked;
     void* extra;
     unsigned char next_unacked;
+    int64_t send_time;
 };
 
 struct Client {
@@ -52,10 +53,10 @@ public:
     virtual void disconnect();
     virtual void drop_receive();
 
-    uint64_t latency;
+    int64_t latency_;
 
-    void calculate_offset(uint64_t client_send_time, uint64_t server_receive_time);
-    uint64_t server_time_difference(uint64_t time);
+    void calculate_offset(int64_t client_send_time, int64_t server_receive_time);
+    int64_t server_time_difference(int64_t time);
 
     bool connected() { return connected_; }
     bool handshake_complete() { return handshake_complete_; }
@@ -74,10 +75,12 @@ private:
     unsigned char ack_id_;
     unsigned char ack_cycle_;
 
-    uint64_t estimated_offset;
-    uint64_t last_sync_time;
-    static const uint64_t sync_interval = 5000; // Sync every 5 seconds
+    int64_t estimated_server_time_;
+    int64_t last_sync_time;
+    static const int64_t sync_interval = 5000; // Sync every 5 seconds
     bool has_first_time_sync;
+
+    int64_t last_packet_time_get_;
 
     bool connected_;
     bool handshake_complete_;
@@ -86,8 +89,7 @@ private:
 
     void request_server_time();
     static int server_time_response_callback(void* data, size_t len, void* extra);
-    uint64_t get_estimated_server_time();
-    void set_offset(uint64_t offset);
+    int64_t get_estimated_server_time();
 };
 
 

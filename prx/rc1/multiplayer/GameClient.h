@@ -29,7 +29,9 @@ struct GameClient : public Client {
     bool update(MPPacketHeader* header, void* packet_data);
     void on_tick();
 
+    static int connect_callback(void* packetData, unsigned int size, void* userdata);
 private:
+    char* ip_;
     Vector<Moby*> mobys_;
     long ticks_;
 
@@ -38,6 +40,7 @@ private:
     RemoteView* remote_view_;
 
     void reset(); // override
+    bool waiting_for_connect_;
 };
 
 

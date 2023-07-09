@@ -7,6 +7,7 @@
 
 
 #include "lib/types.h"
+#include <lib/string.h>
 
 struct Player {
     static Player& shared() {
@@ -19,6 +20,8 @@ struct Player {
     bool use_respawn_position;
 
     bool dead;
+
+    String username;
 
     void on_tick();
     void on_respawned();

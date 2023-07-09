@@ -11,6 +11,7 @@
 
 GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     mobys_.resize(MAX_MP_MOBYS);
+    ip_ = ip;
 
     for(int i = 0; i <= mobys_.capacity(); i++) {
         mobys_[i] = nullptr;
@@ -20,6 +21,7 @@ GameClient::GameClient(char *ip, int port) : Client(ip, port) {
 }
 
 void GameClient::reset() {
+    waiting_for_connect_ = false;
     connection_complete_ = false;
 
     moby_delete_all();
@@ -199,6 +201,11 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
 }
 
 void GameClient::update_set_text(MPPacketSetHUDText* packet) {
+    // If we don't have a view in time for this packet, just return
+    if (remote_view_ == nullptr) {
+        return;
+    }
+
     if (packet->flags & HUDElementDelete) {
         Logger::trace("Deleting HUD element");
         remote_view_->delete_element(packet->id);
@@ -278,8 +285,21 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
     return true;
 }
 
+int GameClient::connect_callback(void* packetData, size_t size, void* userdata) {
+    GameClient* self = (GameClient*)userdata;
+
+    self->connection_complete_ = true;
+
+    return 0;
+}
+
 void GameClient::on_tick() {
     Client::on_tick();
+
+    if (!remote_view_) {
+        remote_view_ = new RemoteView();
+        Game::shared().transition_to(remote_view_);
+    }
 
     ticks_ += 1;
 
@@ -291,18 +311,17 @@ void GameClient::on_tick() {
     }
 
     if (!connection_complete_) {
-        String* nickname = new String("name");
-        send(Packet::make_connect_packet(nickname));
-        connection_complete_ = true;
-        delete nickname;
+        if (!waiting_for_connect_) {
+            Packet *packet = Packet::make_connect_packet(Player::shared().username, Game::shared().userid);
+            make_self_referencing_rpc(packet, connect_callback);
+            send(packet);
+            waiting_for_connect_ = true;
+        }
+
+        return;
     }
 
     Player::shared().on_tick();
-
-    if (!remote_view_) {
-        remote_view_ = new RemoteView();
-        Game::shared().transition_to(remote_view_);
-    }
 
     //if (frame_count < last_frame_count) {
     //    MULTI_LOG("Environment reset\n");

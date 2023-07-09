@@ -9,6 +9,7 @@
 #include "../Input.h"
 
 #include "../PersistentStorage.h"
+#include <rc1/Player.h>
 
 
 #include <lib/logger.h>
@@ -50,6 +51,8 @@ void ServerListView::on_load() {
 
     if (username.length() <= 0) {
         username_input_.activate();
+    } else {
+        Player::shared().username = username;
     }
 
     username_label_ = new TextElement(120, 390, label.c_str());
@@ -138,6 +141,7 @@ int ServerListView::username_input_callback(Input *input, void *userdata) {
 
     PersistentStorage storage = PersistentStorage("settings.conf");
     storage.set("username", input->input_text);
+    Player::shared().username = input->input_text;
 
     return 0;
 }

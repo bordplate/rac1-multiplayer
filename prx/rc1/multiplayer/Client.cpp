@@ -12,7 +12,7 @@
 #include <lib/memory.h>
 #include <sys/sys_time.h>
 
-uint64_t get_time() {
+int64_t get_time() {
     return sys_time_get_system_time() / 1000;
 }
 
@@ -26,7 +26,7 @@ Client::Client(char* ip, int port) {
     sockaddr_.sin_port = htons(port);
     sockaddr_.sin_family = AF_INET;
 
-    estimated_offset = 0;
+    estimated_server_time_ = 0;
     last_sync_time = 0;
     has_first_time_sync = false;
     send_buffer_len = 0;
@@ -62,6 +62,7 @@ void Client::disconnect() {
 void Client::reset() {
     handshake_complete_ = false;
     connected_ = false;
+    sockfd_ = 0;
 
     _connect();
 }
@@ -79,17 +80,19 @@ void Client::send(Packet* packet) {
     }
 
     // Copy the packet data into the buffer.
-    memcpy(send_buffer + send_buffer_len, packet->header, sizeof(MPPacketHeader));
+    memcpy((char*)&send_buffer + send_buffer_len, packet->header, sizeof(MPPacketHeader));
     send_buffer_len += sizeof(MPPacketHeader);
-    memcpy(send_buffer + send_buffer_len, packet->body, packet->header->size);
+    memcpy((char*)&send_buffer + send_buffer_len, packet->body, packet->header->size);
     send_buffer_len += packet->header->size;
 
-    delete packet;
+    if (!packet->retain_after_send) {
+        delete packet;
+    }
 }
 
 void Client::flush() {
     if (sockfd_ && send_buffer_len > 0) {
-        sendto(sockfd_, send_buffer, send_buffer_len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
+        sendto(sockfd_, &send_buffer, send_buffer_len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
         send_buffer_len = 0;
     }
 }
@@ -114,9 +117,18 @@ void Client::make_ack(Packet* packet, AckCallback callback, void* extra) {
     packet->header->ack_cycle = ack_cycle_;
 
     MPUnacked* unacked = &(unacked_[ack_id_]);
+
+    if (unacked->data != nullptr) {
+        free_memory(unacked->data);
+    }
+
     memset(unacked, 0, sizeof(MPUnacked));
 
     unacked->acked = false;
+    unacked->send_time = get_time();
+    unacked->data = packet;
+
+    packet->retain_after_send = true;
 
     if (packet->header->flags & MP_PACKET_FLAG_RPC) {
         unacked->ack_cb = callback;
@@ -149,6 +161,11 @@ void Client::ack(char* packet, size_t len) {
 
     unacked->acked = true;
 
+    if (unacked->data != nullptr) {
+        free_memory(unacked->data);
+        unacked->data = nullptr;
+    }
+
     // If the ack packet has data, call the event handler for this packet
     if (header->size > 0 && unacked->ack_cb) {
         unacked->ack_cb(&packet[sizeof(MPPacketHeader)], header->size, unacked->extra);
@@ -172,13 +189,20 @@ void Client::send_ack(unsigned char id, unsigned char cycle) {
 bool Client::update(MPPacketHeader* header, void* packet_data) {
     //Logger::trace("Processing a received packet with type %d", header->type);
 
+//    if (last_packet_time_get_ != 0 && header->timeSent < last_packet_time_get_) {
+//        // Idk why packets would come out of sync.
+//        return false;
+//    }
+
+    last_packet_time_get_ = header->timeSent;
+
     // If the packet was sent more than 5 seconds ago, we discard this packet and start to process next packet to
     //   increase performance if the operating system receive buffer is full.
-    uint64_t difference = server_time_difference(header->timeSent);
-    if (difference > estimated_offset*4 && header->type != MP_PACKET_ACK) {
-        Logger::debug("Discarding stale packet sent %lu ms ago, offset: %lu", difference, estimated_offset);
-        return false;
-    }
+//    int64_t difference = server_time_difference(header->timeSent);
+//    if (difference > latency_ * latency_ && header->type != MP_PACKET_ACK) {
+//        Logger::debug("Discarding stale packet sent %ld ms ago, server_time: %ld", difference, get_estimated_server_time());
+//        return false;
+//    }
 
     // If a packet requires acknowledgement, it has a value in the requires_ack field.
     // We register that we got the packet and only process the packet if it hasn't been
@@ -287,25 +311,21 @@ int Client::server_time_response_callback(void* data, size_t len, void* extra) {
     return 0;
 }
 
-void Client::calculate_offset(uint64_t client_send_time, uint64_t server_receive_time) {
-    uint64_t now = get_time();
-    latency = (now - client_send_time) / 2;
-    estimated_offset = (server_receive_time + latency) - now;
+void Client::calculate_offset(int64_t client_send_time, int64_t server_receive_time) {
+    int64_t now = get_time();
+    latency_ = (now - client_send_time) / 2;
+    estimated_server_time_ = (server_receive_time + latency_);
 
     has_first_time_sync = true;
 
-    Logger::debug("Server time offset: %lu, latency: %lu", estimated_offset, latency);
+    Logger::debug("Server time: %ld, latency_: %ld", estimated_server_time_, latency_);
 }
 
-uint64_t Client::get_estimated_server_time() {
-    return (get_time()) + estimated_offset;
+int64_t Client::get_estimated_server_time() {
+    return estimated_server_time_ + (get_time() - last_sync_time);
 }
 
-void Client::set_offset(uint64_t offset) {
-    estimated_offset = offset;
-}
-
-uint64_t Client::server_time_difference(uint64_t time) {
+int64_t Client::server_time_difference(int64_t time) {
     if (!has_first_time_sync) {
         return 0;
     }
@@ -314,6 +334,16 @@ uint64_t Client::server_time_difference(uint64_t time) {
 }
 
 void Client::on_tick() {
+    int64_t current_time = get_time();
+    for(int i = 0; i < sizeof(unacked_)/sizeof(unacked_[0]); ++i) {
+        MPUnacked* unacked = &(unacked_[i]);
+        if (unacked->data != nullptr && !unacked->acked && current_time - unacked->send_time > 1000) {
+            // Resend packet
+            send(unacked->data);
+            unacked->send_time = current_time;
+        }
+    }
+
     if (sockfd_ > 0) {
         this->receive();
 
