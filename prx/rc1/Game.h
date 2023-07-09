@@ -22,6 +22,10 @@ public:
         return game;
     }
 
+    int userid;
+
+    void start();
+
     void transition_to(View* view);
 
     void on_tick();
