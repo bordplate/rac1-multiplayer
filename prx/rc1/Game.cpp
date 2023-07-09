@@ -10,6 +10,8 @@
 #include <lib/logger.h>
 #include <lib/memory.h>
 
+#include <sys/random_number.h>
+
 #include "views/StartView.h"
 
 #include "Player.h"
@@ -21,6 +23,18 @@
 LogLevel Logger::log_level_ = Debug;
 
 ServerQueryCallback Game::server_query_callback_ = NULL;
+
+void Game::start() {
+    PersistentStorage storage = PersistentStorage("settings.conf");
+
+    int index = storage.index_of("userid");
+    if (index < 0) {
+        sys_get_random_number(&userid, sizeof(userid));
+        storage.set("userid", userid);
+    } else {
+        userid = storage.get_int("userid");
+    }
+}
 
 void Game::on_tick() {
     if (client_) {
@@ -218,6 +232,10 @@ extern "C" void _c_game_tick() {
 
 extern "C" void _c_game_render() {
     Game::shared().on_render();
+}
+
+extern "C" void _c_game_start() {
+    Game::shared().start();
 }
 
 extern "C" void _c_game_quit() {

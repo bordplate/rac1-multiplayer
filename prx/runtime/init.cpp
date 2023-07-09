@@ -37,6 +37,7 @@ SHK_HOOK( void, _shk_prx_elf_substitute );
 
 extern "C" void __cxa_pure_virtual() { while (1); }
 
+extern "C" void _c_game_start();
 extern "C" void initRuntime() {
     LOADER_LOG("initialising runtime\n");
 
@@ -82,6 +83,8 @@ extern "C" s32 _start(void) {
     LOADER_LOG("initialising modules\n");
     for (u32 i = 0; i < moduleGetModuleCount(); ++i)
         moduleInitModule(moduleGetModuleByIndex(i));
+
+    _c_game_start();
 
     return SYS_PRX_RESIDENT;
 }
