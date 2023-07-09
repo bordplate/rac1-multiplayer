@@ -17,9 +17,6 @@ struct Player {
 
     Vec4 respawn_position;
     Vec4 respawn_rotation;
-    bool use_respawn_position;
-
-    bool dead;
 
     String username;
 

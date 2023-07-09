@@ -191,6 +191,11 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             } else if (packet->offset < 6) {
                 ((float*)&Player::shared().respawn_rotation)[packet->offset-3] = ((MPPacketSetStateFloat*)packet)->value;
             }
+
+            if (current_planet > 0 && ratchet_moby != nullptr) {
+                set_spawn_point(&Player::shared().respawn_position, &Player::shared().respawn_rotation);
+            }
+
             Player::shared().use_respawn_position = true;
             break;
         }
