@@ -195,8 +195,6 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             if (current_planet > 0 && ratchet_moby != nullptr) {
                 set_spawn_point(&Player::shared().respawn_position, &Player::shared().respawn_rotation);
             }
-
-            Player::shared().use_respawn_position = true;
             break;
         }
         default: {

@@ -119,7 +119,7 @@ void Client::make_ack(Packet* packet, AckCallback callback, void* extra) {
     MPUnacked* unacked = &(unacked_[ack_id_]);
 
     if (unacked->data != nullptr) {
-        free_memory(unacked->data);
+        delete unacked->data;
     }
 
     memset(unacked, 0, sizeof(MPUnacked));
@@ -162,7 +162,7 @@ void Client::ack(char* packet, size_t len) {
     unacked->acked = true;
 
     if (unacked->data != nullptr) {
-        free_memory(unacked->data);
+        delete unacked->data;
         unacked->data = nullptr;
     }
 
@@ -338,6 +338,7 @@ void Client::on_tick() {
     for(int i = 0; i < sizeof(unacked_)/sizeof(unacked_[0]); ++i) {
         MPUnacked* unacked = &(unacked_[i]);
         if (unacked->data != nullptr && !unacked->acked && current_time - unacked->send_time > 1000) {
+            Logger::trace("Resending packet");
             // Resend packet
             send(unacked->data);
             unacked->send_time = current_time;
