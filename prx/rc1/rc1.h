@@ -5,6 +5,7 @@
 
 #include <lib/shk.h>
 #include <lib/types.h>
+#include "Moby.h"
 
 #ifdef __cplusplus
 #include "Moby.h"
@@ -57,6 +58,23 @@ enum CONTROLLER_INPUT {
     Right = 8192,
     Down = 16384,
     Left = 32768
+};
+
+struct CollOutput {
+    void* grid;
+    int pad1;
+    int pad2;
+    int pad3;
+    int count;
+    int damage_next;
+    Moby* pMoby;
+    int poly;
+    Vec4 ip;
+    Vec4 push;
+    Vec4 normal;
+    Vec4 v0;
+    Vec4 v1;
+    Vec4 v2;
 };
 
 //
@@ -120,6 +138,8 @@ extern int user_option_camera_rotation_speed;
 #ifdef __cplusplus
 // Pointer to Ratchet moby.
 extern Moby *ratchet_moby;
+extern CollOutput* coll_output;
+extern int n_coll_mobys;
 extern Moby *coll_moby_out;
 #endif
 

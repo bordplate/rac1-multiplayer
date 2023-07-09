@@ -24,12 +24,18 @@ void Moby::check_collision() {
     }
 
     // I'm not sure about these arguments, this kinda works, so I stuck with it.
-    int success = coll_sphere(&this->position, 0, 1, this);
+    int success = coll_sphere(&this->position, this->scale * 10, 0x1, this);
 
-    if (success > 0 && coll_moby_out != 0) {
-        if (coll_moby_out->oClass == 0) {
+    if (vars->collision_debounce > 0) {
+        vars->collision_debounce--;
+    }
+
+    if (success > 0 && coll_moby_out != 0 && vars->collision_debounce <= 0) {
+        if (coll_moby_out == ratchet_moby) {
             if (Game::shared().client()) {
+                Logger::debug("Time to send the collision");
                 Game::shared().client()->send(Packet::make_collision(0, vars->uuid, &this->position, false));
+                vars->collision_debounce = 10;
             }
         }
     }

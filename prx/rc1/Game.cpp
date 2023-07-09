@@ -64,12 +64,12 @@ void Game::on_tick() {
     // Pass inputs to the current view and send to server
     if (pressed_buttons) {
         if (current_view) {
-            Logger::debug("Pressed buttons (%08X) sent to view", pressed_buttons);
+            Logger::trace("Pressed buttons (%08X) sent to view", pressed_buttons);
             current_view->on_pressed_buttons(pressed_buttons);
         }
 
         if (client_ && client_->connected()) {
-            client_->send(Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED));
+            //client_->send(Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED));
         }
     }
 

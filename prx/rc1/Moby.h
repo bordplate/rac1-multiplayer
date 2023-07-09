@@ -17,6 +17,7 @@ typedef struct {
     char o_class;
     int animation_duration;
     u16 sig;
+    u8 collision_debounce;
 } MPMobyVars;
 
 typedef struct MobySeq { /* From Deadlocked types */
@@ -246,7 +247,7 @@ void moby_update(Moby *self);
 
 SHK_FUNCTION_DEFINE_STATIC_6(0x5e598, int, coll_mobys_sphere, float, param_1, Vec4*, param_2, int, param_3, u32, flags,
                              Moby*, param_5, int*, param_6);
-SHK_FUNCTION_DEFINE_STATIC_4(0x59e20, int, coll_sphere, Vec4*, position, Vec4*, param_2, int, flags, Moby*, moby);
+SHK_FUNCTION_DEFINE_STATIC_4(0x59e20, int, coll_sphere, Vec4*, position, float, param_2, int, flags, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_4(0xfddc0, void, set_moby_animation, Moby*, moby, u32, param_2, u32, param_3, u32, param_4);
 SHK_FUNCTION_DEFINE_STATIC_1(0xefa28, Moby*, spawn_moby, int, o_class);
 SHK_FUNCTION_DEFINE_STATIC_1(0xf31a8, int, idk, void*, p1);
