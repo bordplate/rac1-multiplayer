@@ -3,6 +3,7 @@
 //
 
 #include "Client.h"
+#include "rc1/Game.h"
 
 //#include <netex/net.h>
 
@@ -47,6 +48,7 @@ void Client::_connect() {
     Logger::info("Connecting to %s:%d...", ip, sockaddr_.sin_port);
 
     connected_ = true;
+    connection_start_time_ = get_time();
 }
 
 void Client::disconnect() {
@@ -343,6 +345,13 @@ void Client::on_tick() {
             send(unacked->data);
             unacked->send_time = current_time;
         }
+    }
+
+    // Timeout
+    if (connected_ && !handshake_complete_ && get_time() - connection_start_time_ > 5 * 1000) {
+        String message = String("Timed out trying to connect to server.");
+        Game::shared().alert(message);
+        this->disconnect();
     }
 
     if (sockfd_ > 0) {

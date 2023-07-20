@@ -38,6 +38,8 @@ public:
     static int query_servers_callback(void* data, size_t len, void* extra);
     void connect_to(char* ip, int port);
     void query_servers(int directory_id, ServerQueryCallback callback);
+
+    void alert(String& message);
 private:
     Game() {
         previous_user_option_camera_left_right_movement = -1;

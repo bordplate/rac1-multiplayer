@@ -11,6 +11,7 @@
 #include <lib/memory.h>
 
 #include <sys/random_number.h>
+#include <sysutil/sysutil_msgdialog.h>
 
 #include "views/StartView.h"
 
@@ -223,6 +224,10 @@ void Game::connect_to(char* ip, int port) {
 
     delete current_view;
     current_view = 0;
+}
+
+void Game::alert(String& message) {
+    cellMsgDialogOpen2(CELL_MSGDIALOG_TYPE_SE_TYPE_NORMAL, message.c_str(), nullptr, nullptr, nullptr);
 }
 
 

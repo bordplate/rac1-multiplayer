@@ -17,6 +17,8 @@
 #define SEND_BUFFER_SIZE 1024
 #define RECV_BUFFER_SIZE 1024
 
+extern int64_t get_time();
+
 typedef int (*AckCallback)(void* data, size_t len, void* extra);
 typedef int (*SelfRefAckCallback)(void* self, void* data, size_t len);
 
@@ -84,6 +86,7 @@ private:
 
     bool connected_;
     bool handshake_complete_;
+    uint64_t connection_start_time_;
 
     void ack(char* packet, size_t len);
 
