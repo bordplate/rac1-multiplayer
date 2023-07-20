@@ -43,13 +43,14 @@ jobs:
       - name: Create userconfig.mk
         run: |
           echo "PYTHON = python3" > userconfig.mk
-          echo "RPCS3_DIR = ${{ github.workspace }}/PS3_SDK/cell/RPCS3/" >> userconfig.mk
+          echo "RPCS3_DIR = $PS3_SDK/RPCS3/" >> userconfig.mk
           echo "GAME = RC1" >> userconfig.mk
           echo "GAME_ID = NPEA00385" >> userconfig.mk
           echo "GAME_VER = 1.00" >> userconfig.mk
           echo "GAME_CAT = HDD" >> userconfig.mk
-          echo "PS3_SDK = ${{ github.workspace }}/PS3_SDK/cell/" >> userconfig.mk
         shell: pwsh
+        env:
+          PS3_SDK: ${{ replace(github.workspace, '\\', '/') }}/PS3_SDK/cell
 
       - name: Check Config Files
         run: |
@@ -68,6 +69,8 @@ jobs:
       - name: Build and package
         run: make all
         shell: pwsh
+        env:
+          PS3_SDK: ${{ replace(github.workspace, '\\', '/') }}/PS3_SDK/cell
 
       - name: Create release
         id: create_release
@@ -76,7 +79,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v0.0.1-${{ github.run_number }}+${{ github.run_id }}-alpha
-          release_name: Release v0.0.6-${{ github.run_number }}+${{ github.run_id }}-alpha
+          release_name: Release v0.0.1-${{ github.run_number }}+${{ github.run_id }}-alpha
           draft: false
           make_latest: true
 
