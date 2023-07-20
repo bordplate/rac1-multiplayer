@@ -43,7 +43,7 @@ jobs:
       - name: Create userconfig.mk
         run: |
           echo "PYTHON = python3" > userconfig.mk
-          echo "RPCS3_DIR = ${{ github.workspace }}/PS3_SDK/RPCS3" >> userconfig.mk
+          echo "RPCS3_DIR = ${{ github.workspace }}/PS3_SDK/cell/RPCS3/" >> userconfig.mk
           echo "GAME = RC1" >> userconfig.mk
           echo "GAME_ID = NPEA00385" >> userconfig.mk
           echo "GAME_VER = 1.00" >> userconfig.mk
@@ -68,7 +68,7 @@ jobs:
         run: make all
         shell: pwsh
         env:
-          PS3_SDK: ${{ github.workspace }}/PS3_SDK
+          PS3_SDK: ${{ github.workspace }}/PS3_SDK/cell/
 
       - name: Create release
         id: create_release
