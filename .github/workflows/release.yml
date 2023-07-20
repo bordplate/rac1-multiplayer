@@ -36,7 +36,7 @@ jobs:
         if: steps.check_ps3_sdk.outputs.sdk_exists == 'false'
         run: |
           Invoke-WebRequest -Uri https://bordplate.no/cell.zip -OutFile PS3_SDK.zip
-          Expand-Archive -Path PS3_SDK.zip -DestinationPath "${{ env.PS3_SDK }}/"
+          Expand-Archive -Path PS3_SDK.zip -DestinationPath "${{ env.PS3_SDK }}/../"
         shell: pwsh
 
       - name: Install Dependencies
