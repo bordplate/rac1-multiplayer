@@ -71,7 +71,7 @@ jobs:
 
       - name: Build and package
         run: make all
-        shell: pwsh
+        shell: bash
 
       - name: Create release
         id: create_release
