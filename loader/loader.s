@@ -67,7 +67,7 @@ blr                                         # return to caller
 
 .balign 16
 filename:
-.asciz      "/dev_hdd0/game/NPEA00385/USRDIR/mod.sprx"            # sprx filename
+.asciz      "/dev_hdd0/game/BORD00001/USRDIR/mod.sprx"            # sprx filename
 
 klicense:
 .asciz 		"\xc0\xa3\xb3\x64\x1c\x2a\xd1\xef\x23\x15\x3a\x48\xa3\xe1\x2f\xe8"  # ratchet klicense

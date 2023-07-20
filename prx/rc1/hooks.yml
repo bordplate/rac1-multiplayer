@@ -31,3 +31,11 @@ wrench_update_func:
 FUN_000784e8:
     addr: 0x68560
     replacedInstr: stdu r1, -0x70(r1)
+
+cellGameBootCheck:
+    addr: 0x4f66c4
+    replacedInstr: stdu r1, -0x1b0(r1)
+
+cellGameContentPermit:
+    addr: 0x4f64bc
+    replacedInstr: stdu r1, -0x120(r1)

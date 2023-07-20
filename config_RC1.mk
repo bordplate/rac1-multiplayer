@@ -5,7 +5,7 @@
 # shared data: seg021 length 4
 
 TOC									= 0x722328 # static throughout
-LOADER_INJECT_ADDR 					= 0x131b0 # 0x014D4C # nop in main()
+LOADER_INJECT_ADDR 					= 0x4e694c # 0x014D4C # nop in main()
 LOADER_START_ADDR 					= 0x5F7150 # 0x5F7140 + 4 + align16
 LOADER_END_ADDR 					= 0x5F7350 # LOADER_START_ADDR + 0x500
 LOADER_SYS_PRX_MODULE_LOAD_ADDR 	= 0x650544 # cellPrxForUser sys_prx_load_module

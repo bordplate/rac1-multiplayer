@@ -3,6 +3,7 @@
 
 #include <lib/memory.h>
 #include <netex/net.h>
+#include <sysutil/sysutil_gamecontent.h>
 
 #include <rc1/Game.h>
 #include "multiplayer/Packet.h"
@@ -84,12 +85,62 @@ void wrench_update_func_hook(Moby *moby) {
     }
 }
 
+SHK_HOOK(int, cellGameBootCheck, unsigned int*, unsigned int*, CellGameContentSize*, char*);
+int cellGameBootCheckHook(unsigned int* type, unsigned int* attributes, CellGameContentSize* size, char* dirName) {
+    MULTI_LOG("Type: %p, attr: %p, size: %p, dirName: %p\n", type, attributes, size, dirName);
+
+    *type = 2;
+    *attributes = 0;
+    size->hddFreeSizeKB = 10000;
+    size->sizeKB = -1;
+    size->sysSizeKB = 4;
+
+    // Manually copying the string
+    const char* src = "NPEA00385";
+    while (*src) {
+        *dirName = *src;
+        dirName++;
+        src++;
+    }
+    *dirName = '\0';  // Null terminate the string
+
+    MULTI_LOG("Done the thing\n");
+
+    return 0;
+}
+
+SHK_HOOK(int, cellGameContentPermit, char*, char*);
+int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
+    MULTI_LOG("contentInfoPath: %p, usrdirPath: %p\n", contentInfoPath, usrdirPath);
+    // Manually copying the string
+    const char* src = "/dev_hdd0/game/NPEA00385";
+    while (*src) {
+        *contentInfoPath = *src;
+        contentInfoPath++;
+        src++;
+    }
+    *contentInfoPath = '\0';  // Null terminate the string
+
+    src = "/dev_hdd0/game/NPEA00385/USRDIR";
+    while (*src) {
+        *usrdirPath = *src;
+        usrdirPath++;
+        src++;
+    }
+    *usrdirPath = '\0';  // Null terminate the string
+
+    MULTI_LOG("Done the thing\n");
+
+    return 0;
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
     init_memory_allocator(memory_area, sizeof(memory_area));
 
-    //SHK_BIND_HOOK(ratchet_dying, ratchet_dying_hook);
+    MULTI_LOG("Initialized memory allocator. Binding hooks\n");
+
     SHK_BIND_HOOK(STUB_0006544c, STUB_0006544c_hook);  // Used as a "trampoline" to our custom Moby update func
     SHK_BIND_HOOK(game_loop_start, game_loop_start_hook);
     SHK_BIND_HOOK(game_loop_intro_start, game_loop_intro_start_hook);
@@ -97,9 +148,10 @@ void rc1_init() {
     SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
     SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
     SHK_BIND_HOOK(on_respawn, on_respawn_hook);
-    //SHK_BIND_HOOK(FUN_000850f8, FUN_000850f8_hook);
+    SHK_BIND_HOOK(cellGameBootCheck, cellGameBootCheckHook);
+    SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
 
-    sys_net_initialize_network();
+    MULTI_LOG("Bound hooks\n");
 }
 
 void rc1_shutdown() {
