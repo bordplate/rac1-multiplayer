@@ -31,13 +31,16 @@ void Input::check_callback() {
         String result = String::format("%S", (wchar_t *)output_info_.pResultString);
 
         if (result.length() <= 2) {
+            if (has_callback_) {
+                callback_(this, callback_userdata_, 1);
+            }
             return;
         } else {
             input_text.set(result.c_str());
         }
 
         if (has_callback_) {
-            callback_(this, callback_userdata_);
+            callback_(this, callback_userdata_, 0);
         }
     }
 }

@@ -34,7 +34,7 @@ private:
 
     void update_server_list();
 
-    static int username_input_callback(Input* input, void* userdata);
+    static int username_input_callback(Input* input, void* userdata, int status);
 };
 
 

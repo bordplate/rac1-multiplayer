@@ -12,7 +12,7 @@
 
 class Input;
 
-typedef int (*InputCallback)(Input* input, void* userdata);
+typedef int (*InputCallback)(Input* input, void* userdata, int status);
 
 /*E Status of the on-screen keyboard dialog */
 enum {

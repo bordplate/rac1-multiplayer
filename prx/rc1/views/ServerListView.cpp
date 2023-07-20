@@ -134,14 +134,20 @@ void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
     }
 }
 
-int ServerListView::username_input_callback(Input *input, void *userdata) {
-    ServerListView* self = (ServerListView*)userdata;
+int ServerListView::username_input_callback(Input *input, void *userdata, int status) {
+    ServerListView *self = (ServerListView *) userdata;
 
-    self->username_label_->text->setf("\x13 %s", input->input_text.c_str());
+    if (status == 0) {
+        self->username_label_->text->setf("\x13 %s", input->input_text.c_str());
 
-    PersistentStorage storage = PersistentStorage("settings.conf");
-    storage.set("username", input->input_text);
-    Player::shared().username = input->input_text;
+        PersistentStorage storage = PersistentStorage("settings.conf");
+        storage.set("username", input->input_text);
+        Player::shared().username = input->input_text;
+    } else {
+        if (Player::shared().username.length() <= 0) {
+            self->username_input_.activate();
+        }
+    }
 
     return 0;
 }
