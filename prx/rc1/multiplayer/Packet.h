@@ -124,6 +124,7 @@ struct MPPacketMobyUpdate {
     char alpha;
     u8 padding;
     u16 modeBits;
+    u16 state;
 };
 
 typedef struct {

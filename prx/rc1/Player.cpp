@@ -33,6 +33,7 @@ void Player::on_tick() {
     payload->rotZ = player_rot.z;
     payload->scale = ratchet_moby->scale;
     payload->alpha = ratchet_moby->alpha;
+    payload->state = (u16)player_state;
 
     Logger::trace("Sent update packet");
     Game::shared().client()->send(packet);
