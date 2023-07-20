@@ -21,6 +21,7 @@ jobs:
           echo "PS3_SDK=$workspacePath/PS3_SDK/cell/" | Out-File -FilePath $env:GITHUB_ENV -Append
         shell: pwsh
 
+
       - name: Check if PS3 SDK is already downloaded
         id: check_ps3_sdk
         run: |
