@@ -3,8 +3,8 @@
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
 BUILD_DIR = build
-BIN_DIR = $(BUILD_DIR)$(PATH_SEP)bin
-TMP_DIR = $(BUILD_DIR)$(PATH_SEP)tmp
+BIN_DIR = $(BUILD_DIR)/bin
+TMP_DIR = $(BUILD_DIR)/tmp
 
 -include ../os.mk
 include $(TMP_DIR)/shk_prx.gen.mk
@@ -33,9 +33,9 @@ PPU_PRX_LDFLAGS  += \
 	-lsysutil_stub \
 	-Map=$(BIN_DIR)/mod.map \
 	-Wl,--end-group
-CCFLAGSsss = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CFILES) rc1/multiplayer/Client.cpp $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -Wa,-mregnames -g -fno-builtin -Xlinker -Map=$(BIN_DIR)/mod.map -lnet_stub -lsysutil_stub
-CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CPPFILES) lib/memory.c lib/utils.c lib/clib.c lib/external/printf/printf.c lib/module.c rc1/rc1.c $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -fno-exceptions -fno-rtti -Wa,-mregnames $(PPU_PRX_LDFLAGS)
-SCETOOL = $(WINE) $(PS3_SDK)/Tools/tool/scetool.exe
+
+CCFLAGS = $(SHK_PRX_DEFSYMS) $(SHK_PRX_DEFINES) rc1/globals.ld $(SFILES) $(CPPFILES) $(CFILES) $(DEFINES) -I$(PS3_SDK)/target/ppu/include -I./ -fno-exceptions -fno-rtti -Wa,-mregnames $(PPU_PRX_LDFLAGS)
+SCETOOL = $(WINE) $(PS3_SDK)/Tools/alt/scetool.exe
 
 elf:
 	$(CC) $(CCFLAGS) -nostartfiles -Wl,-relocatable -o $(BIN_DIR)/mod.elf
@@ -50,7 +50,20 @@ preprocessed:
 
 sprx: prx
 	#$(MAKE_FSELF) $(BIN_DIR)/mod.prx $(BIN_DIR)/mod.sprx
-	$(SCETOOL) -0 SELF -1 FALSE -s TRUE -2 0007 -3 1010000001000003 -4 01000002 -j FALSE -5 APP -A 0001000000000000 -6 0003005000000000 -c SPRX -9 00000000000000000000000000000000000000000000003B0000000100002000 -g mod.sprx -e $(BIN_DIR)/mod.prx $(BIN_DIR)/mod.sprx
+	cd $(PS3_SDK)/Tools/alt && \
+		$(WINE) $(SCETOOL) -0 SELF -1 FALSE -s TRUE -2 0007 -3 1010000001000003 -4 01000002 -j FALSE -5 APP -A 0001000000000000 -6 0003005000000000 -c SPRX -9 00000000000000000000000000000000000000000000003B0000000100002000 -g mod.sprx -e $(BIN_DIR)/mod.prx $(BIN_DIR)/mod.sprx
+#		$(WINE) $(SCETOOL) \
+#        		--sce-type=SELF \
+#        		--compress-data=TRUE \
+#        		--skip-sections=TRUE \
+#        		--self-ctrl-flags=4000000000000000000000000000000000000000000000000000000000000002 \
+#        		--key-revision=04 \
+#        		--self-auth-id=1010000001000003 \
+#        		--self-app-version=0001000000000000 \
+#        		--self-vendor-id=01000002 \
+#        		--self-type=APP \
+#        		--self-fw-version=0003004000000000 \
+#        		--encrypt $(CURDIR)/$(BIN_DIR)/mod.prx $(CURDIR)/$(BIN_DIR)/mod.sprx
 
 clean:
 	$(DELETE) $(DELETEFLAGS) $(BIN_DIR)$(PATH_SEP)*.*

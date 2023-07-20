@@ -5,8 +5,13 @@
 BASE_DIR = $(CURDIR)
 TOOLS_DIR = $(BASE_DIR)/tools
 
+BIN_DIR = $(BASE_DIR)/build
+
 LOADER_DIR = $(BASE_DIR)/loader
 LOADER_BUILD_DIR = $(LOADER_DIR)/build
+
+APP_DIR = $(BASE_DIR)/app
+APP_BUILD_DIR = $(APP_DIR)/build
 
 PRX_DIR = $(BASE_DIR)/prx
 PRX_BUILD_DIR = $(PRX_DIR)/build
@@ -15,6 +20,8 @@ PRX_BUILD_IN_DIR = $(PRX_BUILD_DIR)/tmp
 PRX_BUILD_TMP_DIR = $(PRX_BUILD_DIR)/tmp
 PRX_BUILD_OUT_DIR = $(PRX_BUILD_DIR)/bin
 BIN2RPCS3PATCH = $(TOOLS_DIR)/bin2rpcs3patch.py
+GENERATEPATCHFILE = $(TOOLS_DIR)/generate_patch.py
+PKG_NPDRM = $(WINE) $(PS3_SDK)/Tools/psn_package_npdrm.exe
 
 # include game specific makefile settings
 include config_$(GAME).mk
@@ -40,6 +47,10 @@ BIN2RPCS3PATCHARGS = \
 	--input "$(LOADER_BUILD_DIR)/loader.text.inject.bin" "$(LOADER_BUILD_DIR)/loader.text.bin" --address $(LOADER_INJECT_ADDR) $(LOADER_START_ADDR) \
 	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_elf_loader_$(GAME)
 
+GENERATEPATCHFILEARGS = \
+	--input "$(LOADER_BUILD_DIR)/loader.text.inject.bin" "$(LOADER_BUILD_DIR)/loader.text.bin" --address $(LOADER_INJECT_ADDR) $(LOADER_START_ADDR) \
+	--output "$(LOADER_BUILD_DIR)/patch.txt" --append
+
 SHKGENARGS = \
 	--tools_dir "$(TOOLS_DIR)" --elf_out_dir "$(LOADER_BUILD_DIR)" --prx_out_dir "$(PRX_OUT_DIR)" \
 	--toc $(TOC) --hook_shared_text_range $(HOOK_SHARED_TEXT_BEGIN_ADDR) $(HOOK_SHARED_TEXT_END_ADDR) \
@@ -51,16 +62,40 @@ all:
 # generate build files
 	cd tools && $(PYTHON) shkgen.py $(SHKGENARGS)
 
+# base game patch
+	cp -f "basepatches/rc1.txt" "$(LOADER_BUILD_DIR)/patch.txt"
+
 # build loader
 	cd "$(LOADER_DIR)" && "$(MAKE)" binary LOADER_INJECT_ADDR=$(LOADER_INJECT_ADDR) LOADER_START_ADDR=$(LOADER_START_ADDR)
 	$(PYTHON) "$(BIN2RPCS3PATCH)" $(BIN2RPCS3PATCHARGS)
+	$(PYTHON) "$(GENERATEPATCHFILE)" $(GENERATEPATCHFILEARGS)
 
 # build injection patch
 	cd "$(LOADER_BUILD_DIR)" && "$(MAKE)" -f shk_elf.gen.mk patch
 
+# patch eboot
+	cd "$(LOADER_DIR)" && "$(MAKE)" patch
+
 # build sprx
 	cd "$(PRX_DIR)" && "$(MAKE)" sprx GAME=$(GAME)
 	cp "$(PRX_BUILD_OUT_DIR)/mod.sprx" "$(GAME_DIR)"
+
+# make launcher app
+	cd "$(APP_DIR)" && "$(MAKE)" eboot
+
+# put in build folder
+	rm -rf $(BIN_DIR)/PS3_GAME/
+	mkdir -p $(BIN_DIR)/PS3_GAME/USRDIR
+	cp -f "$(APP_DIR)/ICON0.png" "$(BIN_DIR)/PS3_GAME/ICON0.png"
+	cp -f "$(APP_DIR)/PARAM.SFO" "$(BIN_DIR)/PS3_GAME/PARAM.SFO"
+	cp -f "$(APP_BUILD_DIR)/bin/EBOOT.BIN" "$(BIN_DIR)/PS3_GAME/USRDIR/EBOOT.BIN"
+	cp -f "$(LOADER_BUILD_DIR)/EBOOT.mp.BIN" "$(BIN_DIR)/PS3_GAME/USRDIR/EBOOT.mp.BIN"
+	cp -f "$(PRX_BUILD_DIR)/bin/mod.sprx" "$(BIN_DIR)/PS3_GAME/USRDIR/mod.sprx"
+
+# build package
+	cd $(PS3_SDK)/Tools && \
+	$(PKG_NPDRM) $(CURDIR)/package.conf $(BIN_DIR)/PS3_GAME && \
+	cp BDUPS3-BORD00001_00-0000000000000000.pkg $(BIN_DIR)/
 
 clean:
 	cd "$(LOADER_DIR)" && "$(MAKE)" clean

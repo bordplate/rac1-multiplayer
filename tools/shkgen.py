@@ -136,6 +136,7 @@ SHARED_TEXT_ADDRESS = {SHARED_TEXT_ADDRESS}
 SHARED_DATA_ADDRESS = {SHARED_DATA_ADDRESS}
 PATCH_FILE = {PATCH_FILE}
 BIN2RPCS3PATCH = $(TOOLS_DIR)/bin2rpcs3patch.py
+GENERATEPATCHFILE = $(TOOLS_DIR)/generate_patch.py
 
 compile:
 	$(WINE) "$(CC)" "$(IN_DIR)/shk_elf.gen.s" -o "$(TMP_DIR)/shk_elf.o" -T "$(IN_DIR)/shk_elf.gen.ld" -v -Xlinker -Map="$(TMP_DIR)/shk_elf.map" -Wa,-mregnames -nostartfiles -nodefaultlibs
@@ -146,6 +147,7 @@ binary: compile{HOOK_OUTPUTS}
 
 patch: binary
 	$(PYTHON) "$(BIN2RPCS3PATCH)" --input{HOOK_INPUTS} "$(TMP_DIR)/.text.shk_elf_shared.bin" "$(TMP_DIR)/.data.shk_elf_shared.bin" --address{HOOK_ADDRESSES} $(SHARED_TEXT_ADDRESS) $(SHARED_DATA_ADDRESS) --output "$(PATCH_FILE)" --replace_patch shk_elf_inject_{GAME} --indent 3
+	$(PYTHON) "$(GENERATEPATCHFILE)" --input{HOOK_INPUTS} "$(TMP_DIR)/.text.shk_elf_shared.bin" "$(TMP_DIR)/.data.shk_elf_shared.bin" --address{HOOK_ADDRESSES} $(SHARED_TEXT_ADDRESS) $(SHARED_DATA_ADDRESS) --output "$(TMP_DIR)/patch.txt" --append
 '''
 
 MK_INJECT_HOOK_OUTPUT_TEMPLATE = \
