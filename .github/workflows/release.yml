@@ -37,12 +37,11 @@ jobs:
       - name: Install Dependencies
         run: |
           choco install make
-          choco install python --version 3.8
         shell: pwsh
 
       - name: Create userconfig.mk
         run: |
-          echo "PYTHON = py -3" > userconfig.mk
+          echo "PYTHON = python3" > userconfig.mk
           echo "RPCS3_DIR = ${{ github.workspace }}/PS3_SDK/RPCS3" >> userconfig.mk
           echo "GAME = RC1" >> userconfig.mk
           echo "GAME_ID = NPEA00385" >> userconfig.mk
