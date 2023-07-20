@@ -17,5 +17,5 @@ else
 	GAME_FOR_PATHS := $(shell echo $(GAME) | tr '[:upper:]' '[:lower:]')
 endif
 
-PS3_SDK := $(shell echo $(PS3_SDK) | sed 's:\\:/:g')
-RPCS3_DIR := $(shell echo $(RPCS3_DIR) | sed 's:\\:/:g')
+PS3_SDK := $(shell echo $(PS3_SDK) | sed 's:\\\\:/:g')
+RPCS3_DIR := $(shell echo $(RPCS3_DIR) | sed 's:\\\\:/:g')
