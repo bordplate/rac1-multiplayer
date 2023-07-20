@@ -24,10 +24,6 @@ on_respawn:
     addr: 0x7f018
     replacedInstr: stdu r1, -0xb0(r1)
 
-#ratchet_dying:
-#    addr: 0x00609cf4
-#    replacedInstr: stdu r1, -0x210(r1)
-
 wrench_update_func:
     addr: 0x42c150
     replacedInstr: stdu r1, -0x2a0(r1)

@@ -10,10 +10,6 @@
 #include "bridging.h"
 
 extern "C" {
-
-//char *start_multiplayer_text = "\x13 MULTIPLAYER";
-//char *connecting_text = "Connecting to multiplayer...";
-
 void game_tick() {
     _c_game_tick();
 }
@@ -39,13 +35,6 @@ void on_respawn_hook() {
     SHK_CALL_HOOK(on_respawn);
     _c_on_respawn();
 }
-
-//SHK_HOOK(void, ratchet_dying);
-//void ratchet_dying_hook() {
-//    SHK_CALL_HOOK(ratchet_dying);
-//
-//    //MULTI_LOG("Dying...\n");
-//}
 
 SHK_HOOK(void, STUB_0006544c);
 void STUB_0006544c_hook(Moby *moby) {

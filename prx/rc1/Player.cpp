@@ -4,8 +4,6 @@
 
 #include "Player.h"
 
-#include <rc1/rc1.h>
-
 #include "Game.h"
 #include "multiplayer/Packet.h"
 

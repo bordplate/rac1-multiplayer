@@ -129,7 +129,6 @@ struct MPPacketMobyUpdate {
 
 typedef struct {
     u16 uuid;
-
 } MPPacketMobyUpdateExtended;
 
 typedef struct {

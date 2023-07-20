@@ -10,7 +10,6 @@
 
 #include "lib/common.h"
 #include "lib/shk.h"
-#include "lib/config.h"
 #include "lib/module.h"
 #include "lib/string.h"
 

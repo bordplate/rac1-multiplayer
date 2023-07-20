@@ -386,35 +386,4 @@ void GameClient::on_tick() {
     }
 
     Player::shared().on_tick();
-
-    //if (frame_count < last_frame_count) {
-    //    MULTI_LOG("Environment reset\n");
-    //    mp_reset_environment();
-    //}
-
-    //if (last_planet != current_planet) {
-    //    MULTI_LOG("Changed planets\n");
-    //    mp_reset_environment();
-    //}
-
-    //last_frame_count = frame_count;
-    //last_planet = current_planet;
-
-    // Re-send packets that require acknowledgement
-    //mp_resend_unacked(mp_ack_id);
-
-    //if (!handshake_complete) {
-    //    mp_send_handshake();
-//
-    //    // Wait until next game tick to receive handshake response and start doing actual stuff
-    //    return;
-    //}
-//
-    //// Send current state to server
-    //// Start by sending packet header.
-    //MULTI_TRACE("Sending current state to server\n");
-//
-    //mp_send_update();
-//
-    //MULTI_TRACE("Done sending state to server\n");
 }
