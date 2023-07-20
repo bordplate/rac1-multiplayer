@@ -37,6 +37,7 @@ jobs:
       - name: Install Dependencies
         run: |
           choco install make
+          pip3 install -r requirements.txt
         shell: pwsh
 
       - name: Create userconfig.mk
