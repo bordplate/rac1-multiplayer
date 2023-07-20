@@ -3,6 +3,12 @@
 
 # dirs
 BASE_DIR = $(CURDIR)
+
+# fix path separator issues
+PS3_SDK := $(shell echo $(PS3_SDK) | sed 's:\\\\:/:g')
+BASE_DIR := $(shell echo $(PS3_SDK) | sed 's:\\\\:/:g')
+RPCS3_DIR := $(shell echo $(PS3_SDK) | sed 's:\\\\:/:g')
+
 TOOLS_DIR = $(BASE_DIR)/tools
 
 BIN_DIR = $(BASE_DIR)/build
