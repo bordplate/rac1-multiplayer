@@ -8,6 +8,7 @@
 
 #include "../Player.h"
 #include "MPMoby.h"
+#include "rc1/views/StartView.h"
 
 GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     mobys_.resize(MAX_MP_MOBYS);
@@ -18,6 +19,16 @@ GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     }
 
     connection_complete_ = false;
+}
+
+void GameClient::disconnect() {
+    Client::disconnect();
+
+    if (ratchet_moby == nullptr && current_planet == 0) {
+        game_state = Menu;
+        StartView* view = new StartView();
+        Game::shared().transition_to(view);
+    }
 }
 
 void GameClient::reset() {
@@ -306,8 +317,33 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
 
 int GameClient::connect_callback(void* packetData, size_t size, void* userdata) {
     GameClient* self = (GameClient*)userdata;
+    MPPacketConnectCallback* response = (MPPacketConnectCallback*)packetData;
 
-    self->connection_complete_ = true;
+    if (response->status == 1) {
+        self->connection_complete_ = true;
+
+        return 0;
+    }
+
+    String message;
+
+    switch (response->status) {
+        case 0:
+            message = String("An unknown error occurred.");
+            break;
+        case 2:
+            message = String("A user with that username is already connected to this server. Please change to a different username.");
+            break;
+        case 3:
+            message = String("You must've been banned from this server or something. Good job.");
+            break;
+        default:
+            message = String("A super unknown error occurred, something's fucky.");
+            break;
+    }
+
+    Game::shared().alert(message);
+    self->disconnect();
 
     return 0;
 }

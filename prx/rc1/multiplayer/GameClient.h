@@ -40,6 +40,7 @@ private:
 
     RemoteView* remote_view_;
 
+    void disconnect();
     void reset(); // override
     bool waiting_for_connect_;
 };
