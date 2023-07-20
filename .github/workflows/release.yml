@@ -32,6 +32,7 @@ jobs:
           fi
         shell: bash
 
+
       - name: Download and extract PS3 SDK
         if: steps.check_ps3_sdk.outputs.sdk_exists == 'false'
         run: |
