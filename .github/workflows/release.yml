@@ -1,0 +1,93 @@
+name: Make PKG release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PS3_SDK: ${{ github.workspace }}/PS3_SDK
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Check if PS3 SDK is already downloaded
+        id: check_ps3_sdk
+        run: |
+          if [[ -d "${{ env.PS3_SDK }}" ]]; then
+            echo "::set-output name=sdk_exists::true"
+          else
+            echo "::set-output name=sdk_exists::false"
+          fi
+        shell: bash
+
+      - name: Download and extract PS3 SDK
+        if: steps.check_ps3_sdk.outputs.sdk_exists == 'false'
+        run: |
+          Invoke-WebRequest -Uri https://bordplate.no/cell.zip -OutFile PS3_SDK.zip
+          Expand-Archive -Path PS3_SDK.zip -DestinationPath ${{ env.PS3_SDK }}
+        shell: pwsh
+
+      - name: Install Dependencies
+        run: |
+          choco install make
+          choco install python --version 3.8
+        shell: pwsh
+
+      - name: Create userconfig.mk
+        run: |
+          echo "PYTHON = py -3" > userconfig.mk
+          echo "RPCS3_DIR = ${{ github.workspace }}/PS3_SDK/RPCS3" >> userconfig.mk
+          echo "GAME = RC1" >> userconfig.mk
+          echo "GAME_ID = NPEA00385" >> userconfig.mk
+          echo "GAME_VER = 1.00" >> userconfig.mk
+          echo "GAME_CAT = HDD" >> userconfig.mk
+        shell: bash
+
+      - name: Check Config Files
+        run: |
+          if [[ ! -f "userconfig.mk" ]]; then
+            echo "userconfig.mk not found!"
+            exit 1
+          fi
+          if [[ ! -f "config_${{ env.GAME }}.mk" ]]; then
+            echo "config_${{ env.GAME }}.mk not found!"
+            exit 1
+          fi
+        shell: bash
+        env:
+          GAME: RC1
+
+      - name: Build and package
+        run: make all
+        shell: pwsh
+        env:
+          PS3_SDK: ${{ github.workspace }}/PS3_SDK
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v0.0.1-${{ github.run_number }}+${{ github.run_id }}-alpha
+          release_name: Release v0.0.6-${{ github.run_number }}+${{ github.run_id }}-alpha
+          draft: false
+          make_latest: true
+
+      - name: Upload assets
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/BDUPS3-BORD00001_00-0000000000000000.pkg
+          asset_name: BDUPS3-BORD00001_00-0000000000000000.pkg
+          asset_content_type: application/zip
