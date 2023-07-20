@@ -17,8 +17,8 @@ jobs:
       - name: Set PS3_SDK path
         id: set_ps3_sdk
         run: |
-          echo "PS3_SDK=$(echo ${{ github.workspace }} | tr '\\' '/')/PS3_SDK/cell/" >> $GITHUB_ENV
-        shell: bash
+          echo "PS3_SDK=${{ github.workspace -replace '\\\', '/' }}/PS3_SDK/cell/" | Out-File -FilePath $env:GITHUB_ENV -Append
+        shell: pwsh
 
       - name: Check if PS3 SDK is already downloaded
         id: check_ps3_sdk
