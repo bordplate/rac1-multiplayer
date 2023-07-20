@@ -43,13 +43,13 @@ jobs:
       - name: Create userconfig.mk
         run: |
           echo "PYTHON = python3" > userconfig.mk
-          echo "RPCS3_DIR = $GITHUB_ACTION_PATH/PS3_SDK/cell/RPCS3/" >> userconfig.mk
+          echo "RPCS3_DIR = ${{ github.workspace }}/PS3_SDK/cell/RPCS3/" >> userconfig.mk
           echo "GAME = RC1" >> userconfig.mk
           echo "GAME_ID = NPEA00385" >> userconfig.mk
           echo "GAME_VER = 1.00" >> userconfig.mk
           echo "GAME_CAT = HDD" >> userconfig.mk
-          echo "PS3_SDK = $GITHUB_ACTION_PATH/PS3_SDK/cell/" >> userconfig.mk
-        shell: bash
+          echo "PS3_SDK = ${{ github.workspace }}/PS3_SDK/cell/" >> userconfig.mk
+        shell: pwsh
 
       - name: Check Config Files
         run: |
