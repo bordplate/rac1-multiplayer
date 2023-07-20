@@ -235,6 +235,18 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
     element->text->set(packet->text);
 }
 
+void GameClient::toast_message(MPPacketToastMessage* packet) {
+    String message = String(packet->message);
+    strcpy((char*)(0xa15c8c), message.c_str());
+    uint32_t duration = packet->duration;
+
+    if (duration < 20) {
+        duration = 20;
+    }
+
+    (*((int*)0xa15c80)) = packet->duration;
+}
+
 bool GameClient::update(MPPacketHeader *header, void *packet_data) {
     if (!Client::update(header, packet_data)) {
         return false;
@@ -269,6 +281,10 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
         }
         case MP_PACKET_SET_HUD_TEXT: {
             update_set_text((MPPacketSetHUDText*)packet_data);
+            break;
+        }
+        case MP_PACKET_TOAST_MESSAGE: {
+            toast_message((MPPacketToastMessage*)packet_data);
             break;
         }
         default:

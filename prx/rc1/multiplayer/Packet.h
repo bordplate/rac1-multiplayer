@@ -66,6 +66,8 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_CONTROLLER_INPUT   13
 #define MP_PACKET_TIME_SYNC          14
 #define MP_PACKET_PLAYER_RESPAWNED   15
+#define MP_PACKET_REGISTER_SERVER    16
+#define MP_PACKET_TOAST_MESSAGE      17
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -197,6 +199,12 @@ typedef struct {
     uint64_t client_send_time;
     uint64_t server_receive_time;
 } MPPacketTimeResponse;
+
+typedef struct {
+    uint32_t type;
+    uint32_t duration;
+    char message[0x50];
+} MPPacketToastMessage;
 
 #pragma pack(pop)
 

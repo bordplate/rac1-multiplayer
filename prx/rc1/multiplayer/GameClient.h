@@ -26,6 +26,7 @@ struct GameClient : public Client {
     void moby_delete_all();
     void update_set_state(MPPacketSetState* packet);
     void update_set_text(MPPacketSetHUDText* packet);
+    void toast_message(MPPacketToastMessage* packet);
     bool update(MPPacketHeader* header, void* packet_data);
     void on_tick();
 
