@@ -48,6 +48,7 @@ jobs:
           echo "GAME_ID = NPEA00385" >> userconfig.mk
           echo "GAME_VER = 1.00" >> userconfig.mk
           echo "GAME_CAT = HDD" >> userconfig.mk
+          echo "PS3_SDK = $(CURDIR)/PS3_SDK/cell/" >> userconfig.mk
         shell: bash
 
       - name: Check Config Files
