@@ -12,6 +12,5 @@ userconfig*
 compile_commands.json*
 .cache/*
 .vscode/*
-loader/build/*
-prx/build/*
+**/build/*
 .vs/*
