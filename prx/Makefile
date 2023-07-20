@@ -6,6 +6,7 @@ BUILD_DIR = build
 BIN_DIR = $(BUILD_DIR)/bin
 TMP_DIR = $(BUILD_DIR)/tmp
 
+-include ../userconfig.mk
 -include ../os.mk
 include $(TMP_DIR)/shk_prx.gen.mk
 
