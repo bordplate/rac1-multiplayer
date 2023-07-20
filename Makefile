@@ -59,6 +59,11 @@ SHKGENARGS = \
 	--sys_prx_load_module_addr $(LOADER_SYS_PRX_MODULE_LOAD_ADDR) --sys_prx_start_module_addr $(LOADER_SYS_PRX_MODULE_START_ADDR) --sce_np_drm_is_available2_addr $(LOADER_SCE_NP_DRM_IS_AVAILABLE_ADDR)
 
 all:
+# generate build folders
+	mkdir -p loader/build
+	mkdir -p prx/build/tmp
+	mkdir -p prx/build/bin
+
 # generate build files
 	cd tools && $(PYTHON) shkgen.py $(SHKGENARGS)
 

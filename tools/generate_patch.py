@@ -18,8 +18,6 @@ def read_binary_file(filename, start_address, output_file, append_mode):
 
         return
 
-    print(f"Couldn't open file {filename}")
-
 
 def main():
     parser = argparse.ArgumentParser(description="Process binary files")
