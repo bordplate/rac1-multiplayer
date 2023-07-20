@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  PS3_SDK: ${{ github.workspace }}/PS3_SDK
-
 jobs:
   build:
     runs-on: windows-latest
@@ -16,6 +13,12 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Set PS3_SDK path
+        id: set_ps3_sdk
+        run: |
+          echo "PS3_SDK=$(echo ${{ github.workspace }} | tr '\\' '/')/PS3_SDK/cell/" >> $GITHUB_ENV
+        shell: bash
 
       - name: Check if PS3 SDK is already downloaded
         id: check_ps3_sdk
@@ -31,7 +34,7 @@ jobs:
         if: steps.check_ps3_sdk.outputs.sdk_exists == 'false'
         run: |
           Invoke-WebRequest -Uri https://bordplate.no/cell.zip -OutFile PS3_SDK.zip
-          Expand-Archive -Path PS3_SDK.zip -DestinationPath ${{ env.PS3_SDK }}
+          Expand-Archive -Path PS3_SDK.zip -DestinationPath "${{ env.PS3_SDK }}"
         shell: pwsh
 
       - name: Install Dependencies
@@ -43,14 +46,12 @@ jobs:
       - name: Create userconfig.mk
         run: |
           echo "PYTHON = python3" > userconfig.mk
-          echo "RPCS3_DIR = $PS3_SDK/RPCS3/" >> userconfig.mk
+          echo "RPCS3_DIR = ${{ env.PS3_SDK }}/RPCS3/" >> userconfig.mk
           echo "GAME = RC1" >> userconfig.mk
           echo "GAME_ID = NPEA00385" >> userconfig.mk
           echo "GAME_VER = 1.00" >> userconfig.mk
           echo "GAME_CAT = HDD" >> userconfig.mk
         shell: pwsh
-        env:
-          PS3_SDK: ${{ replace(github.workspace, '\\', '/') }}/PS3_SDK/cell
 
       - name: Check Config Files
         run: |
@@ -69,8 +70,6 @@ jobs:
       - name: Build and package
         run: make all
         shell: pwsh
-        env:
-          PS3_SDK: ${{ replace(github.workspace, '\\', '/') }}/PS3_SDK/cell
 
       - name: Create release
         id: create_release
