@@ -38,19 +38,25 @@ void Player::on_tick() {
     Game::shared().client()->send(packet);
 
     // Send which buttons we're holding, if any.
-    //if (held_buttons != 0 ) {
-    //    mp_send_controller_input(held_buttons, MP_CONTROLLER_FLAGS_HELD);
-    //}
+    if (Game::shared().client()) {
+        Client *client = Game::shared().client();
+        if (held_buttons != 0) {
+            Packet *controller_input = Packet::make_controller_input(held_buttons, MP_CONTROLLER_FLAGS_HELD);
+            client->send(controller_input);
+        }
 
-    //if (pressed_buttons != 0) {
-    //    mp_send_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED);
-    //}
+        if (pressed_buttons != 0) {
+            Packet* controller_input = Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED);
+            client->send(controller_input);
+        }
 
-    //if (last_game_state != game_state) {
-    //    mp_send_state(MP_STATE_TYPE_GAME, 0, game_state);
-    //}
+        if (last_game_state != game_state) {
+            Packet* game_state_packet = Packet::make_game_state_changed_packet(game_state);
+            client->send(game_state_packet);
+        }
+    }
 
-    //last_game_state = game_state;
+    last_game_state = game_state;
 }
 
 void Player::on_respawned() {

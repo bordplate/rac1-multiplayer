@@ -159,3 +159,16 @@ Packet* Packet::make_player_respawned_packet() {
 
     return packet;
 }
+
+Packet* Packet::make_game_state_changed_packet(GameState state) {
+    Packet* packet = new Packet(sizeof(MPPacketSetState));
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
+
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_GAME;
+    body->value = state;
+    body->offset = 0;
+
+    return packet;
+}

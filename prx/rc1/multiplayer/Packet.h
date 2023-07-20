@@ -235,6 +235,7 @@ struct Packet {
     static Packet* make_disconnect_packet();
     static Packet* make_time_request_packet();
     static Packet* make_player_respawned_packet();
+    static Packet* make_game_state_changed_packet(GameState state);
 };
 
 #endif

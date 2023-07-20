@@ -8,6 +8,7 @@
 
 #include "lib/types.h"
 #include <lib/string.h>
+#include <rc1/rc1.h>
 
 struct Player {
     static Player& shared() {
@@ -19,6 +20,8 @@ struct Player {
     Vec4 respawn_rotation;
 
     String username;
+
+    GameState last_game_state;
 
     void on_tick();
     void on_respawned();
