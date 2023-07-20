@@ -101,6 +101,9 @@ extern int frame_count;
 
 extern bool should_render_server_list;
 
+extern Moby* moby_ptr;
+extern Moby* moby_ptr_end;
+
 // player
 
 // The player's current bolt count.

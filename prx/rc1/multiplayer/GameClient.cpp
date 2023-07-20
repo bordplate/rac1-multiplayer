@@ -123,18 +123,27 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     }
 }
 
-void GameClient::moby_delete(MPPacketMobyCreate* packet) {
-    Moby* moby = mobys_[packet->uuid];
-    if (!moby || moby->state < 0) {
-        mobys_[packet->uuid] = 0;
-        Logger::debug("Already deleted moby %d @ 0x%08x", packet->uuid, moby);
-        return;
+void GameClient::moby_delete(MPPacketMobyDelete* packet) {
+    if (packet->flags & MP_MOBY_DELETE_FLAG_UUID) {
+        Moby *moby = mobys_[packet->value];
+        if (!moby || moby->state < 0) {
+            mobys_[packet->value] = 0;
+            Logger::debug("Already deleted moby %d @ 0x%08x", packet->value, moby);
+            return;
+        }
+
+        Logger::debug("Deleting moby %d", packet->value);
+
+        delete_moby(moby);
+        mobys_[packet->value] = nullptr;
+    } else if (packet->flags & MP_MOBY_DELETE_FLAG_OCLASS) {
+        for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
+            if (moby->state < 0x7f && moby->oClass == packet->value) {
+                moby->state = -1;
+                delete_moby(moby);
+            }
+        }
     }
-
-    Logger::debug("Deleting moby %d", packet->uuid);
-
-    delete_moby(moby);
-    mobys_[packet->uuid] = nullptr;
 }
 
 void GameClient::moby_clear_all() {
@@ -276,7 +285,7 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
             update_moby((MPPacketMobyUpdate*)packet_data);
             break;
         case MP_PACKET_MOBY_DELETE:
-            moby_delete((MPPacketMobyCreate*)packet_data);
+            moby_delete((MPPacketMobyDelete*)packet_data);
             break;
         case MP_PACKET_SET_STATE: {
             // Server can send multiple of these messages in 1 packet to ensure the actions are performed in the right sequence.

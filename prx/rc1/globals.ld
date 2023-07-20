@@ -19,6 +19,9 @@ player_health = 0x96BF88;
 animation_speed = 0x71F410;
 player_type = 0x96bd84;
 
+moby_ptr = 0xa390a0;
+moby_ptr_end = 0xa390a8;
+
 camera_pos = 0x951500;
 camera_rot = 0x95150c;
 

@@ -21,7 +21,7 @@ struct GameClient : public Client {
     GameClient(char* ip, int port);
 
     void update_moby(MPPacketMobyUpdate* packet);
-    void moby_delete(MPPacketMobyCreate* packet);
+    void moby_delete(MPPacketMobyDelete* packet);
     void moby_clear_all();
     void moby_delete_all();
     void update_set_state(MPPacketSetState* packet);

@@ -135,6 +135,15 @@ typedef struct {
     u32 uuid;
 } MPPacketMobyCreate;
 
+#define MP_MOBY_DELETE_FLAG_UUID   1
+#define MP_MOBY_DELETE_FLAG_OCLASS 2
+#define MP_MOBY_DELETE_FLAG_ALL    4
+
+typedef struct {
+    u32 value;
+    u32 flags;
+} MPPacketMobyDelete;
+
 typedef struct {
     u32 flags;
     u16 uuid;
