@@ -50,10 +50,6 @@ jobs:
         run: |
           echo "PYTHON = python3" > userconfig.mk
           echo "RPCS3_DIR = ${{ env.PS3_SDK }}/RPCS3/" >> userconfig.mk
-          echo "GAME = RC1" >> userconfig.mk
-          echo "GAME_ID = NPEA00385" >> userconfig.mk
-          echo "GAME_VER = 1.00" >> userconfig.mk
-          echo "GAME_CAT = HDD" >> userconfig.mk
         shell: pwsh
 
       - name: Check Config Files

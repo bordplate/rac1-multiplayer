@@ -108,6 +108,10 @@ all:
 	$(PKG_NPDRM) $(CURDIR)/package.conf $(BIN_DIR)/PS3_GAME && \
 	cp BDUPS3-BORD00001_00-0000000000000000.pkg $(BIN_DIR)/
 
+sprx:
+	cd "$(PRX_DIR)" && "$(MAKE)" sprx GAME=$(GAME)
+	cp "$(PRX_BUILD_OUT_DIR)/mod.sprx" "$(BIN_DIR)/PS3_GAME/USRDIR/mod.sprx"
+
 clean:
 	cd "$(LOADER_DIR)" && "$(MAKE)" clean
 	cd "$(PRX_DIR)" && "$(MAKE)" clean
