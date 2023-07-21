@@ -2,7 +2,10 @@
 This is a multiplayer mod for the PS3 HD release of the original 2002 Ratchet & Clank. It runs on console and emulator thanks
 to [PS3-CKit](https://github.com/tge-was-taken/ps3-ckit) by TGE.  
 
-For the server side, check out [bordplate/Lawrence](https://github.com/bordplate/Lawrence).
+For the server side, check out [bordplate/Lawrence](https://github.com/bordplate/Lawrence).  
+
+We also have a [community over on Discord](https://discord.gg/5DXGkhb2zZ) for discussing the multiplayer and 
+[Randomizer](https://github.com/bordplate/rac1-randomizer) mods. 
 
 ## Installation
 Go to the releases and download the .pkg file. Install on either console or emulator the way you install .pkg files normally. 
