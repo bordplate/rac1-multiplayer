@@ -1,3 +1,8 @@
+GAME = RC1
+GAME_ID = NPEA00385
+GAME_VER = 1.00
+GAME_CAT = HDD
+
 ifeq ($(OS),Windows_NT)
 	OS_ID := Windows
 	PATH_SEP := \\
@@ -16,8 +21,3 @@ else
 	WINE := wine
 	GAME_FOR_PATHS := $(shell echo $(GAME) | tr '[:upper:]' '[:lower:]')
 endif
-
-GAME = RC1
-GAME_ID = NPEA00385
-GAME_VER = 1.00
-GAME_CAT = HDD
