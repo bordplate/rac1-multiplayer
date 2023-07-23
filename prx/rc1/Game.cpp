@@ -17,6 +17,7 @@
 
 #include "Player.h"
 #include "PersistentStorage.h"
+#include "GoldBolt.h"
 
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
@@ -35,6 +36,9 @@ void Game::start() {
     } else {
         userid = storage.get_int("userid");
     }
+
+    // "Temporary" hack for gold bolt stuff
+    memset(blocked_bolts, 0, 100);
 }
 
 void Game::on_tick() {

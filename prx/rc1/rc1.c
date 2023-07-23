@@ -134,6 +134,13 @@ int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     return 0;
 }
 
+#include "GoldBolt.h"
+
+SHK_HOOK(void, goldBoltUpdate, Moby* moby);
+void goldBoltUpdateHook(Moby* moby) {
+    ((GoldBolt*)moby)->update();
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
@@ -150,6 +157,7 @@ void rc1_init() {
     SHK_BIND_HOOK(on_respawn, on_respawn_hook);
     SHK_BIND_HOOK(cellGameBootCheck, cellGameBootCheckHook);
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
+    SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
 
     MULTI_LOG("Bound hooks\n");
 }

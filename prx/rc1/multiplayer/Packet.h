@@ -160,6 +160,8 @@ typedef struct {
 #define MP_STATE_TYPE_GAME      5
 #define MP_STATE_TYPE_ITEM      6
 #define MP_STATE_TYPE_SET_RESPAWN 7
+#define MP_STATE_TYPE_COLLECTED_GOLD_BOLT 8
+#define MP_STATE_TYPE_BLOCK_BOLT 9
 
 typedef struct {
     u32 state_type;
@@ -236,6 +238,7 @@ struct Packet {
     static Packet* make_time_request_packet();
     static Packet* make_player_respawned_packet();
     static Packet* make_game_state_changed_packet(GameState state);
+    static Packet* make_collected_gold_bolt_packet(int bolt_number);
 };
 
 #endif

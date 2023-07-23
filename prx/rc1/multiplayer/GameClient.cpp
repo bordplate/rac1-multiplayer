@@ -10,6 +10,8 @@
 #include "MPMoby.h"
 #include "rc1/views/StartView.h"
 
+#include "../GoldBolt.h"
+
 GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     mobys_.resize(MAX_MP_MOBYS);
     ip_ = ip;
@@ -215,6 +217,11 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             if (current_planet > 0 && ratchet_moby != nullptr) {
                 set_spawn_point(&Player::shared().respawn_position, &Player::shared().respawn_rotation);
             }
+            break;
+        }
+        case MP_STATE_TYPE_BLOCK_BOLT: {
+            blocked_bolts[(packet->offset * 4) + packet->value] = 1;
+
             break;
         }
         default: {

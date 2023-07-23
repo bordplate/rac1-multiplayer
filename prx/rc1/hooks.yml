@@ -39,3 +39,7 @@ cellGameBootCheck:
 cellGameContentPermit:
     addr: 0x4f64bc
     replacedInstr: stdu r1, -0x120(r1)
+
+goldBoltUpdate:
+    addr: 0x1d9d48
+    replacedInstr: stdu r1, -0x140(r1)
