@@ -49,10 +49,10 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
         return;
     }
 
-    if (ticks_ < 60 * 1) {
-        Logger::trace("Waiting a little before spawning moby. Tick: %d", ticks_);
-        return;
-    }
+//    if (ticks_ < 60 * 1) {
+//        Logger::trace("Waiting a little before spawning moby. Tick: %d", ticks_);
+//        return;
+//    }
 
     if (game_state != PlayerControl) {
         Logger::trace("Moby not updating because game state %d", game_state);
@@ -185,7 +185,8 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_PLANET: {
-            if (current_planet != (int)packet->value && destination_planet != (int)packet->value) {
+            if ((current_planet != (int)packet->value && destination_planet != (int)packet->value) ||
+                ratchet_moby == nullptr) {
                 Logger::info("Going to planet %d", (int)packet->value);
                 seen_planets[0] = 1;
                 seen_planets[packet->value] = 1;
