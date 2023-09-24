@@ -14,8 +14,13 @@ void RemoteView::on_load() {
 }
 
 void RemoteView::render() {
-    memory_info_text_->text->setf("mem: %d/%d (%d)", used_memory, sizeof(memory_area), num_allocated);
-    ping_text_->text->setf("ping: %lu", Game::shared().client()->latency_ * 2);
+    if (game_state == Menu) {
+        memory_info_text_->text->setf("mem: %d/%d (%d)", used_memory, sizeof(memory_area), num_allocated);
+        ping_text_->text->setf("ping: %lu", Game::shared().client()->latency_ * 2);
+    } else {
+        memory_info_text_->text->set("");
+        ping_text_->text->set("");
+    }
 
     View::render();
 }
