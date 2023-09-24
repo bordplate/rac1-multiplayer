@@ -15,6 +15,7 @@ player_neutral = 0x969E74;
 player_ghost_frames = 0x969EAC;
 ratchet_moby = 0x96BD60;
 player_state = 0x96BD64;
+player_state_input = 0x96bd6c;
 player_health = 0x96BF88;
 animation_speed = 0x71F410;
 player_type = 0x96bd84;

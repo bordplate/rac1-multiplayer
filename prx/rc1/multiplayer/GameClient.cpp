@@ -182,8 +182,12 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             transition_to_movement_state(packet->value, 1);
             break;
         }
+        case MP_STATE_TYPE_PLAYER_INPUT: {
+            player_state_input = (int)packet->value;
+            break;
+        }
         case MP_STATE_TYPE_POSITION: {
-            if (packet->offset > 3) {
+            if (packet->offset > 8) {
                 Logger::error("Server tried to set position at invalid offset %d", packet->offset);
                 break;
             }
@@ -230,6 +234,10 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
         case MP_STATE_TYPE_BLOCK_BOLT: {
             blocked_bolts[(packet->offset * 4) + packet->value] = 1;
 
+            break;
+        }
+        case MP_STATE_TYPE_ARBITRARY: {
+            *(int*)(packet->offset) = (int)packet->value;
             break;
         }
         default: {

@@ -118,6 +118,8 @@ extern float player_neutral;
 extern int player_ghost_frames;
 // The player's current state.
 extern int player_state;
+// The player's current input(?) state
+extern int player_state_input;
 // The player's current HP.
 extern int player_health;
 // Which player type the player is

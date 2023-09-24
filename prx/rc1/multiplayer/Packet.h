@@ -163,6 +163,8 @@ typedef struct {
 #define MP_STATE_TYPE_SET_RESPAWN 7
 #define MP_STATE_TYPE_COLLECTED_GOLD_BOLT 8
 #define MP_STATE_TYPE_BLOCK_BOLT 9
+#define MP_STATE_TYPE_PLAYER_INPUT 10
+#define MP_STATE_TYPE_ARBITRARY 11
 
 typedef struct {
     u32 state_type;
