@@ -93,6 +93,7 @@ struct MPPacketHeader {
 
 struct MPPacketConnect {
     int32_t userid;
+    int32_t version;
     char passcode[8];
     u16 nick_length;
 };
@@ -101,6 +102,8 @@ struct MPPacketConnect {
 #define MP_CONNECT_SUCCESS 1
 #define MP_CONNECT_ERROR_USER_ALREADY_CONNECTED 2
 #define MP_CONNECT_ERROR_NOT_ALLOWED 3
+#define MP_CONNECT_ERROR_OUTDATED 4
+#define MP_CONNECT_ERROR_WRONG_PASSCODE 5
 
 struct MPPacketConnectCallback {
     int32_t status;

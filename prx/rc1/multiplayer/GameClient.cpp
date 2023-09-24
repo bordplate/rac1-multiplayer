@@ -369,6 +369,12 @@ int GameClient::connect_callback(void* packetData, size_t size, void* userdata) 
         case 3:
             message = String("You must've been banned from this server or something. Good job.");
             break;
+        case 4:
+            message = String("Your multiplayer mod is outdated. Please update your multiplayer mod to connect to this game server.");
+            break;
+        case 5:
+            message = String("Wrong passcode.");
+            break;
         default:
             message = String("A super unknown error occurred, something's fucky.");
             break;
