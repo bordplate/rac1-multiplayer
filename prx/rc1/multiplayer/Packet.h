@@ -138,6 +138,7 @@ typedef struct {
 #define MP_MOBY_DELETE_FLAG_UUID   1
 #define MP_MOBY_DELETE_FLAG_OCLASS 2
 #define MP_MOBY_DELETE_FLAG_ALL    4
+#define MP_MOBY_DELETE_FLAG_UID   8
 
 typedef struct {
     u32 value;

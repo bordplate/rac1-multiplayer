@@ -145,6 +145,13 @@ void GameClient::moby_delete(MPPacketMobyDelete* packet) {
                 delete_moby(moby);
             }
         }
+    } else if (packet->flags & MP_MOBY_DELETE_FLAG_UID) {
+        for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
+            if (moby->state < 0x7f && moby->UID == packet->value) {
+                moby->state = -1;
+                delete_moby(moby);
+            }
+        }
     }
 }
 
