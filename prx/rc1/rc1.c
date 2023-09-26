@@ -113,7 +113,7 @@ SHK_HOOK(int, cellGameContentPermit, char*, char*);
 int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     MULTI_LOG("contentInfoPath: %p, usrdirPath: %p\n", contentInfoPath, usrdirPath);
     // Manually copying the string
-    const char* src = "/dev_bdvd/PS3_GAME";
+    const char* src = "/dev_bdvd/PS3_GAME"; 
     while (*src) {
         *contentInfoPath = *src;
         contentInfoPath++;
