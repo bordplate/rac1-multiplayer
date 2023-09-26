@@ -96,7 +96,7 @@ int cellGameBootCheckHook(unsigned int* type, unsigned int* attributes, CellGame
     size->sysSizeKB = 4;
 
     // Manually copying the string
-    const char* src = "NPEA00385";
+    const char* src = "BCES01503";
     while (*src) {
         *dirName = *src;
         dirName++;
@@ -113,7 +113,7 @@ SHK_HOOK(int, cellGameContentPermit, char*, char*);
 int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     MULTI_LOG("contentInfoPath: %p, usrdirPath: %p\n", contentInfoPath, usrdirPath);
     // Manually copying the string
-    const char* src = "/dev_hdd0/game/NPEA00385";
+    const char* src = "/dev_bdvd/PS3_GAME";
     while (*src) {
         *contentInfoPath = *src;
         contentInfoPath++;
@@ -121,7 +121,7 @@ int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     }
     *contentInfoPath = '\0';  // Null terminate the string
 
-    src = "/dev_hdd0/game/NPEA00385/USRDIR";
+    src = "/dev_bdvd/PS3_GAME/USRDIR";
     while (*src) {
         *usrdirPath = *src;
         usrdirPath++;
