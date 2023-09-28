@@ -246,6 +246,7 @@ struct Packet {
     static Packet* make_player_respawned_packet();
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
+    static Packet* make_unlock_item_packet(int item_id);
 };
 
 #endif
