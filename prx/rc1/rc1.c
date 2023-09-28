@@ -141,6 +141,14 @@ void goldBoltUpdateHook(Moby* moby) {
     ((GoldBolt*)moby)->update();
 }
 
+SHK_HOOK(void, on_item_unlock, int*);
+void on_item_unlock_hook(int* item_id) {
+    if (Game::shared().client()) {
+            Game::shared().client()->send(Packet::make_unlock_item_packet(*item_id));
+        }
+    SHK_CALL_HOOK(on_item_unlock, item_id); // probably not send this by default and do it later instead
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
@@ -158,6 +166,7 @@ void rc1_init() {
     SHK_BIND_HOOK(cellGameBootCheck, cellGameBootCheckHook);
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
     SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
+    SHK_BIND_HOOK(on_item_unlock, on_item_unlock_hook);
 
     MULTI_LOG("Bound hooks\n");
 }
