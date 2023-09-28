@@ -168,6 +168,7 @@ typedef struct {
 #define MP_STATE_TYPE_BLOCK_BOLT 9
 #define MP_STATE_TYPE_PLAYER_INPUT 10
 #define MP_STATE_TYPE_ARBITRARY 11
+#define MP_STATE_TYPE_UNLOCK_ITEM 12
 
 typedef struct {
     u32 state_type;
