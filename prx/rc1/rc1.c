@@ -169,8 +169,8 @@ void on_item_unlock_hook(int* item_id) {
     Client* client = Game::shared().client();
     if (client != nullptr) {
         Packet* packet = Packet::make_unlock_item_packet(*item_id);
-        client->make_ack(packet, nullptr);
-        client->send(packet);
+//        client->make_ack(packet, nullptr);
+//        client->send(packet);
     }
 //    if (Game::shared().client()) {
 //        Game::shared().client()->send(Packet::make_unlock_item_packet(*item_id));
