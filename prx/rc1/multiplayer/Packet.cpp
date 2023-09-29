@@ -189,13 +189,13 @@ Packet* Packet::make_collected_gold_bolt_packet(int bolt_number) {
 
 Packet* Packet::make_unlock_item_packet(int item_id) {
     Packet* packet = new Packet(sizeof(MPPacketSetState));
-//    packet->header->type = MP_PACKET_SET_STATE;
-//    packet->header->size = sizeof(MPPacketSetState);
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
 
-//    MPPacketSetState* body = (MPPacketSetState*)packet->body;
-//    body->state_type = MP_STATE_TYPE_UNLOCK_ITEM;
-//    body->value = item_id;
-//    body->offset = 0;
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_UNLOCK_ITEM;
+    body->value = item_id;
+    body->offset = 0;
 
     return packet;
 }
