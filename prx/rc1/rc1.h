@@ -30,7 +30,10 @@ extern int game_ticks;
 
 extern int current_weapon;
 
-extern int itemGivenByServer;
+#ifndef __itenGivenByServerVariable
+#define __itemGivenByServerVariable
+extern int itemGivenByServer = 0;
+#endif
 
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
 SHK_FUNCTION_DEFINE_STATIC_3(0x650764, int, sys_mmapper_allocate_memory, size_t, size, u64, flags, void*, addr);
