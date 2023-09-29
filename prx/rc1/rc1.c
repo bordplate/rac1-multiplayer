@@ -168,7 +168,7 @@ SHK_HOOK(void, on_item_unlock, int*);
 void on_item_unlock_hook(int* item_id) {
     Client* client = Game::shared().client();
     if (client != nullptr) {
-//        Packet* packet = Packet::make_unlock_item_packet(*item_id);
+        Packet* packet = Packet::make_unlock_item_packet(*item_id);
 //        client->make_ack(packet, nullptr);
 //        client->send(packet);
     }

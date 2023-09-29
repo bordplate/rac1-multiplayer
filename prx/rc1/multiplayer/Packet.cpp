@@ -189,7 +189,7 @@ Packet* Packet::make_collected_gold_bolt_packet(int bolt_number) {
 
 Packet* Packet::make_unlock_item_packet(int item_id) {
     Packet* packet = new Packet(sizeof(MPPacketSetState));
-    packet->header->type = MP_PACKET_SET_STATE;
+//    packet->header->type = MP_PACKET_SET_STATE;
 //    packet->header->size = sizeof(MPPacketSetState);
 
 //    MPPacketSetState* body = (MPPacketSetState*)packet->body;
