@@ -213,6 +213,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             u16 item = (u16)(packet->value & 0xFFFF);
 
             if (give) {
+                itemGivenByServer = 1;
                 unlock_item(item, 0);
             }
 

@@ -13,6 +13,8 @@
 extern "C" {
 #endif
 
+extern int itemGivenByServer = 0;
+
 typedef enum GameState {
     PlayerControl = 0,
     Movie = 1,

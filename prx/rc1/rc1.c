@@ -166,16 +166,17 @@ void goldBoltUpdateHook(Moby* moby) {
 
 SHK_HOOK(void, on_item_unlock, int);
 void on_item_unlock_hook(int item_id) {
-    Client* client = Game::shared().client();
-    if (client != nullptr) {
-        Packet* packet = Packet::make_unlock_item_packet(item_id);
-        client->make_ack(packet, nullptr);
-        client->send(packet);
+    if (itemGivenByServer) {
+        itemGivenByServer = 0;
+        SHK_CALL_HOOK(on_item_unlock, item_id);
+    } else {
+        Client *client = Game::shared().client();
+        if (client != nullptr) {
+            Packet *packet = Packet::make_unlock_item_packet(item_id);
+            client->make_ack(packet, nullptr);
+            client->send(packet);
+        }
     }
-//    SHK_CALL_HOOK(on_item_unlock, item_id);
-//    if (*item_id == 0xa) { // bomb glove
-//        SHK_CALL_HOOK(on_item_unlock, item_id);
-//    }
 }
 
 void rc1_init() {
