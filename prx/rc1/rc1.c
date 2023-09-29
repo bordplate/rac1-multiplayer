@@ -172,7 +172,7 @@ void on_item_unlock_hook(int item_id) {
         client->make_ack(packet, nullptr);
         client->send(packet);
     }
-    SHK_CALL_HOOK(on_item_unlock, item_id);
+//    SHK_CALL_HOOK(on_item_unlock, item_id);
 //    if (*item_id == 0xa) { // bomb glove
 //        SHK_CALL_HOOK(on_item_unlock, item_id);
 //    }
