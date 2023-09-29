@@ -113,7 +113,7 @@ SHK_HOOK(int, cellGameContentPermit, char*, char*);
 int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     MULTI_LOG("contentInfoPath: %p, usrdirPath: %p\n", contentInfoPath, usrdirPath);
     // Manually copying the string
-    const char* src = "/dev_bdvd/PS3_GAME"; 
+    const char* src = "/dev_bdvd/PS3_GAME";
     while (*src) {
         *contentInfoPath = *src;
         contentInfoPath++;
@@ -146,9 +146,10 @@ void on_item_unlock_hook(int* item_id) {
     if (Game::shared().client()) {
             Game::shared().client()->send(Packet::make_unlock_item_packet(*item_id));
         }
-    if (*item_id == 0xa) { // bomb glove
-        SHK_CALL_HOOK(on_item_unlock, item_id); // probably not send this by default and do it later instead
-    }
+//    if (*item_id == 0xa) { // bomb glove
+//        SHK_CALL_HOOK(on_item_unlock, item_id); // probably not send this by default and do it later instead
+//    }
+    SHK_CALL_HOOK(on_item_unlock, item_id); // probably not send this by default and do it later instead
 }
 
 void rc1_init() {
