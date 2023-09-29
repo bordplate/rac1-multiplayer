@@ -5,6 +5,8 @@
 #include <netex/net.h>
 #include <sysutil/sysutil_gamecontent.h>
 
+#include <cell/cell_fs.h>
+
 #include <rc1/Game.h>
 #include "multiplayer/Packet.h"
 
@@ -95,8 +97,16 @@ int cellGameBootCheckHook(unsigned int* type, unsigned int* attributes, CellGame
     size->sizeKB = -1;
     size->sysSizeKB = 4;
 
+    int fd;
+    const char* src;
     // Manually copying the string
-    const char* src = "BCES01503";
+    // Check if digital version exists and use that. Otherwise fall back to disc. If no disc then we just crash
+    CellFsErrno ebootStat = cellFsOpendir("/dev_hdd0/game/NPEA00385/", &fd);
+    if (ebootStat == CELL_FS_ENOENT) {
+        src = "BCES01503";
+    } else {
+        src = "NPEA00385";
+    }
     while (*src) {
         *dirName = *src;
         dirName++;
@@ -112,8 +122,17 @@ int cellGameBootCheckHook(unsigned int* type, unsigned int* attributes, CellGame
 SHK_HOOK(int, cellGameContentPermit, char*, char*);
 int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     MULTI_LOG("contentInfoPath: %p, usrdirPath: %p\n", contentInfoPath, usrdirPath);
-    // Manually copying the string
-    const char* src = "/dev_bdvd/PS3_GAME";
+
+    int fd;
+    const char *src;
+
+    // Check if digital version exists and use that. Otherwise fall back to disc. If no disc then we just crash
+    CellFsErrno ebootStat = cellFsOpendir("/dev_hdd0/game/NPEA00385/", &fd);
+    if (ebootStat == CELL_FS_ENOENT) {
+        src = "/dev_bdvd/PS3_GAME";
+    } else {
+        src = "/dev_hdd0/game/NPEA00385";
+    }
     while (*src) {
         *contentInfoPath = *src;
         contentInfoPath++;
@@ -121,7 +140,11 @@ int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     }
     *contentInfoPath = '\0';  // Null terminate the string
 
-    src = "/dev_bdvd/PS3_GAME/USRDIR";
+    if (ebootStat == CELL_FS_ENOENT) {
+        src = "/dev_bdvd/PS3_GAME/USRDIR";
+    } else {
+        src = "/dev_hdd0/game/NPEA00385/USRDIR";
+    }
     while (*src) {
         *usrdirPath = *src;
         usrdirPath++;
