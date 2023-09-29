@@ -165,7 +165,7 @@ void goldBoltUpdateHook(Moby* moby) {
 }
 
 SHK_HOOK(void, on_item_unlock, int);
-void on_item_unlock_hook(int* item_id) {
+void on_item_unlock_hook(int item_id) {
     Client* client = Game::shared().client();
     if (client != nullptr) {
         Packet* packet = Packet::make_unlock_item_packet(item_id);
