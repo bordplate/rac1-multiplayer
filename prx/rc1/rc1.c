@@ -169,7 +169,7 @@ void on_item_unlock_hook(int* item_id) {
 //    if (Game::shared().client()) {
 //        Game::shared().client()->send(Packet::make_unlock_item_packet(*item_id));
 //    }
-    SHK_CALL_HOOK(on_item_unlock, item_id);
+//    SHK_CALL_HOOK(on_item_unlock, item_id);
 //    if (*item_id == 0xa) { // bomb glove
 //        SHK_CALL_HOOK(on_item_unlock, item_id);
 //    }
