@@ -17,6 +17,8 @@ void game_tick() {
     _c_game_tick();
 }
 
+int itemGivenByServer = 0;
+
 SHK_HOOK(void, game_loop_start);
 void game_loop_start_hook() {
     if (current_planet != 0 || ratchet_moby != 0) {

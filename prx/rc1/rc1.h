@@ -1,9 +1,7 @@
 #ifdef GAME_RC1
 
-//#ifndef RC1_H
-//#define RC1_H
-
-#pragma once
+#ifndef RC1_H
+#define RC1_H
 
 #include <lib/shk.h>
 #include <lib/types.h>
@@ -32,7 +30,7 @@ extern int game_ticks;
 
 extern int current_weapon;
 
-extern int itemGivenByServer = 0;
+extern int itemGivenByServer;
 
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
 SHK_FUNCTION_DEFINE_STATIC_3(0x650764, int, sys_mmapper_allocate_memory, size_t, size, u64, flags, void*, addr);
@@ -160,5 +158,5 @@ void rc1_shutdown();
 }
 #endif
 
-//#endif // RC1_H
+#endif // RC1_H
 #endif // GAME_RC1
