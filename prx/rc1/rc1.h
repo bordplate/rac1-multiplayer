@@ -13,8 +13,6 @@
 extern "C" {
 #endif
 
-extern int itemGivenByServer = 0;
-
 typedef enum GameState {
     PlayerControl = 0,
     Movie = 1,
@@ -31,6 +29,8 @@ typedef enum GameState {
 extern int game_ticks;
 
 extern int current_weapon;
+
+extern int itemGivenByServer;
 
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
 SHK_FUNCTION_DEFINE_STATIC_3(0x650764, int, sys_mmapper_allocate_memory, size_t, size, u64, flags, void*, addr);
