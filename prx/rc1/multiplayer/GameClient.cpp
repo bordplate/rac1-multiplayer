@@ -216,13 +216,16 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_ITEM: {
-            u16 give = (u16)(packet->value  >> 16);
+            u8 give = (u8)(packet->value  >> 16);
             u16 item = (u16)(packet->value & 0xFFFF);
 
-            if (give) {
-                itemGivenByServer = 1;
-                unlock_item(item, 0);
-            }
+            itemGivenByServer = 1;
+            unlock_item(item, give);
+
+//            if (give) {
+//                itemGivenByServer = 1;
+//                unlock_item(item, 0);
+//            }
 
             break;
         }
