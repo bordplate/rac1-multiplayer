@@ -200,7 +200,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
                 ratchet_moby == nullptr) {
                 Logger::info("Going to planet %d", (int)packet->value);
                 seen_planets[0] = 1;
-                if (!packet->offset) seen_planets[packet->value] = 1;
+                if (packet->offset) seen_planets[packet->value] = 1;
 
                 Logger::debug("Printing galactic map entries!");
                 for (int i = 0x96c18c; i < 0x96c1a8; i += 0x4) {
