@@ -204,7 +204,8 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
 
                 Logger::debug("Printing galactic map entries!");
                 for (int i = 0x96c18c; i < 0x96c1a8; i += 0x4) {
-                    Logger::debug("Current galactic_map[%d] = %x", i, *(int*)i);
+                    if (packet->offset && i == *(int*)0x969C70) *(int*)i = 0; // if the not unlock param is true and the current planet is in the visited list, set it to zero. I intend to figure out whether the pointer will cause issues later.
+                    Logger::debug("Current galactic_map[%d] = 0x%x", i, *(int*)i);
                 }
                 Logger::debug("");
                 *(int*)0xa10700 = 1;
