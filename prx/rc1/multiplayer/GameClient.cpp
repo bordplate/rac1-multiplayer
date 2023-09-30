@@ -200,14 +200,14 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
                 ratchet_moby == nullptr) {
                 Logger::info("Going to planet %d", (int)packet->value);
                 seen_planets[0] = 1;
-                if (packet->offset) seen_planets[packet->value] = 1;
+                seen_planets[packet->value] = 1;
 
-                Logger::debug("Printing galactic map entries!");
-                for (int i = 0x96c18c; i < 0x96c1a8; i += 0x4) {
-                    if (!packet->offset && *(int*)i == *(int*)0x969C70) *(int*)i = 0; // if the not unlock param is true and the current planet is in the visited list, set it to zero. I intend to figure out whether the pointer will cause issues later.
-                    Logger::debug("Current galactic_map[%d] = 0x%x", i, *(int*)i);
-                }
-                Logger::debug("");
+//                Logger::debug("Printing galactic map entries!");
+//                for (int i = 0x96c18c; i < 0x96c1a8; i += 0x4) {
+//                    if (!packet->offset && *(int*)i == *(int*)0x969C70) *(int*)i = 0; // if the not unlock param is true and the current planet is in the visited list, set it to zero. I intend to figure out whether the pointer will cause issues later.
+//                    Logger::debug("Current galactic_map[%d] = 0x%x", i, *(int*)i);
+//                }
+//                Logger::debug("");
                 *(int*)0xa10700 = 1;
                 *(int*)0xa10704 = (int)packet->value;
                 *(int*)0x969c70 = (int)packet->value;
