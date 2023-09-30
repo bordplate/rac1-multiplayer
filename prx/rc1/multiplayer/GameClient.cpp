@@ -206,10 +206,10 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
                 for (int i = 0x96c18c; i < 0x96c1a8; i += 0x4) {
                     Logger::debug("Current galactic_map[%d] = %x", i, *(int*)i);
                 }
+                Logger::debug("");
                 *(int*)0xa10700 = 1;
                 *(int*)0xa10704 = (int)packet->value;
                 *(int*)0x969c70 = (int)packet->value;
-                Logger:debug("");
             }
 
             break;
