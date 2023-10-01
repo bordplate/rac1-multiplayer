@@ -255,6 +255,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             uint32_t value = (uint32_t)packet->value;
             Logger::debug("Setting bolt count to %d", value);
             Logger::debug("Actually i'm setting it to %x", packet->value);
+            Logger::debug("Bolts address: %x", player_bolts);
             *(int*)player_bolts += (int)(((value>>24)&0xff) | // move byte 3 to byte 0
                                          ((value<<8)&0xff0000) | // move byte 1 to byte 2
                                          ((value>>8)&0xff00) | // move byte 2 to byte 1
