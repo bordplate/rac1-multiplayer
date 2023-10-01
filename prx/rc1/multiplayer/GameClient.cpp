@@ -252,8 +252,8 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_SET_BOLTS: {
-            *(int*)0x969CA0 = 10;
-//            uint32_t value = (uint32_t)packet->value;
+            uint32_t value = (uint32_t)packet->value;
+            Logger::debug("Setting bolt count to %d", value);
 //            *(int*)0x969CA0 += (int)(((value>>24)&0xff) | // move byte 3 to byte 0
 //                                         ((value<<8)&0xff0000) | // move byte 1 to byte 2
 //                                         ((value>>8)&0xff00) | // move byte 2 to byte 1
