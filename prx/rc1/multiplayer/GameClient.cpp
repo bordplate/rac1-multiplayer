@@ -251,6 +251,10 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             *(int*)(packet->offset) = (int)packet->value;
             break;
         }
+        case MP_STATE_TYPE_GIVE_BOLTS: {
+            *(int*)player_bolts += (int)packet->value;
+            break;
+        }
         default: {
             Logger::error("Server asked us to set unknown state type %d", packet->state_type);
         }
