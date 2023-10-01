@@ -169,7 +169,8 @@ typedef struct {
 #define MP_STATE_TYPE_PLAYER_INPUT 10
 #define MP_STATE_TYPE_ARBITRARY 11
 #define MP_STATE_TYPE_UNLOCK_ITEM 12
-#define MP_STATE_TYPE_GIVE_BOLTS 13
+#define MP_STATE_TYPE_SET_BOLTS 13
+#define MP_STATE_TYPE_GIVE_BOLTS 14
 
 typedef struct {
     u32 state_type;
@@ -224,6 +225,10 @@ typedef struct {
     uint32_t duration;
     char message[0x50];
 } MPPacketToastMessage;
+
+typedef struct {
+    uint32_t value;
+} MPPacketBolts;
 
 #pragma pack(pop)
 

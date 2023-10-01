@@ -251,6 +251,14 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             *(int*)(packet->offset) = (int)packet->value;
             break;
         }
+        case MP_STATE_TYPE_SET_BOLTS: {
+            uint32_t value = (uint32_t)packet->value;
+            *(uint32_t*)player_bolts += ((value>>24)&0xff) | // move byte 3 to byte 0
+                                        ((value<<8)&0xff0000) | // move byte 1 to byte 2
+                                        ((value>>8)&0xff00) | // move byte 2 to byte 1
+                                        ((value<<24)&0xff000000); // byte 0 to byte 3
+            break;
+        }
         case MP_STATE_TYPE_GIVE_BOLTS: {
             *(uint32_t*)player_bolts += __bswap_32((uint32_t)packet->value);
             break;

@@ -6,7 +6,6 @@
 #define RAC1_MULTIPLAYER_DIRECTORYCLIENT_H
 
 #include "Client.h"
-#include "byteswap.h"
 
 class DirectoryClient : public Client {
 public:
