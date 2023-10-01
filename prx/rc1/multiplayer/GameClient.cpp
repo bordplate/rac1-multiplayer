@@ -252,7 +252,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_GIVE_BOLTS: {
-            *(int*)player_bolts += (int)packet->value;
+            *(uint32_t*)player_bolts += __bswap_32((uint32_t)packet->value);
             break;
         }
         default: {
