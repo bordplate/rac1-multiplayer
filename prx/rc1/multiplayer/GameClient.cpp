@@ -255,6 +255,11 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             *(uint32_t*)0x969CA0 += packet->value;
             break;
         }
+        case MP_STATE_TYPE_UNLOCK_PLANET: {
+            int planet = (int)(packet->value);
+            planetUnlockedByServer = 1;
+            unlock_planet(planet);
+        }
         default: {
             Logger::error("Server asked us to set unknown state type %d", packet->state_type);
         }

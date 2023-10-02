@@ -32,6 +32,8 @@ extern int current_weapon;
 
 extern int itemGivenByServer;
 
+extern int planetUnlockedByServer;
+
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
 SHK_FUNCTION_DEFINE_STATIC_3(0x650764, int, sys_mmapper_allocate_memory, size_t, size, u64, flags, void*, addr);
 SHK_FUNCTION_DEFINE_STATIC_3(0x4e8470, void, new_game, int, p1, void*, p2, u64, p3);

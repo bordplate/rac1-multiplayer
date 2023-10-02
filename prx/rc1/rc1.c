@@ -18,6 +18,7 @@ void game_tick() {
 }
 
 int itemGivenByServer = 0;
+int planetUnlockedByServer = 0;
 
 SHK_HOOK(void, game_loop_start);
 void game_loop_start_hook() {
@@ -189,16 +190,17 @@ void on_item_unlock_hook(int item_id) {
 
 SHK_HOOK(void, on_unlock_planet, int);
 void on_unlock_planet_hook(int planet) {
-    Logger::debug("Unlock planet: %x", planet);
-
-    Client *client = Game::shared().client();
-    if (client != nullptr) {
-        Packet *packet = Packet::make_unlock_planet_packet(planet);
-        client->make_ack(packet, nullptr);
-        client->send(packet);
+    if (planetUnlockedByServer) {
+        planetUnlockedByServer = 0;
+        SHK_CALL_HOOK(on_unlock_planet, planet);
+    } else {
+        Client *client = Game::shared().client();
+        if (client != nullptr) {
+            Packet *packet = Packet::make_unlock_planet_packet(planet);
+            client->make_ack(packet, nullptr);
+            client->send(packet);
+        }
     }
-
-    SHK_CALL_HOOK(on_unlock_planet, planet);
 }
 
 void rc1_init() {
