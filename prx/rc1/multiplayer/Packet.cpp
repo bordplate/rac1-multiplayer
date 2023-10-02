@@ -200,7 +200,7 @@ Packet* Packet::make_unlock_item_packet(int item_id) {
     return packet;
 }
 
-Packet* Packet::make_unlock_item_packet(int planet) {
+Packet* Packet::make_unlock_planet_packet(int planet) {
     Packet* packet = new Packet(sizeof(MPPacketSetState));
     packet->header->type = MP_PACKET_SET_STATE;
     packet->header->size = sizeof(MPPacketSetState);
