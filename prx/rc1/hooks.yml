@@ -47,3 +47,7 @@ goldBoltUpdate:
 on_item_unlock:
     addr: 0x112e18
     replacedInstr: stdu r1, -0xb0(r1)
+
+on_vendor_thing:
+    addr: 0x4f8d38
+    replacedInstr: ld r2, -0x28(r1)

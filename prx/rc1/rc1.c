@@ -181,6 +181,12 @@ void on_item_unlock_hook(int item_id) {
     }
 }
 
+SHK_HOOK(void, on_vendor_thingy, int);
+void on_vendor_thingy_hook(int item) {
+    Logger::debug("Vendor thingy hit with item: %d", item);
+    SHK_CALL_HOOK(on_vendor_thingy, item);
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
@@ -199,6 +205,7 @@ void rc1_init() {
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
     SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
     SHK_BIND_HOOK(on_item_unlock, on_item_unlock_hook);
+    SHK_BIND_HOOK(on_vendor_thingy, on_vendor_thingy_hook);
 
     MULTI_LOG("Bound hooks\n");
 }
