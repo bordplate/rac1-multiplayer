@@ -252,9 +252,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_GIVE_BOLTS: {
-            Logger::debug("Changing bolt count to: %d", (int)packet->value);
-            Logger::debug("Changing bolt count to: %lu", (unsigned long)packet->value);
-            *(int*)0x969CA0 += (int)packet->value;
+            *(uint32_t*)0x969CA0 += packet->value;
             break;
         }
         default: {
