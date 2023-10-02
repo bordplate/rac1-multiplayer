@@ -40,7 +40,8 @@ SHK_FUNCTION_DEFINE_STATIC_2(0xb72b0, u64, transition_to_movement_state, u32, st
 SHK_FUNCTION_DEFINE_STATIC_2(0x112e18, void, unlock_item, u32, item, u8, equipped);
 SHK_FUNCTION_DEFINE_STATIC_0(0x164c58, void, load_destination_planet);
 SHK_FUNCTION_DEFINE_STATIC_1(0xccda0, void, toast_message, char*, message);
-SHK_FUNCTION_DEFINE_STATIC_1(0x4f8d38, void, vendor_thing, int, item);
+SHK_FUNCTION_DEFINE_STATIC_1(0x112c20, void, unlock_planet, int, planet);
+//SHK_FUNCTION_DEFINE_STATIC_1(0x4f8d38, void, vendor_thing, int, item);
 
 SHK_FUNCTION_DEFINE_STATIC_2(0x151e70, void, set_spawn_point, Vec4*, position, Vec4*, rotation);
 

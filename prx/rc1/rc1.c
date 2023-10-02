@@ -181,10 +181,24 @@ void on_item_unlock_hook(int item_id) {
     }
 }
 
-SHK_HOOK(void, on_vendor_thing, int);
-void on_vendor_thing_hook(int item) {
-    Logger::debug("Vendor thingy hit with item: %d", item);
-    SHK_CALL_HOOK(on_vendor_thing, item);
+//SHK_HOOK(void, on_vendor_thing, int);
+//void on_vendor_thing_hook(int item) {
+//    Logger::debug("Vendor thingy hit with item: %d", item);
+//    SHK_CALL_HOOK(on_vendor_thing, item);
+//}
+
+SHK_HOOK(void, on_unlock_planet, int);
+void on_unlock_planet_hook(int planet) {
+    Logger::debug("Unlock planet: %x", planet);
+
+    Client *client = Game::shared().client();
+    if (client != nullptr) {
+        Packet *packet = Packet::make_unlock_planet_packet(planet);
+        client->make_ack(packet, nullptr);
+        client->send(packet);
+    }
+
+    SHK_CALL_HOOK(on_unlock_planet, planet);
 }
 
 void rc1_init() {
@@ -205,7 +219,8 @@ void rc1_init() {
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
     SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
     SHK_BIND_HOOK(on_item_unlock, on_item_unlock_hook);
-    SHK_BIND_HOOK(on_vendor_thing, on_vendor_thing_hook);
+//    SHK_BIND_HOOK(on_vendor_thing, on_vendor_thing_hook);
+    SHK_BIND_HOOK(on_unlock_planet, on_unlock_planet_hook);
 
     MULTI_LOG("Bound hooks\n");
 }

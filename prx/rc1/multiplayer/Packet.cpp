@@ -199,3 +199,16 @@ Packet* Packet::make_unlock_item_packet(int item_id) {
 
     return packet;
 }
+
+Packet* Packet::make_unlock_item_packet(int planet) {
+    Packet* packet = new Packet(sizeof(MPPacketSetState));
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
+
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_UNLOCK_PLANET;
+    body->value = planet;
+    body->offset = 0;
+
+    return packet;
+}
