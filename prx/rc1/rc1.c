@@ -164,6 +164,36 @@ void goldBoltUpdateHook(Moby* moby) {
     ((GoldBolt*)moby)->update();
 }
 
+// Hook the item_unlock function
+SHK_HOOK(void, _unlock_item, int, uint8_t);
+void _unlock_item_hook(int item_id, uint8_t equip) {
+    Client *client = Game::shared().client();
+    if (client != nullptr) {
+        Packet *packet = Packet::make_unlock_item_packet(item_id, equip);
+        client->make_ack(packet, nullptr);
+        client->send(packet);
+    }
+}
+
+// Make original unlock_item available to our code
+void unlock_item(int item_id, uint8_t equip) {
+    SHK_CALL_HOOK(_unlock_item, item_id, equip);
+}
+
+SHK_HOOK(void, _unlock_level, int);
+void _unlock_level_hook(int level) {
+    Client *client = Game::shared().client();
+    if (client != nullptr) {
+        Packet *packet = Packet::make_unlock_level_packet(level);
+        client->make_ack(packet, nullptr);
+        client->send(packet);
+    }
+}
+
+void unlock_level(int level) {
+    SHK_CALL_HOOK(_unlock_level, level);
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
@@ -181,6 +211,8 @@ void rc1_init() {
     SHK_BIND_HOOK(cellGameBootCheck, cellGameBootCheckHook);
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
     SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
+    SHK_BIND_HOOK(_unlock_item, _unlock_item_hook);
+    SHK_BIND_HOOK(_unlock_level, _unlock_level_hook);
 
     MULTI_LOG("Bound hooks\n");
 }

@@ -209,11 +209,19 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_ITEM: {
-            u16 give = (u16)(packet->value  >> 16);
+            u8 flags = (u8)(packet->value  >> 16);
             u16 item = (u16)(packet->value & 0xFFFF);
 
+            u8 give = flags & 1;
+            u8 equip = flags & 2;
+
             if (give) {
-                unlock_item(item, 0);
+                unlock_item(item, equip);
+            } else {
+                // TODO: Take item away from player
+                // Since the game never really takes an item away from you
+                // there's no simple way to "unequip" an item as far as we know from reversing.
+                Logger::error("Can't take away items yet.");
             }
 
             break;
@@ -239,6 +247,14 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
         case MP_STATE_TYPE_ARBITRARY: {
             *(int*)(packet->offset) = (int)packet->value;
             break;
+        }
+        case MP_STATE_TYPE_GIVE_BOLTS: {
+            player_bolts += packet->value;
+            break;
+        }
+        case MP_STATE_TYPE_UNLOCK_LEVEL: {
+            int level = (int)(packet->value);
+            unlock_level(level);
         }
         default: {
             Logger::error("Server asked us to set unknown state type %d", packet->state_type);

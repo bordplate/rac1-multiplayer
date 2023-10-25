@@ -215,6 +215,10 @@ int Game::query_servers_callback(void* data, size_t len, void* extra) {
 }
 
 void Game::query_servers(int directory_id, ServerQueryCallback callback) {
+    // FIXME: Unhardcode directory server.
+    // - 172.104.144.15 -> boltcrate.space
+    // We use IP instead of domain name because I don't trust that name resolution
+    //   on PS3 will be stable forever or for everyone.
     client_ = new DirectoryClient("172.104.144.15", 2407);
     client_->_connect();
 
