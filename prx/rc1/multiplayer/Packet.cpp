@@ -131,7 +131,7 @@ Packet* Packet::make_connect_packet(const String& nickname, int32_t userid) {
 
     MPPacketConnect *body = (MPPacketConnect*)packet->body;
     body->userid = userid;
-    body->version = 1;
+    body->version = 2;
     body->nick_length = nickname.length();
 
     memcpy((char*)packet->body + sizeof(MPPacketConnect), nickname.c_str(), nickname.length());
@@ -183,6 +183,34 @@ Packet* Packet::make_collected_gold_bolt_packet(int bolt_number) {
     body->state_type = MP_STATE_TYPE_COLLECTED_GOLD_BOLT;
     body->value = bolt_number;
     body->offset = current_planet;
+
+    return packet;
+}
+
+Packet* Packet::make_unlock_item_packet(int item_id, bool equip) {
+    Packet* packet = new Packet(sizeof(MPPacketSetState));
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
+
+    uint16_t flags = equip ? 1 : 0;
+
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_UNLOCK_ITEM;
+    body->value = (flags << 16) | item_id;
+    body->offset = 0;
+
+    return packet;
+}
+
+Packet* Packet::make_unlock_level_packet(int level) {
+    Packet* packet = new Packet(sizeof(MPPacketSetState));
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
+
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_UNLOCK_LEVEL;
+    body->value = level;
+    body->offset = 0;
 
     return packet;
 }

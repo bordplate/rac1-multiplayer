@@ -43,3 +43,11 @@ cellGameContentPermit:
 goldBoltUpdate:
     addr: 0x1d9d48
     replacedInstr: stdu r1, -0x140(r1)
+
+_unlock_item:
+    addr: 0x112e18
+    replacedInstr: stdu r1, -0xb0(r1)
+
+_unlock_level:
+    addr: 0x112c20
+    replacedInstr: stdu r1, -0xe0(r1)
