@@ -168,6 +168,9 @@ typedef struct {
 #define MP_STATE_TYPE_BLOCK_BOLT 9
 #define MP_STATE_TYPE_PLAYER_INPUT 10
 #define MP_STATE_TYPE_ARBITRARY 11
+#define MP_STATE_TYPE_UNLOCK_ITEM 12
+#define MP_STATE_TYPE_GIVE_BOLTS 13
+#define MP_STATE_TYPE_UNLOCK_PLANET 14
 
 typedef struct {
     u32 state_type;
@@ -223,6 +226,10 @@ typedef struct {
     char message[0x50];
 } MPPacketToastMessage;
 
+typedef struct {
+    uint32_t value;
+} MPPacketBolts;
+
 #pragma pack(pop)
 
 struct Packet {
@@ -245,6 +252,8 @@ struct Packet {
     static Packet* make_player_respawned_packet();
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
+    static Packet* make_unlock_item_packet(int item_id);
+    static Packet* make_unlock_planet_packet(int planet);
 };
 
 #endif

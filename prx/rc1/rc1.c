@@ -17,6 +17,9 @@ void game_tick() {
     _c_game_tick();
 }
 
+int itemGivenByServer = 0;
+int planetUnlockedByServer = 0;
+
 SHK_HOOK(void, game_loop_start);
 void game_loop_start_hook() {
     if (current_planet != 0 || ratchet_moby != 0) {
@@ -164,6 +167,42 @@ void goldBoltUpdateHook(Moby* moby) {
     ((GoldBolt*)moby)->update();
 }
 
+SHK_HOOK(void, on_item_unlock, int);
+void on_item_unlock_hook(int item_id) {
+    if (itemGivenByServer) {
+        itemGivenByServer = 0;
+        SHK_CALL_HOOK(on_item_unlock, item_id);
+    } else {
+        Client *client = Game::shared().client();
+        if (client != nullptr) {
+            Packet *packet = Packet::make_unlock_item_packet(item_id);
+            client->make_ack(packet, nullptr);
+            client->send(packet);
+        }
+    }
+}
+
+//SHK_HOOK(void, on_vendor_thing, int);
+//void on_vendor_thing_hook(int item) {
+//    Logger::debug("Vendor thingy hit with item: %d", item);
+//    SHK_CALL_HOOK(on_vendor_thing, item);
+//}
+
+SHK_HOOK(void, on_unlock_planet, int);
+void on_unlock_planet_hook(int planet) {
+    if (planetUnlockedByServer) {
+        planetUnlockedByServer = 0;
+        SHK_CALL_HOOK(on_unlock_planet, planet);
+    } else {
+        Client *client = Game::shared().client();
+        if (client != nullptr) {
+            Packet *packet = Packet::make_unlock_planet_packet(planet);
+            client->make_ack(packet, nullptr);
+            client->send(packet);
+        }
+    }
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
@@ -181,6 +220,9 @@ void rc1_init() {
     SHK_BIND_HOOK(cellGameBootCheck, cellGameBootCheckHook);
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
     SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
+    SHK_BIND_HOOK(on_item_unlock, on_item_unlock_hook);
+//    SHK_BIND_HOOK(on_vendor_thing, on_vendor_thing_hook);
+    SHK_BIND_HOOK(on_unlock_planet, on_unlock_planet_hook);
 
     MULTI_LOG("Bound hooks\n");
 }

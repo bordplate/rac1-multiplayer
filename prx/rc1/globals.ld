@@ -7,6 +7,7 @@ should_load_destination_planet = 0xa10700;
 current_planet = 0x969C70;
 destination_planet = 0xa10704;
 seen_planets = 0x96ca20;
+galactic_map = 0x96c18c; /* warning! might not be trivial to change around */
 
 player_bolts = 0x969CA0;
 player_pos = 0x969D60;
