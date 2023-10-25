@@ -170,7 +170,7 @@ typedef struct {
 #define MP_STATE_TYPE_ARBITRARY 11
 #define MP_STATE_TYPE_UNLOCK_ITEM 12
 #define MP_STATE_TYPE_GIVE_BOLTS 13
-#define MP_STATE_TYPE_UNLOCK_PLANET 14
+#define MP_STATE_TYPE_UNLOCK_LEVEL 14
 
 typedef struct {
     u32 state_type;
@@ -252,8 +252,8 @@ struct Packet {
     static Packet* make_player_respawned_packet();
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
-    static Packet* make_unlock_item_packet(int item_id);
-    static Packet* make_unlock_planet_packet(int planet);
+    static Packet* make_unlock_item_packet(int item_id, bool equip);
+    static Packet* make_unlock_level_packet(int level);
 };
 
 #endif

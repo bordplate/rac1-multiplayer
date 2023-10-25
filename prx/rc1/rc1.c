@@ -17,9 +17,6 @@ void game_tick() {
     _c_game_tick();
 }
 
-int itemGivenByServer = 0;
-int planetUnlockedByServer = 0;
-
 SHK_HOOK(void, game_loop_start);
 void game_loop_start_hook() {
     if (current_planet != 0 || ratchet_moby != 0) {
@@ -167,40 +164,34 @@ void goldBoltUpdateHook(Moby* moby) {
     ((GoldBolt*)moby)->update();
 }
 
-SHK_HOOK(void, on_item_unlock, int);
-void on_item_unlock_hook(int item_id) {
-    if (itemGivenByServer) {
-        itemGivenByServer = 0;
-        SHK_CALL_HOOK(on_item_unlock, item_id);
-    } else {
-        Client *client = Game::shared().client();
-        if (client != nullptr) {
-            Packet *packet = Packet::make_unlock_item_packet(item_id);
-            client->make_ack(packet, nullptr);
-            client->send(packet);
-        }
+// Hook the item_unlock function
+SHK_HOOK(void, _unlock_item, int, uint8_t);
+void _unlock_item_hook(int item_id, uint8_t equip) {
+    Client *client = Game::shared().client();
+    if (client != nullptr) {
+        Packet *packet = Packet::make_unlock_item_packet(item_id, equip);
+        client->make_ack(packet, nullptr);
+        client->send(packet);
     }
 }
 
-//SHK_HOOK(void, on_vendor_thing, int);
-//void on_vendor_thing_hook(int item) {
-//    Logger::debug("Vendor thingy hit with item: %d", item);
-//    SHK_CALL_HOOK(on_vendor_thing, item);
-//}
+// Make original unlock_item available to our code
+void unlock_item(int item_id, uint8_t equip) {
+    SHK_CALL_HOOK(_unlock_item, item_id, equip);
+}
 
-SHK_HOOK(void, on_unlock_planet, int);
-void on_unlock_planet_hook(int planet) {
-    if (planetUnlockedByServer) {
-        planetUnlockedByServer = 0;
-        SHK_CALL_HOOK(on_unlock_planet, planet);
-    } else {
-        Client *client = Game::shared().client();
-        if (client != nullptr) {
-            Packet *packet = Packet::make_unlock_planet_packet(planet);
-            client->make_ack(packet, nullptr);
-            client->send(packet);
-        }
+SHK_HOOK(void, _unlock_level, int);
+void _unlock_level_hook(int level) {
+    Client *client = Game::shared().client();
+    if (client != nullptr) {
+        Packet *packet = Packet::make_unlock_level_packet(level);
+        client->make_ack(packet, nullptr);
+        client->send(packet);
     }
+}
+
+void unlock_level(int level) {
+    SHK_CALL_HOOK(_unlock_level, level);
 }
 
 void rc1_init() {
@@ -220,9 +211,8 @@ void rc1_init() {
     SHK_BIND_HOOK(cellGameBootCheck, cellGameBootCheckHook);
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);
     SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
-    SHK_BIND_HOOK(on_item_unlock, on_item_unlock_hook);
-//    SHK_BIND_HOOK(on_vendor_thing, on_vendor_thing_hook);
-    SHK_BIND_HOOK(on_unlock_planet, on_unlock_planet_hook);
+    SHK_BIND_HOOK(_unlock_item, _unlock_item_hook);
+    SHK_BIND_HOOK(_unlock_level, _unlock_level_hook);
 
     MULTI_LOG("Bound hooks\n");
 }
