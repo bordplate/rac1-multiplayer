@@ -31,10 +31,12 @@ private:
     int selected_server_;
 
     Input username_input_;
+    Input direct_ip_input_;
 
     void update_server_list();
 
     static int username_input_callback(Input* input, void* userdata, int status);
+    static int direct_ip_input_callback(Input* input, void* userdata, int status);
 };
 
 

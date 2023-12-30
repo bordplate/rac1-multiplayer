@@ -1,8 +1,5 @@
 #include "Input.h"
 
-int getkbLen(char* str);
-void makekbStr(char* str, char* dest, int len);
-
 void Input::activate() {
     open_osk();
 }
@@ -93,8 +90,12 @@ void Input::open_osk()
 {
     // Create the input field parameters
     CellOskDialogInputFieldInfo input_field;
-    input_field.message = (uint16_t*)L"Create a username:";
-    input_field.init_text = (uint16_t*)L"";
+    input_field.message = prompt;
+
+    wchar_t* init_text = new wchar_t[input_text.length() + 1];
+    mbstowcs(init_text, input_text.c_str(), input_text.length());
+
+    input_field.init_text = (uint16_t *)init_text;
     input_field.limit_length = CELL_OSKDIALOG_STRING_SIZE;
 
     // Create the on-screen keyboard parameters
@@ -120,4 +121,14 @@ void Input::open_osk()
     {
         Logger::error("Failed to open OSK: %d", ret);
     }
+}
+
+void Input::set_prompt(const char* prompt) {
+    // Convert to UTF-16
+    size_t len = strlen(prompt);
+    wchar_t* wide = new wchar_t[len + 1];
+    mbstowcs(wide, prompt, len);
+    wide[len] = 0;
+
+    this->prompt = (uint16_t*)wide;
 }

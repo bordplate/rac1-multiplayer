@@ -60,6 +60,10 @@ char * strrchr( const char * s, int c );
 size_t strspn( const char * s1, const char * s2 );
 char * strstr( const char * s1, const char * s2 );
 size_t strxfrm( char * s1, const char * s2, size_t n );
+size_t mbstowcs(wchar_t* dst, const char* src, size_t len);
+int isspace( int c );
+int isdigit( int c );
+int atoi( const char * str );
 double pow( double x, double y );
 
 // stdio.h

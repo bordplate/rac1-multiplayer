@@ -421,6 +421,57 @@ size_t strxfrm( char * s1, const char * s2, size_t n )
     return len;
 }
 
+size_t mbstowcs(wchar_t* dst, const char* src, size_t len)
+{
+    size_t i = 0;
+    while (i < len && src[i] != '\0')
+    {
+        dst[i] = src[i];
+        i++;
+    }
+    return i;
+}
+
+int isspace( int c )
+{
+    return ( c == ' ' || c == '\t' || c == '\n' || c == '\r' );
+}
+
+int isdigit( int c )
+{
+    return ( c >= '0' && c <= '9' );
+}
+
+int atoi( const char * str )
+{
+    int rc = 0;
+    int sign = 1;
+
+    while ( isspace( *str ) )
+    {
+        ++str;
+    }
+
+    if ( *str == '-' )
+    {
+        sign = -1;
+        ++str;
+    }
+    else if ( *str == '+' )
+    {
+        ++str;
+    }
+
+    while ( isdigit( *str ) )
+    {
+        rc *= 10;
+        rc += *str - '0';
+        ++str;
+    }
+
+    return rc * sign;
+}
+
 double pow( double x, double y )
 {
     if (y == 0)
