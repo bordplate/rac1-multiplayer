@@ -35,9 +35,12 @@ public:
     void check_callback();
 
     void set_callback(InputCallback callback, void* userdata);
+    void set_prompt(const char* prompt);
 private:
     CellOskDialogCallbackReturnParam output_info_;
     uint16_t input_buffer_[CELL_OSKDIALOG_STRING_SIZE + 1];
+
+    uint16_t* prompt;
 
     InputCallback callback_;
     void* callback_userdata_;

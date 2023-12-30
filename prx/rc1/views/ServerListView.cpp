@@ -26,6 +26,7 @@ void ServerListView::render() {
     View::render();
 
     username_input_.check_callback();
+    direct_ip_input_.check_callback();
 }
 
 void ServerListView::update_server_list() {
@@ -43,9 +44,23 @@ void ServerListView::on_load() {
     View::on_load();
 
     username_input_.set_callback(username_input_callback, this);
+    username_input_.set_prompt("Enter username");
+
+    direct_ip_input_.set_callback(direct_ip_input_callback, this);
+    direct_ip_input_.set_prompt("Enter IP address");
 
     PersistentStorage storage = PersistentStorage("settings.conf");
+
     String username = storage.get_string("username");
+    String last_direct_ip = storage.get_string("last_direct_ip");
+
+    if (username.length() > 0) {
+        username_input_.input_text = username;
+    }
+
+    if (last_direct_ip.length() > 0) {
+        direct_ip_input_.input_text = last_direct_ip;
+    }
 
     String label = username.length() > 0 ? String::format("\x13 %s", username.c_str()) : "\x13 Change nickname";
 
@@ -59,6 +74,7 @@ void ServerListView::on_load() {
 
     this->add_element(username_label_);
     this->add_element(new TextElement(380, 390, "\x12 Back"));
+    this->add_element(new TextElement(380, 370, "\x11 Direct IP"));
 
     // Make the server list
     if (servers_.size() > 0) {
@@ -115,6 +131,10 @@ void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
         username_input_.activate();
     }
 
+    if (input & Circle) {
+        direct_ip_input_.activate();
+    }
+
     if (input & Triangle) {
         // Setting game_state to Menu should make the main MP game loop delete this view and present
         //  the relevant StartView.
@@ -147,6 +167,27 @@ int ServerListView::username_input_callback(Input *input, void *userdata, int st
         if (Player::shared().username.length() <= 0) {
             self->username_input_.activate();
         }
+    }
+
+    return 0;
+}
+
+int ServerListView::direct_ip_input_callback(Input *input, void *userdata, int status) {
+    ServerListView *self = (ServerListView *)userdata;
+
+    if (status == 0) {
+        PersistentStorage storage = PersistentStorage("settings.conf");
+        storage.set("last_direct_ip", input->input_text);
+
+        int port = 2407;
+
+        // Get port from input if it's there
+        if (input->input_text.find(":") != -1) {
+            String port_str = input->input_text.substr(input->input_text.find(":") + 1);
+            port = atoi(port_str.c_str());
+        }
+
+        Game::shared().connect_to((char*)input->input_text.c_str(), port);
     }
 
     return 0;
