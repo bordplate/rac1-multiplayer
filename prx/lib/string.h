@@ -108,6 +108,32 @@ public:
         return slice_string;
     }
 
+    int find(const char* needle) {
+        size_t needle_len = strlen(needle);
+        for (int i = 0; i < m_length; i++) {
+            if (strncmp(m_str + i, needle, needle_len) == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    String substr(int start_index, int end_index) {
+        size_t length = end_index - start_index;
+        char* substr = new char[end_index - start_index + 1];
+        strncpy(substr, m_str + start_index, length);
+        substr[length] = '\0';
+
+        String slice_string = String(substr);
+        delete[] substr;
+
+        return slice_string;
+    }
+
+    String substr(int start_index) {
+        return substr(start_index, m_length);
+    }
+
     // Operators
     String& operator=(const String& other) {
         set(other.m_str);
