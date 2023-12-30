@@ -74,7 +74,7 @@ void ServerListView::on_load() {
 
     this->add_element(username_label_);
     this->add_element(new TextElement(380, 390, "\x12 Back"));
-    this->add_element(new TextElement(380, 10, "\x11 Direct IP"));
+    this->add_element(new TextElement(380, 370, "\x11 Direct IP"));
 
     // Make the server list
     if (servers_.size() > 0) {
