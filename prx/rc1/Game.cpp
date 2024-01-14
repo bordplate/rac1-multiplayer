@@ -89,6 +89,8 @@ void Game::on_tick() {
             StartView* view = new StartView();
             this->transition_to(view);
         }
+    } else if (ratchet_moby != nullptr && use_custom_player_color) {
+        ratchet_moby->color = custom_player_color;
     }
 
     if (client_) {

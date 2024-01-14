@@ -58,6 +58,7 @@ To build this project on Windows 10, you need:
 - python 3.8, available through ``py -3``
 - PS3 SDK compilers (check GitHub Action workflow mentioned above)
 - PS3_SDK environment variable that points to the root of the PS3 SDK
+- Cygwin/MinGW/WSL to access Linux tools such as ``sed`` and ``awk``. Must be available in the environment path.
 - RPCS3
 - text editor of choice, such as vscode
 - a copy of Ratchet & Clank (NPEA00385) installed in RPCS3 in `{RPCS3_INSTALL_DIR}/dev_hdd0/game/NPEA00385`

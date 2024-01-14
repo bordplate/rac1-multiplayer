@@ -12,6 +12,9 @@
 
 #include "bridging.h"
 
+bool use_custom_player_color = false;
+uint32_t custom_player_color = 0;
+
 extern "C" {
 void game_tick() {
     _c_game_tick();

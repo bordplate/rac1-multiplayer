@@ -112,7 +112,7 @@ struct Moby {
     short draw_distance;
     unsigned short mode_bits;
     unsigned short field19_0x36;
-    unsigned int stateTimerMaybe;
+    unsigned int color;
     char field21_0x3c;
     char field22_0x3d;
     char field23_0x3e;
@@ -146,7 +146,7 @@ struct Moby {
     char field57_0x8d;
     char field58_0x8e;
     char field59_0x8f;
-    struct Moby *parent;
+    unsigned int field60_0x90;
     unsigned short *collision;
     float *collisionMesh;
     unsigned int field63_0x9c;
@@ -213,8 +213,9 @@ struct Moby {
     char field124_0xed;
     char field125_0xee;
     char field126_0xef;
-    u32 field127_0xf0;
-    u32 field128_0xf4;
+    u16 field127_0xf0;
+    u32 field128_0xf2;
+    u16 field129_0xf6;
     u32 field132_0xf8;
     unsigned int field136_0xfc;
 

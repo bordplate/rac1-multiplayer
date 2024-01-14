@@ -125,6 +125,44 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     }
 }
 
+void GameClient::update_moby_ex(MPPacketMobyExtended *packet) {
+    // Check that we're not trying to update a moby beyond our predefined moby space.
+    if (packet->uuid > mobys_.capacity()) {
+        Logger::error("Tried to update illegal Moby UUID: %d", packet->uuid);
+        return;
+    }
+
+    Moby* moby;
+
+    if (packet->uuid == 0) {
+        moby = ratchet_moby;
+    } else {
+        moby = mobys_[packet->uuid];
+    }
+
+    if (moby) {
+        // Get the payload
+        for(int i = 0; i < packet->num_values; i++) {
+            MPPacketMobyExtendedPayload* payload = (MPPacketMobyExtendedPayload*)((char*)packet + sizeof(MPPacketMobyExtended) + (i * sizeof(MPPacketMobyExtendedPayload)));
+
+            if (payload->offset > 0x100) {
+                Logger::error("Tried to update illegal Moby offset: %d", payload->offset);
+                continue;
+            }
+
+            // Handle edge case with hero moby coloring
+            if (moby == ratchet_moby && payload->offset == 0x38) {
+                use_custom_player_color = true;
+                custom_player_color = payload->value;
+
+                continue;
+            }
+
+            *((unsigned int*)((char*)moby + payload->offset)) = payload->value;
+        }
+    }
+}
+
 void GameClient::moby_delete(MPPacketMobyDelete* packet) {
     if (packet->flags & MP_MOBY_DELETE_FLAG_UUID) {
         Moby *moby = mobys_[packet->value];
@@ -322,6 +360,9 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
     switch(header->type) {
         case MP_PACKET_MOBY_UPDATE:
             update_moby((MPPacketMobyUpdate*)packet_data);
+            break;
+        case MP_PACKET_MOBY_EX:
+            update_moby_ex((MPPacketMobyExtended*)packet_data);
             break;
         case MP_PACKET_MOBY_DELETE:
             moby_delete((MPPacketMobyDelete*)packet_data);

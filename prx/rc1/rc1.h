@@ -3,6 +3,12 @@
 #ifndef RC1_H
 #define RC1_H
 
+#define RGBA(r, g, b, a) \
+    (((unsigned int)(a) << 24) | \
+     ((unsigned int)(b) << 16) | \
+     ((unsigned int)(g) << 8)  | \
+     ((unsigned int)(r)))
+
 #include <lib/shk.h>
 #include <lib/types.h>
 #include "Moby.h"
@@ -79,6 +85,13 @@ struct CollOutput {
     Vec4 v1;
     Vec4 v2;
 };
+
+//
+// Various global variables
+//
+
+extern bool use_custom_player_color;
+extern uint32_t custom_player_color;
 
 //
 // Game-global variables
