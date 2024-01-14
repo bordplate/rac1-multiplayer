@@ -219,7 +219,8 @@ void Game::query_servers(int directory_id, ServerQueryCallback callback) {
     // - 172.104.144.15 -> boltcrate.space
     // We use IP instead of domain name because I don't trust that name resolution
     //   on PS3 will be stable forever or for everyone.
-    client_ = new DirectoryClient("172.104.144.15", 2407);
+    //client_ = new DirectoryClient("172.104.144.15", 2407);
+    client_ = new DirectoryClient("192.168.5.35", 2407);
     client_->_connect();
 
     server_query_callback_ = callback;
