@@ -1,7 +1,7 @@
 # Multiplayer for Ratchet & Clank
 
-![Ratchet Multiplayer logo](https://raw.githubusercontent.com/bordplate/rac1-multiplayer/main/app/LOGO.png)
-Logo courtesy of Discord user _triippy_
+![Ratchet Multiplayer logo](https://raw.githubusercontent.com/bordplate/rac1-multiplayer/main/app/LOGO.png)  
+Logo courtesy of Discord user \_triippy\_
 
 This is a multiplayer mod for the PS3 HD release of the original 2002 Ratchet & Clank. It runs on console and emulator thanks
 to [PS3-CKit](https://github.com/tge-was-taken/ps3-ckit) by TGE.  
