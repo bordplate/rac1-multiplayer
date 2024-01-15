@@ -4,9 +4,11 @@
 
 #include "TextElement.h"
 
-TextElement::TextElement(int x, int y, const char* text) {
+TextElement::TextElement(int x, int y, const char* text, GameState state) {
     this->x = x;
     this->y = y;
+
+    this->state = state;
 
     this->text = new String(text);
     this->has_shadow = true;

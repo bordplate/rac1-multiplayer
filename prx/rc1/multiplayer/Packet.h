@@ -196,6 +196,8 @@ typedef struct {
     float size;
     char text[50];
 } MPPacketSetHUDText;
+static u16 game_state_flags = 0x1C;
+static u16 game_state_offset = 0x2;
 
 // Packet used to query a directory for game servers
 typedef struct {

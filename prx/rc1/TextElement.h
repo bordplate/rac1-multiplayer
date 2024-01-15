@@ -19,7 +19,7 @@ typedef enum {
 } HUDElementTextFlags;
 
 struct TextElement : public ViewElement {
-    TextElement(int x, int y, const char* text);
+    TextElement(int x, int y, const char* text, GameState state = PlayerControl);
     ~TextElement();
 
     Color color;

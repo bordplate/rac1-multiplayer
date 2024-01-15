@@ -11,7 +11,7 @@ View::View() {
 void View::render() {
     for (int i = 0; i < this->elements_.size(); i++) {
         ViewElement* element = this->elements_[i];
-        if (element) {
+        if (element && element->state == game_state) {
             element->render();
         }
     }
