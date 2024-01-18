@@ -287,7 +287,7 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
     element->x = packet->x;
     element->y = packet->y;
 
-    element->state = static_cast<GameState>((packet->flags & game_state_flags) >> game_state_offset);
+    element->states = (packet->flags >> game_state_offset) & game_state_flags;
 
     element->color = packet->color;
 

@@ -4,12 +4,10 @@
 
 #include "RemoteView.h"
 #include <rc1/Game.h>
-// TODO: include wherever the gamestate exists to react to it
 
-// TODO: these are already only shown in the pause menu, figure out how
 void RemoteView::on_load() {
-    memory_info_text_ = new TextElement(80, 0, "<memory>", Menu);
-    ping_text_ = new TextElement(0, 20, "<ping>", Menu);
+    memory_info_text_ = new TextElement(80, 0, "<memory>", ViewMenu);
+    ping_text_ = new TextElement(0, 20, "<ping>", ViewMenu);
 
     add_element(memory_info_text_);
     add_element(ping_text_);
@@ -46,7 +44,7 @@ TextElement* RemoteView::get_element(int id) {
 
     if (!text_elements_[id]) {
         Logger::trace("Making new text element for remote view. ID: %d", id);
-        text_elements_[id] = new TextElement(0, 0, "<?>");
+        text_elements_[id] = new TextElement(0, 0, "<?>", ViewNoView);
         this->add_element(text_elements_[id]);
         //text_elements_[id] = element;
     }
