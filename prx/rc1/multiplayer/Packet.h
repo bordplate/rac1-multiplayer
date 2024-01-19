@@ -55,6 +55,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_SYN                2
 #define MP_PACKET_ACK                3
 #define MP_PACKET_MOBY_UPDATE        4
+#define MP_PACKET_MOBY_EX            18
 #define MP_PACKET_IDKU               5
 #define MP_PACKET_MOBY_CREATE        6
 #define MP_PACKET_DISCONNECT         7
@@ -131,8 +132,14 @@ struct MPPacketMobyUpdate {
 };
 
 typedef struct {
+    u16 offset;
+    u32 value;
+} MPPacketMobyExtendedPayload;
+
+typedef struct {
     u16 uuid;
-} MPPacketMobyUpdateExtended;
+    u16 num_values;
+} MPPacketMobyExtended;
 
 typedef struct {
     u32 uuid;
