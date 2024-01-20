@@ -14,5 +14,3 @@ compile_commands.json*
 .vscode/*
 **/build/*
 .vs/*
-
-make
