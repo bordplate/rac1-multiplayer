@@ -21,7 +21,7 @@ StartView::~StartView() {
 }
 
 void StartView::on_load() {
-    label_ = new TextElement(250, 310, start_multiplayer_str);
+    label_ = new TextElement(250, 310, start_multiplayer_str, ViewMenu);
 
     this->add_element(label_);
 }

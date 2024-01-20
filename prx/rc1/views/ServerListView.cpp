@@ -70,11 +70,11 @@ void ServerListView::on_load() {
         Player::shared().username = username;
     }
 
-    username_label_ = new TextElement(120, 390, label.c_str());
+    username_label_ = new TextElement(120, 390, label.c_str(), ViewMovie);
 
     this->add_element(username_label_);
-    this->add_element(new TextElement(380, 390, "\x12 Back"));
-    this->add_element(new TextElement(380, 370, "\x11 Direct IP"));
+    this->add_element(new TextElement(380, 390, "\x12 Back", ViewMovie));
+    this->add_element(new TextElement(380, 370, "\x11 Direct IP", ViewMovie));
 
     // Make the server list
     if (servers_.size() > 0) {
@@ -89,7 +89,7 @@ void ServerListView::on_load() {
                 int y = ((500 - total_height) - total_height / 2) / 2 + i * 30;
 
                 // Create a new text element for the game server
-                TextElement* element = new TextElement(250, y, "");
+                TextElement* element = new TextElement(250, y, "", ViewMovie);
 
                 // Set the element's color
                 element->color.b = (i == selected_server_) ? 0 : element->color.b;

@@ -4,9 +4,11 @@
 
 #include "TextElement.h"
 
-TextElement::TextElement(int x, int y, const char* text) {
+TextElement::TextElement(int x, int y, const char* text, u8 states) {
     this->x = x;
     this->y = y;
+
+    this->states = states;
 
     this->text = new String(text);
     this->has_shadow = true;

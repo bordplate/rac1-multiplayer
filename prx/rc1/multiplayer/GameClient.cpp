@@ -325,6 +325,18 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
     element->x = packet->x;
     element->y = packet->y;
 
+    #define game_state_mask 0xFF
+    #define game_state_offset 0x3
+
+    #define flags_set_mask 0x1
+    #define flags_set_offset 0x2
+
+    if (packet->flags >> flags_set_offset & flags_set_mask) { // flag idicating that the server has configured the state flags
+        element->states = (packet->flags >> game_state_offset) & game_state_mask;
+    } else { // if the flag is not set, default to original behavior for new client -> old server backward compatibility
+        element->states = ViewPlayerControl;
+    }
+
     element->color = packet->color;
 
     Logger::trace("Before setting text");
