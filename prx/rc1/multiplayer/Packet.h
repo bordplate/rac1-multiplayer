@@ -55,7 +55,6 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_SYN                2
 #define MP_PACKET_ACK                3
 #define MP_PACKET_MOBY_UPDATE        4
-#define MP_PACKET_MOBY_EX            18
 #define MP_PACKET_IDKU               5
 #define MP_PACKET_MOBY_CREATE        6
 #define MP_PACKET_DISCONNECT         7
@@ -69,6 +68,10 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_PLAYER_RESPAWNED   15
 #define MP_PACKET_REGISTER_SERVER    16
 #define MP_PACKET_TOAST_MESSAGE      17
+#define MP_PACKET_MOBY_EX            18
+#define MP_PACKET_AUTH               19
+#define MP_PACKET_CREATE_USER        20
+#define MP_PACKET_ERROR_MESSAGE      21
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -97,6 +100,19 @@ struct MPPacketConnect {
     int32_t version;
     char passcode[8];
     u16 nick_length;
+};
+
+struct MPPacketAuth {
+    int32_t userid;
+    int32_t step;
+    int64_t field1;
+    int64_t field2;
+};
+
+struct MPPacketCreateUser {
+    int32_t userid;
+    u16 nick_length;
+    u16 email_length;
 };
 
 #define MP_CONNECT_ERROR_UNKNOWN 0
@@ -236,6 +252,10 @@ typedef struct {
 typedef struct {
     uint32_t value;
 } MPPacketBolts;
+
+struct MPPacketErrorMessage {
+    u16 message_length;
+};
 
 #pragma pack(pop)
 

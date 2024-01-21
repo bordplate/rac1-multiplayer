@@ -399,6 +399,16 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
             toast_message((MPPacketToastMessage*)packet_data);
             break;
         }
+        case MP_PACKET_ERROR_MESSAGE: {
+            MPPacketErrorMessage* error = (MPPacketErrorMessage*)packet_data;
+
+            String message = String((const char*)((char*)packet_data + sizeof(MPPacketErrorMessage)));
+            message = message.slice(0, error->message_length);
+
+            Game::shared().alert(message);
+
+            break;
+        }
         default:
             Logger::error("Received %ld bytes of unknown packet %d:", received(), header->type);
             Logger::error("> Advertised size: %d", sizeof(MPPacketHeader)+header->size);
