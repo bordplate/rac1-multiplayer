@@ -131,7 +131,7 @@ Packet* Packet::make_connect_packet(const String& nickname, int32_t userid) {
 
     MPPacketConnect *body = (MPPacketConnect*)packet->body;
     body->userid = userid;
-    body->version = 3;
+    body->version = MP_API_VERSION;
     body->nick_length = nickname.length();
 
     memcpy((char*)packet->body + sizeof(MPPacketConnect), nickname.c_str(), nickname.length());
