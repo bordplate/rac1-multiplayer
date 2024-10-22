@@ -66,6 +66,15 @@ void Client::reset() {
     connected_ = false;
     sockfd_ = 0;
 
+    ack_id_ = 0;
+    ack_cycle_ = 0;
+
+    memset(&acked_, 0, sizeof(acked_));
+    memset(&unacked_, 0, sizeof(unacked_));
+
+    received_ = 0;
+    send_buffer_len = 0;
+
     _connect();
 }
 
