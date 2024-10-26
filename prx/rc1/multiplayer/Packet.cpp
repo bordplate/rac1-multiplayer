@@ -215,6 +215,19 @@ Packet* Packet::make_unlock_level_packet(int level) {
     return packet;
 }
 
+Packet* Packet::make_unlock_skillpoint_packet(u8 skillpoint) {
+    Packet* packet = new Packet(sizeof(MPPacketSetState));
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
+
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_UNLOCK_SKILLPOINT;
+    body->value = skillpoint;
+    body->offset = 0;
+
+    return packet;
+}
+
 Packet* Packet::make_monitored_value_changed_packet(u16 uid, u32 offset, u32 size, u8 flags, u32 old_value, u32 new_value) {
     Packet* packet = new Packet(sizeof(MPPacketMonitoredValueChanged));
     packet->header->type = MP_PACKET_MONITORED_VALUE_CHANGED;

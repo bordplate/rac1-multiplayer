@@ -168,6 +168,7 @@ extern PlayerType player_type;
 
 void unlock_item(int item_id, uint8_t equip);
 void unlock_level(int level);
+void unlock_skillpoint(u8 skillpoint);
 
 #ifdef __cplusplus
 // Pointer to Ratchet moby.

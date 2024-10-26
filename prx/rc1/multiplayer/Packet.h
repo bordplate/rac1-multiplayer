@@ -243,6 +243,7 @@ typedef struct {
 #define MP_STATE_TYPE_GIVE_BOLTS 13
 #define MP_STATE_TYPE_UNLOCK_LEVEL 14
 #define MP_STATE_TYPE_LEVEL_FLAG 15
+#define MP_STATE_TYPE_UNLOCK_SKILLPOINT 16
 
 typedef struct {
     u32 state_type;
@@ -340,8 +341,9 @@ struct Packet {
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
     static Packet* make_unlock_item_packet(int item_id, bool equip);
-    static Packet* make_monitored_value_changed_packet(u16 uid, u32 offset, u32 size, u8 flags, u32 old_value, u32 new_value);
     static Packet* make_unlock_level_packet(int level);
+    static Packet* make_unlock_skillpoint_packet(u8 skillpoint);
+    static Packet* make_monitored_value_changed_packet(u16 uid, u32 offset, u32 size, u8 flags, u32 old_value, u32 new_value);
     static Packet* make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value);
 };
 

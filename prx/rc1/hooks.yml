@@ -51,3 +51,7 @@ _unlock_item:
 _unlock_level:
     addr: 0x112c20
     replacedInstr: stdu r1, -0xe0(r1)
+
+_unlock_skillpoint:
+    addr: 0x11b728
+    replacedInstr: stdu r1, -0xa0(r1)

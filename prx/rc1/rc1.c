@@ -197,6 +197,20 @@ void unlock_level(int level) {
     SHK_CALL_HOOK(_unlock_level, level);
 }
 
+SHK_HOOK(void, _unlock_skillpoint, u8);
+void _unlock_skillpoint_hook(u8 skillpoint) {
+    Client *client = Game::shared().client();
+    if (client != nullptr) {
+        Packet *packet = Packet::make_unlock_skillpoint_packet(skillpoint);
+        client->make_ack(packet, nullptr);
+        client->send(packet);
+    }
+}
+
+void unlock_skillpoint(u8 skillpoint) {
+    SHK_CALL_HOOK(_unlock_skillpoint, skillpoint);
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
@@ -216,6 +230,7 @@ void rc1_init() {
     SHK_BIND_HOOK(goldBoltUpdate, goldBoltUpdateHook);
     SHK_BIND_HOOK(_unlock_item, _unlock_item_hook);
     SHK_BIND_HOOK(_unlock_level, _unlock_level_hook);
+    SHK_BIND_HOOK(_unlock_skillpoint, _unlock_skillpoint_hook);
 
     MULTI_LOG("Bound hooks\n");
 }

@@ -323,6 +323,10 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             unlock_level(level);
             break;
         }
+        case MP_STATE_TYPE_UNLOCK_SKILLPOINT: {
+            unlock_skillpoint((u8)packet->value);
+            break;
+        }
         case MP_STATE_TYPE_LEVEL_FLAG: {
             int level = (int)(packet->offset >> 24) & 0xFF;
             int type = (int)(packet->offset >> 16) & 0xFF;
