@@ -214,3 +214,18 @@ Packet* Packet::make_unlock_level_packet(int level) {
 
     return packet;
 }
+
+Packet* Packet::make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value) {
+    Packet* packet = new Packet(sizeof(MPPacketLevelFlagChanged));
+    packet->header->type = MP_PACKET_LEVEL_FLAG_CHANGED;
+    packet->header->size = sizeof(MPPacketLevelFlagChanged);
+
+    MPPacketLevelFlagChanged* body = (MPPacketLevelFlagChanged*)packet->body;
+    body->type = type;
+    body->level = level;
+    body->size = size;
+    body->index = index;
+    body->value = value;
+
+    return packet;
+}

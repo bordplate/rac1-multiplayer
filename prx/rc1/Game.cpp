@@ -44,6 +44,10 @@ void Game::start() {
 void Game::on_tick() {
     if (client_) {
         client_->on_tick();
+
+        if (ratchet_moby != nullptr) {
+            check_level_flags();
+        }
     }
 
     if (previous_user_option_camera_left_right_movement == -1) {
@@ -117,7 +121,14 @@ void Game::before_player_spawn() {
             restored_camera_options_ = true;
         }
 
-        ((GameClient *) client())->moby_clear_all();
+        ((GameClient*)client())->moby_clear_all();
+        ((GameClient*)client())->refresh_hybrid_mobys();
+
+        if (last_planet_ != current_planet) {
+            last_planet_ = current_planet;
+
+            ((GameClient*)client())->clear_hybrid_mobys();
+        }
     }
 }
 
@@ -238,6 +249,47 @@ void Game::connect_to(char* ip, int port) {
 
 void Game::alert(String& message) {
     cellMsgDialogOpen2(CELL_MSGDIALOG_TYPE_SE_TYPE_NORMAL, message.c_str(), nullptr, nullptr, nullptr);
+}
+
+void Game::refresh_level_flags() {
+    Logger::debug("Reloading level flags");
+    memcpy(&level_flags1_, level_flags1 + 0x10 * current_planet, 0x10);
+    memcpy(&level_flags2_, level_flags2 + 0x100 * current_planet, 0x100);
+}
+
+void Game::check_level_flags() {
+    if (should_load_destination_planet) {
+        reload_level_flags_ = true;
+        return;
+    } else if (reload_level_flags_) {
+        reload_level_flags_ = false;
+        refresh_level_flags();
+    }
+
+    Logger::trace("Checking level flags");
+    for (int i = 0; i < 0x10; i++) {
+        if (level_flags1_[i] != level_flags1[0x10 * current_planet + i]) {
+            level_flags1_[i] = level_flags1[0x10 * current_planet + i];
+
+            if (client_ && client_->handshake_complete()) {
+                Packet* packet = Packet::make_level_flag_changed_packet(MP_LEVEL_FLAG_TYPE_1, current_planet, 1, i, level_flags1_[i]);
+                client_->make_ack(packet, nullptr);
+                client_->send(packet);
+            }
+        }
+    }
+
+    for (int i = 0; i < 0x100; i++) {
+        if (level_flags2_[i] != level_flags2[0x100 * current_planet + i]) {
+            level_flags2_[i] = level_flags2[0x100 * current_planet + i];
+
+            if (client_ && client_->handshake_complete()) {
+                Packet* packet = Packet::make_level_flag_changed_packet(MP_LEVEL_FLAG_TYPE_2, current_planet, 1, i, level_flags2_[i]);
+                client_->make_ack(packet, nullptr);
+                client_->send(packet);
+            }
+        }
+    }
 }
 
 

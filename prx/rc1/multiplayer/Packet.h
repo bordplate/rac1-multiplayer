@@ -74,6 +74,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_AUTH               19
 #define MP_PACKET_CREATE_USER        20
 #define MP_PACKET_ERROR_MESSAGE      21
+#define MP_PACKET_LEVEL_FLAG_CHANGED 25
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -196,6 +197,7 @@ typedef struct {
 #define MP_STATE_TYPE_UNLOCK_ITEM 12
 #define MP_STATE_TYPE_GIVE_BOLTS 13
 #define MP_STATE_TYPE_UNLOCK_LEVEL 14
+#define MP_STATE_TYPE_LEVEL_FLAG 15
 
 typedef struct {
     u32 state_type;
@@ -259,6 +261,17 @@ struct MPPacketErrorMessage {
     u16 message_length;
 };
 
+#define MP_LEVEL_FLAG_TYPE_1  1
+#define MP_LEVEL_FLAG_TYPE_2  2
+
+typedef struct {
+    u16 type;
+    u8 level;
+    u8 size;
+    u16 index;
+    u32 value;
+} MPPacketLevelFlagChanged;
+
 #pragma pack(pop)
 
 struct Packet {
@@ -283,6 +296,7 @@ struct Packet {
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
     static Packet* make_unlock_item_packet(int item_id, bool equip);
     static Packet* make_unlock_level_packet(int level);
+    static Packet* make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value);
 };
 
 #endif

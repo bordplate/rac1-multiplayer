@@ -294,6 +294,23 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             int level = (int)(packet->value);
             unlock_level(level);
         }
+        case MP_STATE_TYPE_LEVEL_FLAG: {
+            int level = (int)(packet->offset >> 24) & 0xFF;
+            int type = (int)(packet->offset >> 16) & 0xFF;
+            int offset = (int)(packet->offset) & 0xFFFF;
+
+            Logger::trace("Setting level flag %d %d %d", level, type, offset);
+
+            if (type == MP_LEVEL_FLAG_TYPE_1) {
+                level_flags1[level * 0x10 + offset] = packet->value;
+            }
+            if (type == MP_LEVEL_FLAG_TYPE_2) {
+                level_flags2[level * 0x100 + offset] = packet->value;
+            }
+
+            Game::shared().refresh_level_flags();
+            break;
+        }
         default: {
             Logger::error("Server asked us to set unknown state type %d", packet->state_type);
         }
