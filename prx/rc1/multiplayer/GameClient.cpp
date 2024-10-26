@@ -16,7 +16,7 @@ GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     mobys_.resize(MAX_MP_MOBYS);
     ip_ = ip;
 
-    for(int i = 0; i <= mobys_.capacity(); i++) {
+    for(int i = 0; i < mobys_.capacity(); i++) {
         mobys_[i] = nullptr;
     }
 
@@ -37,6 +37,7 @@ void GameClient::reset() {
     waiting_for_connect_ = false;
     connection_complete_ = false;
 
+    clear_hybrid_mobys();
     moby_delete_all();
 
     Client::reset();
@@ -65,7 +66,7 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
 
     Moby* moby = mobys_[packet->uuid];
 
-    if (moby && moby->state > 0 && moby->oClass != packet->o_class) {
+    if (moby && moby->state >= 0 && moby->oClass != packet->o_class) {
         Logger::error("[%d] Incoming o_class %d did not match o_class %d for existing moby", packet->uuid, packet->o_class, moby->oClass);
         if (((MPMobyVars*)moby->pVars)->sig != 0x4542) {
             Logger::debug("Signature also doesn't match a MP moby");
@@ -163,7 +164,34 @@ void GameClient::update_moby_ex(MPPacketMobyExtended *packet) {
     }
 }
 
+void GameClient::change_moby_value(MPPacketChangeMobyValue* packet) {
+    Moby* moby = nullptr;
+
+    if (packet->flags & MP_MOBY_FLAG_FIND_BY_UUID) {
+        Logger::debug("Changing moby value by UUID %d", packet->id);
+        moby = mobys_[packet->id];
+    } else if (packet->flags & MP_MOBY_FLAG_FIND_BY_UID) {
+        Logger::debug("Changing moby value by UID %d", packet->id);
+        moby = Moby::find_by_uid(packet->id);
+    }
+
+    if (moby == nullptr) {
+        return;
+    }
+
+    moby->change_values((MPPacketChangeMobyValuePayload*)((char*)packet + sizeof(MPPacketChangeMobyValue)), packet->num_values, packet->flags);
+
+    // If we have this moby as a hybrid moby, we should update the old values without notifying the server
+    for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
+        if (hybrid_mobys_[i]->uid == moby->UID) {
+            hybrid_mobys_[i]->refresh_old_values_without_notifying_server();
+        }
+    }
+}
+
 void GameClient::moby_delete(MPPacketMobyDelete* packet) {
+    Logger::trace("Deleting moby %d", packet->value);
+
     if (packet->flags & MP_MOBY_DELETE_FLAG_UUID) {
         Moby *moby = mobys_[packet->value];
         if (!moby || moby->state < 0) {
@@ -194,13 +222,13 @@ void GameClient::moby_delete(MPPacketMobyDelete* packet) {
 }
 
 void GameClient::moby_clear_all() {
-    for(int i = 0; i <= mobys_.size(); i++) {
+    for(int i = 0; i < mobys_.size(); i++) {
         mobys_[i] = nullptr;
     }
 }
 
 void GameClient::moby_delete_all() {
-    for(int i = 0; i <= mobys_.size(); i++) {
+    for(int i = 0; i < mobys_.size(); i++) {
         Moby* moby = mobys_[i];
         if (moby != nullptr && moby->state >= 0) {
             delete_moby(moby);
@@ -293,6 +321,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
         case MP_STATE_TYPE_UNLOCK_LEVEL: {
             int level = (int)(packet->value);
             unlock_level(level);
+            break;
         }
         case MP_STATE_TYPE_LEVEL_FLAG: {
             int level = (int)(packet->offset >> 24) & 0xFF;
@@ -333,7 +362,7 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
     TextElement* element = remote_view_->get_element(packet->id);
 
     if (!element) {
-        Logger::critical("Unable to create text element for remote view");
+        Logger::critical("Unable to create text element for remote view: %d", packet->id);
         return;
     }
 
@@ -373,6 +402,56 @@ void GameClient::toast_message(MPPacketToastMessage* packet) {
     (*((int*)0xa15c80)) = packet->duration;
 }
 
+void GameClient::register_hybrid_moby(MPPacketRegisterHybridMoby* packet) {
+    Logger::debug("Registering hybrid moby %d", packet->moby_uid);
+
+    Moby* native_moby = Moby::find_by_uid(packet->moby_uid);
+
+    if (native_moby == nullptr) {
+        return;
+    }
+
+    HybridMoby* hybrid_moby;
+
+    for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
+        if (hybrid_mobys_[i]->uid == packet->moby_uid) {
+            hybrid_moby = hybrid_mobys_[i];
+            break;
+        }
+    }
+
+    if (hybrid_moby == nullptr) {
+        hybrid_moby = new HybridMoby(native_moby, packet->moby_uid);
+    }
+
+    hybrid_mobys_.push_back(hybrid_moby);
+
+    for (size_t i = 0; i < packet->n_monitored_attributes + packet->n_monitored_pvars; i++) {
+        MPPacketMonitorValue* monitor_value = (MPPacketMonitorValue*)((char*)packet + sizeof(MPPacketRegisterHybridMoby)
+                + (i * sizeof(MPPacketMonitorValue)));
+
+        if (i < packet->n_monitored_attributes) {
+            hybrid_moby->monitor_attribute(monitor_value->offset, monitor_value->size);
+        } else {
+            hybrid_moby->monitor_pvar(monitor_value->offset, monitor_value->size);
+        }
+    }
+}
+
+void GameClient::refresh_hybrid_mobys() {
+    for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
+        hybrid_mobys_[i]->set_moby(Moby::find_by_uid(hybrid_mobys_[i]->uid));
+    }
+}
+
+void GameClient::clear_hybrid_mobys() {
+    for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
+        delete hybrid_mobys_[i];
+    }
+
+    hybrid_mobys_.resize(0);
+}
+
 bool GameClient::update(MPPacketHeader *header, void *packet_data) {
     if (!Client::update(header, packet_data)) {
         return false;
@@ -392,6 +471,9 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
             break;
         case MP_PACKET_MOBY_EX:
             update_moby_ex((MPPacketMobyExtended*)packet_data);
+            break;
+        case MP_PACKET_CHANGE_MOBY_VALUE:
+            change_moby_value((MPPacketChangeMobyValue*)packet_data);
             break;
         case MP_PACKET_MOBY_DELETE:
             moby_delete((MPPacketMobyDelete*)packet_data);
@@ -426,6 +508,10 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
 
             break;
         }
+        case MP_PACKET_REGISTER_HYBRID_MOBY: {
+            register_hybrid_moby((MPPacketRegisterHybridMoby*)packet_data);
+            break;
+        }
         default:
             Logger::error("Received %ld bytes of unknown packet %d:", received(), header->type);
             Logger::error("> Advertised size: %d", sizeof(MPPacketHeader)+header->size);
@@ -448,6 +534,7 @@ int GameClient::connect_callback(void* packetData, size_t size, void* userdata) 
     MPPacketConnectCallback* response = (MPPacketConnectCallback*)packetData;
 
     if (response->status == 1) {
+        Logger::info("Connection successfully established!");
         self->connection_complete_ = true;
 
         return 0;
@@ -488,6 +575,10 @@ void GameClient::on_tick() {
     if (!remote_view_) {
         remote_view_ = new RemoteView();
         Game::shared().transition_to(remote_view_);
+    }
+
+    for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
+        hybrid_mobys_[i]->on_tick();
     }
 
     ticks_ += 1;

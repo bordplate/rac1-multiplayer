@@ -74,6 +74,9 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_AUTH               19
 #define MP_PACKET_CREATE_USER        20
 #define MP_PACKET_ERROR_MESSAGE      21
+#define MP_PACKET_REGISTER_HYBRID_MOBY 22
+#define MP_PACKET_MONITORED_VALUE_CHANGED 23
+#define MP_PACKET_CHANGE_MOBY_VALUE 24
 #define MP_PACKET_LEVEL_FLAG_CHANGED 25
 
 #define MP_PACKET_FLAG_RPC           0x1
@@ -164,6 +167,25 @@ typedef struct {
     u32 uuid;
 } MPPacketMobyCreate;
 
+#define MP_MOBY_FLAG_FIND_BY_UUID (1 << 0)
+#define MP_MOBY_FLAG_FIND_BY_UID  (1 << 1)
+
+#define MP_MOBY_FLAG_CHANGE_ATTR (1 << 8)
+#define MP_MOBY_FLAG_CHANGE_PVAR (1 << 9)
+
+typedef struct {
+    u16 id;
+    u16 flags;
+    u16 num_values;
+} MPPacketChangeMobyValue;
+
+// Defined in Moby.h because of annoying things with including and C/C++ interop or whatever
+//typedef struct {
+//    u16 offset;
+//    u16 size;
+//    u32 value;
+//} MPPacketChangeMobyValuePayload;
+
 #define MP_MOBY_DELETE_FLAG_UUID   1
 #define MP_MOBY_DELETE_FLAG_OCLASS 2
 #define MP_MOBY_DELETE_FLAG_ALL    4
@@ -182,6 +204,29 @@ typedef struct {
     float y;
     float z;
 } MPPacketMobyCollision;
+
+typedef struct {
+    u16 moby_uid;
+    u16 n_monitored_attributes;
+    u16 n_monitored_pvars;
+} MPPacketRegisterHybridMoby;
+
+typedef struct {
+    u16 offset;
+    u16 size;
+} MPPacketMonitorValue;
+
+#define MP_MONITORED_VALUE_TYPE_ATTR 1
+#define MP_MONITORED_VALUE_TYPE_PVAR 2
+
+typedef struct {
+    u16 uid;
+    u16 offset;
+    u8 flags;
+    u8 size;
+    u32 old_value;
+    u32 new_value;
+} MPPacketMonitoredValueChanged;
 
 #define MP_STATE_TYPE_DAMAGE    1
 #define MP_STATE_TYPE_PLAYER    2
@@ -295,6 +340,7 @@ struct Packet {
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
     static Packet* make_unlock_item_packet(int item_id, bool equip);
+    static Packet* make_monitored_value_changed_packet(u16 uid, u32 offset, u32 size, u8 flags, u32 old_value, u32 new_value);
     static Packet* make_unlock_level_packet(int level);
     static Packet* make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value);
 };

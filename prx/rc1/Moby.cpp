@@ -41,6 +41,39 @@ void Moby::check_collision() {
     }
 }
 
+void Moby::change_values(MPPacketChangeMobyValuePayload* changes, size_t num, u16 value_type) {
+    char* base_address = value_type & MP_MOBY_FLAG_CHANGE_ATTR ? (char*)this : (char*)this->pVars;
+
+    for(int i = 0; i < num; i++) {
+        MPPacketChangeMobyValuePayload* payload = &changes[i];
+
+        // Handle edge case with hero moby coloring
+        if (this == ratchet_moby && payload->offset == 0x38 && value_type & MP_MOBY_FLAG_CHANGE_ATTR) {
+            use_custom_player_color = true;
+            custom_player_color = payload->value;
+
+            continue;
+        }
+
+        if (payload->size == 1) {
+            u8 temp_value = (u8)payload->value;
+
+            Logger::debug("Changing byte at offset %d to %d", payload->offset, temp_value);
+
+            memcpy(base_address + payload->offset, &temp_value, payload->size);
+        } else if (payload->size == 2) {
+            u16 temp_value = (u16)payload->value;
+
+            Logger::debug("Changing short at offset %d to %d", payload->offset, temp_value);
+
+            memcpy(base_address + payload->offset, &temp_value, payload->size);
+        } else {
+            Logger::debug("Changing int at offset %d to %d", payload->offset, payload->value);
+            memcpy(base_address + payload->offset, &payload->value, payload->size);
+        }
+    }
+}
+
 Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBits) {
     // If the main hero moby isn't spawned in, we shouldn't try to spawn anything else either.
     if (!ratchet_moby) {
@@ -67,4 +100,26 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBit
     Logger::info("Spawned Moby (oClass: %d)", o_class);
 
     return moby;
+}
+
+Moby* Moby::find_by_uid(u16 uid) {
+    Logger::trace("Finding moby by UID: %d", uid);
+    for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
+        if (moby->state < 0x7f && moby->UID == uid) {
+            return moby;
+        }
+    }
+
+    return nullptr;
+}
+
+Moby* Moby::find_first_oclass(u16 o_class) {
+    Logger::trace("Finding first moby by oClass: %d", o_class);
+    for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
+        if (moby->state < 0x7f && moby->oClass == o_class) {
+            return moby;
+        }
+    }
+
+    return nullptr;
 }

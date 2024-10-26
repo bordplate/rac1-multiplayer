@@ -3,11 +3,20 @@
 
 #include <lib/shk.h>
 #include <lib/types.h>
+#include "Moby.h"
 
 //#include <lib/common.h>
 //#include <rc1/common.h>
 
 #ifdef __cplusplus
+
+// Should be in Packet.h, but something is stopping us from including it here so we'll just define it here
+typedef struct {
+    u16 offset;
+    u16 size;
+    u32 value;
+} MPPacketChangeMobyValuePayload;
+
 extern "C" {
 #endif
 
@@ -223,7 +232,11 @@ struct Moby {
     void set_animation(char animation_id, char animation_frame, u32 duration);
     void check_collision();
 
+    void change_values(MPPacketChangeMobyValuePayload* changes, size_t num, u16 value_type);
+
     static Moby* spawn(unsigned short o_class, unsigned short flags, uint16_t modeBits);
+    static Moby* find_by_uid(u16 uid);
+    static Moby* find_first_oclass(u16 o_class);
 #endif
 }
 #ifdef __cplusplus

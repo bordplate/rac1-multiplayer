@@ -215,6 +215,23 @@ Packet* Packet::make_unlock_level_packet(int level) {
     return packet;
 }
 
+Packet* Packet::make_monitored_value_changed_packet(u16 uid, u32 offset, u32 size, u8 flags, u32 old_value, u32 new_value) {
+    Packet* packet = new Packet(sizeof(MPPacketMonitoredValueChanged));
+    packet->header->type = MP_PACKET_MONITORED_VALUE_CHANGED;
+    packet->header->size = sizeof(MPPacketMonitoredValueChanged);
+
+    MPPacketMonitoredValueChanged* body = (MPPacketMonitoredValueChanged*)packet->body;
+    body->uid = uid;
+    body->offset = offset;
+    body->size = size;
+    body->flags = flags;
+    body->old_value = old_value;
+    body->new_value = new_value;
+
+    return packet;
+}
+
+
 Packet* Packet::make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value) {
     Packet* packet = new Packet(sizeof(MPPacketLevelFlagChanged));
     packet->header->type = MP_PACKET_LEVEL_FLAG_CHANGED;
