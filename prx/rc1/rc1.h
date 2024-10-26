@@ -31,6 +31,13 @@ typedef enum GameState {
     UnkFF = 255
 } GameState;
 
+typedef enum PlayerType {
+    PlayerTypeRatchet = 0x0,
+    PlayerTypeClank = 0x1,
+    PlayerTypeBigClank = 0x2,
+    PlayerTypeHologuise = 0x3,
+} PlayerType;
+
 // Our global variables
 extern int game_ticks;
 
@@ -46,6 +53,7 @@ SHK_FUNCTION_DEFINE_STATIC_2(0xb72b0, u64, transition_to_movement_state, u32, st
 SHK_FUNCTION_DEFINE_STATIC_0(0x164c58, void, load_destination_planet);
 SHK_FUNCTION_DEFINE_STATIC_1(0xccda0, void, toast_message, char*, message);
 SHK_FUNCTION_DEFINE_STATIC_1(0x112c20, void, unlock_planet, int, planet);
+SHK_FUNCTION_DEFINE_STATIC_4(0xdbc38, void, load_moby_model, void**, addr, int, unk0, int, unk1, short, oClass);
 
 SHK_FUNCTION_DEFINE_STATIC_2(0x151e70, void, set_spawn_point, Vec4*, position, Vec4*, rotation);
 
@@ -119,6 +127,8 @@ extern bool should_render_server_list;
 extern Moby* moby_ptr;
 extern Moby* moby_ptr_end;
 
+extern MobyClass** mclass_table;
+
 // player
 
 // The player's current bolt count.
@@ -137,8 +147,6 @@ extern int player_state;
 extern int player_state_input;
 // The player's current HP.
 extern int player_health;
-// Which player type the player is
-extern char player_type;
 
 extern Vec3 camera_pos;
 extern Vec3 camera_rot;
@@ -155,6 +163,8 @@ extern float animation_speed;
 extern int user_option_camera_left_right_movement;
 extern int user_option_camera_up_down_movement;
 extern int user_option_camera_rotation_speed;
+
+extern PlayerType player_type;
 
 void unlock_item(int item_id, uint8_t equip);
 void unlock_level(int level);

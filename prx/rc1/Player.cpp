@@ -19,7 +19,7 @@ void Player::on_tick() {
     MPPacketMobyUpdate* payload = (MPPacketMobyUpdate*)packet->body;
     payload->uuid = 0;  // Player moby is always uuid 0
     payload->flags |= ratchet_moby != 0 ? 1 : 0;
-    payload->o_class = 0;
+    payload->o_class = ratchet_moby->oClass;
     payload->level = (u16)current_planet;
     payload->animation_id = ratchet_moby != 0 ? ratchet_moby->animationID : 0;
     payload->animation_duration = 10;
