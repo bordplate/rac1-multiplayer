@@ -6,12 +6,7 @@
 #define RAC1_MULTIPLAYER_HYBRIDMOBY_H
 
 #include <rc1/Moby.h>
-
-struct MonitoredValue {
-    u32 offset;
-    u32 size;
-    u32 old_value;
-};
+#include "MonitoredValue.h"
 
 struct HybridMoby {
 public:

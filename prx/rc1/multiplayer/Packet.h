@@ -78,6 +78,8 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_MONITORED_VALUE_CHANGED 23
 #define MP_PACKET_CHANGE_MOBY_VALUE 24
 #define MP_PACKET_LEVEL_FLAG_CHANGED 25
+#define MP_PACKET_MONITOR_ADDRESS    26
+#define MP_PACKET_ADDRESS_CHANGED    27
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -246,13 +248,15 @@ typedef struct {
 #define MP_STATE_TYPE_UNLOCK_SKILLPOINT 16
 
 typedef struct {
-    u32 state_type;
+    u16 flags;
+    u16 state_type;
     u32 offset;
     u32 value;
 } MPPacketSetState;
 
 typedef struct {
-    u32 state_type;
+    u16 flags;
+    u16 state_type;
     u32 offset;
     float value;
 } MPPacketSetStateFloat;
@@ -318,6 +322,19 @@ typedef struct {
     u32 value;
 } MPPacketLevelFlagChanged;
 
+typedef struct {
+    u8 flags;
+    u8 size;
+    u32 address;
+} MPPacketMonitorAddress;
+
+typedef struct {
+    u32 address;
+    u16 size;
+    u32 old_value;
+    u32 new_value;
+} MPPacketAddressChanged;
+
 #pragma pack(pop)
 
 struct Packet {
@@ -345,6 +362,7 @@ struct Packet {
     static Packet* make_unlock_skillpoint_packet(u8 skillpoint);
     static Packet* make_monitored_value_changed_packet(u16 uid, u32 offset, u32 size, u8 flags, u32 old_value, u32 new_value);
     static Packet* make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value);
+    static Packet* make_address_changed_packet(u32 address, u16 size, u32 old_value, u32 new_value);
 };
 
 #endif

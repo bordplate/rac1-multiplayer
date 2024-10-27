@@ -40,6 +40,11 @@ void GameClient::reset() {
     clear_hybrid_mobys();
     moby_delete_all();
 
+    for (size_t i = 0; i < monitored_addresses_.size(); i++) {
+        delete monitored_addresses_[i];
+    }
+    monitored_addresses_.resize(0);
+
     Client::reset();
 }
 
@@ -311,7 +316,16 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_ARBITRARY: {
-            *(int*)(packet->offset) = (int)packet->value;
+            memcpy((unsigned char*)packet->offset, &packet->value, packet->flags);
+
+            // If we're monitoring this address, we must change its old_value
+            for (size_t i = 0; i < monitored_addresses_.size(); i++) {
+                if (monitored_addresses_[i]->offset == packet->offset) {
+                    memcpy(&monitored_addresses_[i]->old_value, &packet->value, packet->flags);
+                    break;
+                }
+            }
+
             break;
         }
         case MP_STATE_TYPE_GIVE_BOLTS: {
@@ -456,6 +470,28 @@ void GameClient::clear_hybrid_mobys() {
     hybrid_mobys_.resize(0);
 }
 
+void GameClient::monitor_address(MPPacketMonitorAddress* packet) {
+    if (packet->size > 4) {
+        Logger::error("Server tried to monitor address with size %d. Ignoring.", packet->size);
+        return;
+    }
+
+    Logger::debug("Monitoring address %p with size %d", packet->address, packet->size);
+
+    MonitoredValue* value = new MonitoredValue();
+    value->offset = packet->address;
+    value->size = packet->size;
+
+    memcpy(&value->old_value, (unsigned char*)packet->address, packet->size);
+
+    // Send initial value back to server
+    Packet* addrChangedPacket = Packet::make_address_changed_packet(packet->address, packet->size, value->old_value, value->old_value);
+    make_ack(addrChangedPacket, nullptr);
+    send(addrChangedPacket);
+
+    monitored_addresses_.push_back(value);
+}
+
 bool GameClient::update(MPPacketHeader *header, void *packet_data) {
     if (!Client::update(header, packet_data)) {
         return false;
@@ -514,6 +550,10 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
         }
         case MP_PACKET_REGISTER_HYBRID_MOBY: {
             register_hybrid_moby((MPPacketRegisterHybridMoby*)packet_data);
+            break;
+        }
+        case MP_PACKET_MONITOR_ADDRESS: {
+            monitor_address((MPPacketMonitorAddress*)packet_data);
             break;
         }
         default:
@@ -583,6 +623,21 @@ void GameClient::on_tick() {
 
     for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
         hybrid_mobys_[i]->on_tick();
+    }
+
+    for (size_t i = 0; i < monitored_addresses_.size(); i++) {
+        MonitoredValue* address_value = monitored_addresses_[i];
+
+        u32 value;
+        memcpy(&value, (char*)address_value->offset, address_value->size);
+
+        if (value != address_value->old_value) {
+            Packet* packet = Packet::make_address_changed_packet(address_value->offset, address_value->size, address_value->old_value, value);
+            make_ack(packet, nullptr);
+            send(packet);
+        }
+
+        address_value->old_value = value;
     }
 
     ticks_ += 1;

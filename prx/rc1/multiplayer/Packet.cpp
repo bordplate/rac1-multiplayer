@@ -259,3 +259,17 @@ Packet* Packet::make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 
 
     return packet;
 }
+
+Packet* Packet::make_address_changed_packet(u32 address, u16 size, u32 old_value, u32 new_value) {
+    Packet* packet = new Packet(sizeof(MPPacketAddressChanged));
+    packet->header->type = MP_PACKET_ADDRESS_CHANGED;
+    packet->header->size = sizeof(MPPacketAddressChanged);
+
+    MPPacketAddressChanged* body = (MPPacketAddressChanged*)packet->body;
+    body->address = address;
+    body->size = size;
+    body->old_value = old_value;
+    body->new_value = new_value;
+
+    return packet;
+}
