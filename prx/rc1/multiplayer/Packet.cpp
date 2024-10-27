@@ -260,7 +260,7 @@ Packet* Packet::make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 
     return packet;
 }
 
-Packet* Packet::make_bolt_count_changed_packet(s32 bolt_diff) {
+Packet* Packet::make_bolt_count_changed_packet(s32 bolt_diff, u32 current_bolts) {
     Packet* packet = new Packet(sizeof(MPPacketSetState));
     packet->header->type = MP_PACKET_SET_STATE;
     packet->header->size = sizeof(MPPacketSetState);
@@ -268,6 +268,7 @@ Packet* Packet::make_bolt_count_changed_packet(s32 bolt_diff) {
     MPPacketSetState* body = (MPPacketSetState*)packet->body;
     body->state_type = MP_STATE_TYPE_GIVE_BOLTS;
     body->value = bolt_diff;
+    body->offset = current_bolts;
 
     return packet;
 }

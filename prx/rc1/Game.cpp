@@ -99,7 +99,7 @@ void Game::on_tick() {
 
     if (previous_bolt_count != player_bolts) {
         s32 bolt_diff = player_bolts - previous_bolt_count;
-        if (client_) client_->send(Packet::make_bolt_count_changed_packet(bolt_diff));
+        if (client_) client_->send(Packet::make_bolt_count_changed_packet(bolt_diff, player_bolts));
         previous_bolt_count = player_bolts;
     }
 
