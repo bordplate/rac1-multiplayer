@@ -321,7 +321,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             } else {
                 player_bolts += (s32)packet->value;
             }
-            Game::shared().previous_bolt_count = player_bolts;
+            Player::shared().previous_bolt_count = player_bolts;
             break;
         }
         case MP_STATE_TYPE_UNLOCK_LEVEL: {

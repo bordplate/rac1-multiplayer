@@ -45,15 +45,11 @@ public:
     void refresh_level_flags();
 
     void alert(String& message);
-
-    s32 previous_bolt_count; // man idk if this being public is even legal but it seems needed
 private:
     Game() {
         previous_user_option_camera_left_right_movement = -1;
         previous_user_option_camera_up_down_movement = -1;
         previous_user_option_camera_rotation_speed = -1;
-
-        previous_bolt_count = player_bolts;
     }
     Game(Game const&);
 
