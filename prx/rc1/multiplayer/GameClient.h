@@ -14,6 +14,7 @@
 
 #include "../views/RemoteView.h"
 #include "HybridMoby.h"
+#include "MonitoredValue.h"
 
 // Maximum amount of moby's we can deal with
 #define MAX_MP_MOBYS 1024
@@ -33,6 +34,7 @@ struct GameClient : public Client {
     void register_hybrid_moby(MPPacketRegisterHybridMoby* packet);
     void refresh_hybrid_mobys();
     void clear_hybrid_mobys();
+    void monitor_address(MPPacketMonitorAddress* packet);
     bool update(MPPacketHeader* header, void* packet_data);
     void on_tick();
 
@@ -41,6 +43,7 @@ private:
     char* ip_;
     Vector<Moby*> mobys_;
     Vector<HybridMoby*> hybrid_mobys_;
+    Vector<MonitoredValue*> monitored_addresses_;
     long ticks_;
 
     bool connection_complete_;
