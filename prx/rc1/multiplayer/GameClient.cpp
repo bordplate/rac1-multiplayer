@@ -333,7 +333,13 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_GIVE_BOLTS: {
-            player_bolts += packet->value;
+            #define SET_BOLTS 1
+            if (packet->offset == SET_BOLTS) {
+                player_bolts = (s32)packet->value;
+            } else {
+                player_bolts += (s32)packet->value;
+            }
+            Player::shared().previous_bolt_count = player_bolts;
             break;
         }
         case MP_STATE_TYPE_UNLOCK_LEVEL: {

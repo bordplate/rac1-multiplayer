@@ -25,8 +25,11 @@ struct Player {
 
     void on_tick();
     void on_respawned();
+    s32 previous_bolt_count;
 private:
-    Player() {}
+    Player() {
+        previous_bolt_count = player_bolts;
+    }
     Player(Player const&);
 };
 
