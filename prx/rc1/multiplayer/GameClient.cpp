@@ -316,12 +316,16 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             break;
         }
         case MP_STATE_TYPE_ARBITRARY: {
-            memcpy((unsigned char*)packet->offset, &packet->value, packet->flags);
+            u16 size = packet->flags;
+
+            u32 value = packet->value << 8 * (4 - size);
+
+            memcpy((unsigned char*)packet->offset, &value, size);
 
             // If we're monitoring this address, we must change its old_value
             for (size_t i = 0; i < monitored_addresses_.size(); i++) {
                 if (monitored_addresses_[i]->offset == packet->offset) {
-                    memcpy(&monitored_addresses_[i]->old_value, &packet->value, packet->flags);
+                    memcpy(&monitored_addresses_[i]->old_value, &value, size);
                     break;
                 }
             }
