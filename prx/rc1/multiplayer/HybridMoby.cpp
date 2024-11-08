@@ -50,18 +50,15 @@ void HybridMoby::monitor_attribute(u32 offset, u32 size) {
     if (Game::shared().client()) {
         Client* client = Game::shared().client();
 
-        Packet* packet = Packet::make_monitored_value_changed_packet(
+        // NOTE: We could bundle all the changes into one packet
+        client->send_ack(Packet::make_monitored_value_changed_packet(
                 uid,
                 value->offset,
                 value->size,
                 MP_MONITORED_VALUE_TYPE_ATTR,
                 value->old_value,
                 value->old_value
-        );
-
-        // NOTE: We could bundle all the changes into one packet
-        client->make_ack(packet, nullptr);
-        client->send(packet);
+        ));
     }
 
     monitored_attributes_.push_back(value);
@@ -81,29 +78,26 @@ void HybridMoby::monitor_pvar(u32 offset, u32 size) {
     value->size = size;
 
     if (size == 1) {
-        memcpy(&value->old_value, (unsigned char*)moby_->pVars + offset, 1);
+        memcpy(&value->old_value, (unsigned char*)moby_->vars + offset, 1);
     } else if (size == 2) {
-        memcpy(&value->old_value, (unsigned char*)moby_->pVars + offset, 2);
+        memcpy(&value->old_value, (unsigned char*)moby_->vars + offset, 2);
     } else {
-        memcpy(&value->old_value, (unsigned char*)moby_->pVars + offset, 4);
+        memcpy(&value->old_value, (unsigned char*)moby_->vars + offset, 4);
     }
 
     // Send initial value to the client, should be easily ignorable as both old and new values are the same
     if (Game::shared().client()) {
         Client* client = Game::shared().client();
 
-        Packet* packet = Packet::make_monitored_value_changed_packet(
+        // NOTE: We could bundle all the changes into one packet
+        client->send_ack(Packet::make_monitored_value_changed_packet(
                 uid,
                 value->offset,
                 value->size,
                 MP_MONITORED_VALUE_TYPE_PVAR,
                 value->old_value,
                 value->old_value
-        );
-
-        // NOTE: We could bundle all the changes into one packet
-        client->make_ack(packet, nullptr);
-        client->send(packet);
+        ));
     }
 
 
@@ -136,18 +130,15 @@ void HybridMoby::on_tick() {
             if (Game::shared().client()) {
                 Client* client = Game::shared().client();
 
-                Packet* packet = Packet::make_monitored_value_changed_packet(
+                // NOTE: We could bundle all the changes into one packet
+                client->send_ack(Packet::make_monitored_value_changed_packet(
                         uid,
                         value->offset,
                         value->size,
                         MP_MONITORED_VALUE_TYPE_ATTR,
                         value->old_value,
                         new_value
-                );
-
-                // NOTE: We could bundle all the changes into one packet
-                client->make_ack(packet, nullptr);
-                client->send(packet);
+                ));
             }
 
             value->old_value = new_value;
@@ -160,14 +151,14 @@ void HybridMoby::on_tick() {
 
         if (value->size == 1) {
             u8 temp_value;
-            memcpy(&temp_value, (unsigned char*)moby_->pVars + value->offset, 1);
+            memcpy(&temp_value, (unsigned char*)moby_->vars + value->offset, 1);
             new_value = temp_value;
         } else if (value->size == 2) {
             u16 temp_value;
-            memcpy(&temp_value, (unsigned char*)moby_->pVars + value->offset, 2);
+            memcpy(&temp_value, (unsigned char*)moby_->vars + value->offset, 2);
             new_value = temp_value;
         } else {
-            memcpy(&new_value, (unsigned char*)moby_->pVars + value->offset, 4);
+            memcpy(&new_value, (unsigned char*)moby_->vars + value->offset, 4);
         }
 
         if (new_value != value->old_value) {
@@ -175,18 +166,15 @@ void HybridMoby::on_tick() {
             if (Game::shared().client()) {
                 Client* client = Game::shared().client();
 
-                Packet* packet = Packet::make_monitored_value_changed_packet(
+                // NOTE: We could bundle all the changes into one packet
+                client->send_ack(Packet::make_monitored_value_changed_packet(
                         uid,
                         value->offset,
                         value->size,
                         MP_MONITORED_VALUE_TYPE_PVAR,
                         value->old_value,
                         new_value
-                );
-
-                // NOTE: We could bundle all the changes into one packet
-                client->make_ack(packet, nullptr);
-                client->send(packet);
+                ));
             }
 
             value->old_value = new_value;
@@ -223,14 +211,14 @@ void HybridMoby::refresh_old_values_without_notifying_server() {
 
         if (value->size == 1) {
             u8 temp_value;
-            memcpy(&temp_value, (unsigned char*)moby_->pVars + value->offset, 1);
+            memcpy(&temp_value, (unsigned char*)moby_->vars + value->offset, 1);
             new_value = temp_value;
         } else if (value->size == 2) {
             u16 temp_value;
-            memcpy(&temp_value, (unsigned char*)moby_->pVars + value->offset, 2);
+            memcpy(&temp_value, (unsigned char*)moby_->vars + value->offset, 2);
             new_value = temp_value;
         } else {
-            memcpy(&new_value, (unsigned char*)moby_->pVars + value->offset, 4);
+            memcpy(&new_value, (unsigned char*)moby_->vars + value->offset, 4);
         }
 
         value->old_value = new_value;

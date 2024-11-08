@@ -7,6 +7,18 @@
 
 #include <rc1/moby.h>
 
+typedef struct {
+    u8 pad[10];
+    u16 uuid;
+    bool attached_to_parent;
+    Moby* parent;
+    u8 parent_position_bone;
+    u8 parent_transform_bone;
+    char next_animation_id;
+    int animation_duration;
+    u8 collision_debounce;
+} MPMobyVars;
+
 struct MPMoby : public Moby {
 public:
     void update();

@@ -76,10 +76,6 @@ void Game::on_tick() {
             Logger::trace("Pressed buttons (%08X) sent to view", pressed_buttons);
             current_view->on_pressed_buttons(pressed_buttons);
         }
-
-        if (client_ && client_->connected()) {
-            //client_->send(Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED));
-        }
     }
 
     // Player is most likely on intro menu scene. Present and handle multiplayer startup stuff.
@@ -164,6 +160,14 @@ void Game::transition_to(View *view) {
 
 Client* Game::client() {
     return client_;
+}
+
+Client* Game::connected_client() {
+    if (client_ && client_->connected() && client_->handshake_complete()) {
+        return client_;
+    }
+
+    return nullptr;
 }
 
 int Game::query_servers_callback(void* data, size_t len, void* extra) {
@@ -252,7 +256,7 @@ void Game::alert(String& message) {
 }
 
 void Game::refresh_level_flags() {
-    Logger::debug("Reloading level flags");
+    Logger::trace("Reloading level flags");
     memcpy(&level_flags1_, level_flags1 + 0x10 * current_planet, 0x10);
     memcpy(&level_flags2_, level_flags2 + 0x100 * current_planet, 0x100);
 }
@@ -271,10 +275,11 @@ void Game::check_level_flags() {
         if (level_flags1_[i] != level_flags1[0x10 * current_planet + i]) {
             level_flags1_[i] = level_flags1[0x10 * current_planet + i];
 
-            if (client_ && client_->handshake_complete()) {
+            Client* client = connected_client();
+            if (client != nullptr) {
                 Packet* packet = Packet::make_level_flag_changed_packet(MP_LEVEL_FLAG_TYPE_1, current_planet, 1, i, level_flags1_[i]);
-                client_->make_ack(packet, nullptr);
-                client_->send(packet);
+                client->make_ack(packet, nullptr);
+                client->send(packet);
             }
         }
     }

@@ -61,7 +61,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_MOBY_CREATE        6
 #define MP_PACKET_DISCONNECT         7
 #define MP_PACKET_MOBY_DELETE        8
-#define MP_PACKET_MOBY_COLLISION     9
+#define MP_PACKET_MOBY_DAMAGE        9
 #define MP_PACKET_SET_STATE          10
 #define MP_PACKET_SET_HUD_TEXT       11
 #define MP_PACKET_QUERY_GAME_SERVERS 12
@@ -80,14 +80,17 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_LEVEL_FLAG_CHANGED 25
 #define MP_PACKET_MONITOR_ADDRESS    26
 #define MP_PACKET_ADDRESS_CHANGED    27
+#define MP_PACKET_MOBY_CREATE_FAILURE 28
 
 #define MP_PACKET_FLAG_RPC           0x1
 
-#define MP_COLLISION_FLAG_AGGRESSIVE 1
+#define MP_COLLISION_FLAG_AGGRESSIVE   1
+#define MP_COLLISION_FLAG_GAME_MOBY    2
 
 #define MP_MOBY_FLAG_ACTIVE           0x1
 #define MP_MOBY_FLAG_NO_COLLISION     0x2
 #define MP_MOBY_FLAG_ORIG_UDPATE_FUNC 0x4
+#define MP_MOBY_FLAG_ATTACHED_TO      0x8
 
 #define MP_CONTROLLER_FLAGS_PRESSED 1
 #define MP_CONTROLLER_FLAGS_HELD 2
@@ -98,27 +101,27 @@ struct MPPacketHeader {
     u16 type;
     u16 flags;
     u32 size;
-    int64_t timeSent;
-    unsigned char requires_ack;
-    unsigned char ack_cycle;
+    u64 timeSent;
+    u8 requires_ack;
+    u8 ack_cycle;
 };
 
 struct MPPacketConnect {
-    int32_t userid;
-    int32_t version;
-    char passcode[8];
+    u32 userid;
+    u32 version;
+    u8 passcode[8];
     u16 nick_length;
 };
 
 struct MPPacketAuth {
-    int32_t userid;
-    int32_t step;
-    int64_t field1;
-    int64_t field2;
+    u32 userid;
+    u32 step;
+    u64 field1;
+    u64 field2;
 };
 
 struct MPPacketCreateUser {
-    int32_t userid;
+    u32 userid;
     u16 nick_length;
     u16 email_length;
 };
@@ -131,17 +134,14 @@ struct MPPacketCreateUser {
 #define MP_CONNECT_ERROR_WRONG_PASSCODE 5
 
 struct MPPacketConnectCallback {
-    int32_t status;
+    u32 status;
 };
 
 struct MPPacketMobyUpdate {
     u16 uuid;
-    u16 parent;
-    u16 flags;
     u16 o_class;
-    u16 level;
-    u32 animation_id;
-    u32 animation_duration;
+    u8 animation_id;
+    u8 animation_duration;
     float x;
     float y;
     float z;
@@ -149,10 +149,6 @@ struct MPPacketMobyUpdate {
     float rotY;
     float rotZ;
     float scale;
-    char alpha;
-    u8 padding;
-    u16 modeBits;
-    u16 state;
 };
 
 typedef struct {
@@ -166,8 +162,30 @@ typedef struct {
 } MPPacketMobyExtended;
 
 typedef struct {
-    u32 uuid;
+    u16 uuid;
+    u16 parent_uuid;
+    u8 spawn_id;
+    u8 flags;
+    u16 o_class;
+    u16 mode_bits;
+    u8 position_bone;
+    u8 transform_bone;
 } MPPacketMobyCreate;
+
+typedef struct {
+    u16 uuid;
+} MPPacketMobyCreateResponse;
+
+#define MP_MOBY_CREATE_FAILURE_REASON_UNKNOWN 0
+#define MP_MOBY_CREATE_FAILURE_REASON_NOT_READY 1
+#define MP_MOBY_CREATE_FAILURE_REASON_ALREADY_EXISTS 2
+#define MP_MOBY_CREATE_FAILURE_REASON_INVALID_PARENT 3
+#define MP_MOBY_CREATE_FAILURE_REASON_MAX_MOBYS 4
+
+typedef struct {
+    u16 uuid;
+    u8 reason;
+} MPPacketMobyCreateFailure;
 
 #define MP_MOBY_FLAG_FIND_BY_UUID (1 << 0)
 #define MP_MOBY_FLAG_FIND_BY_UID  (1 << 1)
@@ -199,13 +217,16 @@ typedef struct {
 } MPPacketMobyDelete;
 
 typedef struct {
-    u32 flags;
     u16 uuid;
-    u16 collided_with;
+    u16 collided_with_uuid;
+    u32 flags;
+    u16 damaged_o_class;
+    u16 source_o_class;
     float x;
     float y;
     float z;
-} MPPacketMobyCollision;
+    float damage;
+} MPPacketDamage;
 
 typedef struct {
     u16 moby_uid;
@@ -293,19 +314,15 @@ typedef struct {
 } MPPacketControllerInput;
 
 typedef struct {
-    uint64_t client_send_time;
-    uint64_t server_receive_time;
+    u64 client_send_time;
+    u64 server_receive_time;
 } MPPacketTimeResponse;
 
 typedef struct {
-    uint32_t type;
-    uint32_t duration;
+    u32 type;
+    u32 duration;
     char message[0x50];
 } MPPacketToastMessage;
-
-typedef struct {
-    uint32_t value;
-} MPPacketBolts;
 
 struct MPPacketErrorMessage {
     u16 message_length;
@@ -335,6 +352,10 @@ typedef struct {
     u32 new_value;
 } MPPacketAddressChanged;
 
+typedef struct {
+    u8 spawn_id;
+} MPPacketSpawned;
+
 #pragma pack(pop)
 
 struct Packet {
@@ -349,12 +370,14 @@ struct Packet {
     static Packet* make_handshake_packet();
     static Packet* make_ack_packet(unsigned char id, unsigned char cycle);
     static Packet* make_query_directory_packet(int directory_id);
+    static Packet* make_moby_create_packet(u16 uuid, u16 parent_uuid, u8 spawn_id, u16 flags, u16 o_class, u16 mode_bits, u8 position_bone, u8 transform_bone);
+    static Packet* make_moby_delete_packet(u16 uuid);
     static Packet* make_controller_input(CONTROLLER_INPUT inputs, u16 flags);
-    static Packet* make_collision(u16 uuid, u16 collided_with, Vec4* position, bool aggressive);
+    static Packet* make_damage_packet(u16 uuid, u16 collided_with_uuid, u32 flags, u16 damaged_o_class, u16 source_o_class, Vec4* position, float damage);
     static Packet* make_connect_packet(const String& nickname, int32_t userid);
     static Packet* make_disconnect_packet();
     static Packet* make_time_request_packet();
-    static Packet* make_player_respawned_packet();
+    static Packet* make_player_respawned_packet(u8 spawn_id);
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
     static Packet* make_unlock_item_packet(int item_id, bool equip);
@@ -364,6 +387,7 @@ struct Packet {
     static Packet* make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value);
     static Packet* make_address_changed_packet(u32 address, u16 size, u32 old_value, u32 new_value);
     static Packet* make_bolt_count_changed_packet(s32 bolt_diff, u32 current_bolts);
+    static Packet* make_moby_create_failure_packet(u16 uuid, u8 reason);
 };
 
 #endif

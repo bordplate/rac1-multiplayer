@@ -19,9 +19,22 @@
 // Maximum amount of moby's we can deal with
 #define MAX_MP_MOBYS 1024
 
+struct MobyInfo {
+    Moby* moby;
+    u16 uuid;
+    u16 parent_uuid;
+    u16 o_class;
+    u16 flags;
+    u16 mode_bits;
+    u16 position_bone;
+    u16 transform_bone;
+};
+
 struct GameClient : public Client {
     GameClient(char* ip, int port);
 
+    void create_moby(MobyInfo* moby_info);
+    void create_moby(MPPacketMobyCreate* packet);
     void update_moby(MPPacketMobyUpdate* packet);
     void update_moby_ex(MPPacketMobyExtended* packet);
     void change_moby_value(MPPacketChangeMobyValue* packet);
@@ -41,7 +54,7 @@ struct GameClient : public Client {
     static int connect_callback(void* packetData, unsigned int size, void* userdata);
 private:
     char* ip_;
-    Vector<Moby*> mobys_;
+    Vector<MobyInfo> mobys_;
     Vector<HybridMoby*> hybrid_mobys_;
     Vector<MonitoredValue*> monitored_addresses_;
     long ticks_;

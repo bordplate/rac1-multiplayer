@@ -45,6 +45,7 @@ extern int current_weapon;
 
 extern int planetUnlockedByServer;
 
+SHK_FUNCTION_DEFINE_STATIC_1(0x0f58d8, int, compute_animation, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
 SHK_FUNCTION_DEFINE_STATIC_3(0x650764, int, sys_mmapper_allocate_memory, size_t, size, u64, flags, void*, addr);
 SHK_FUNCTION_DEFINE_STATIC_3(0x4e8470, void, new_game, int, p1, void*, p2, u64, p3);
@@ -92,6 +93,88 @@ struct CollOutput {
     Vec4 v0;
     Vec4 v1;
     Vec4 v2;
+};
+
+struct MenuItem {
+    undefined field0_0x0;
+    undefined field1_0x1;
+    undefined field2_0x2;
+    undefined field3_0x3;
+    undefined field4_0x4;
+    undefined field5_0x5;
+    undefined field6_0x6;
+    undefined field7_0x7;
+    undefined field8_0x8;
+    undefined field9_0x9;
+    undefined field10_0xa;
+    undefined field11_0xb;
+    undefined field12_0xc;
+    undefined field13_0xd;
+    undefined field14_0xe;
+    undefined field15_0xf;
+    undefined field16_0x10;
+    undefined field17_0x11;
+    undefined field18_0x12;
+    undefined field19_0x13;
+    Moby* field20_0x14;
+    undefined field21_0x18;
+    undefined field22_0x19;
+    undefined field23_0x1a;
+    undefined field24_0x1b;
+    undefined field25_0x1c;
+    undefined field26_0x1d;
+    undefined field27_0x1e;
+    undefined field28_0x1f;
+    undefined field29_0x20;
+    undefined field30_0x21;
+    undefined field31_0x22;
+    undefined field32_0x23;
+    undefined field33_0x24;
+    undefined field34_0x25;
+    undefined field35_0x26;
+    undefined field36_0x27;
+    undefined field37_0x28;
+    undefined field38_0x29;
+    undefined field39_0x2a;
+    undefined field40_0x2b;
+    undefined field41_0x2c;
+    undefined field42_0x2d;
+    undefined field43_0x2e;
+    undefined field44_0x2f;
+    unsigned int field45_0x30;
+    unsigned int field46_0x34;
+    undefined4 field47_0x38;
+    undefined4 field48_0x3c;
+    int field49_0x40;
+};
+
+struct Damage {
+    undefined field0_0x0;
+    undefined field1_0x1;
+    undefined field2_0x2;
+    undefined field3_0x3;
+    undefined field4_0x4;
+    undefined field5_0x5;
+    undefined field6_0x6;
+    undefined field7_0x7;
+    undefined field8_0x8;
+    undefined field9_0x9;
+    undefined field10_0xa;
+    undefined field11_0xb;
+    undefined field12_0xc;
+    undefined field13_0xd;
+    undefined field14_0xe;
+    undefined field15_0xf;
+    Vec4 position;
+    Moby *damaged_moby;
+    undefined field18_0x24;
+    undefined field19_0x25;
+    undefined field20_0x26;
+    undefined field21_0x27;
+    u8 field22_0x28;
+    u8 field23_0x29;
+    u16 source_o_class;
+    float damage_dealt;
 };
 
 //
@@ -169,6 +252,8 @@ extern PlayerType player_type;
 void unlock_item(int item_id, uint8_t equip);
 void unlock_level(int level);
 void unlock_skillpoint(u8 skillpoint);
+Moby* spawn_moby(u16 o_class);
+struct Damage* moby_get_damage(Moby* moby, u32 flags, u32 unk);
 
 #ifdef __cplusplus
 // Pointer to Ratchet moby.

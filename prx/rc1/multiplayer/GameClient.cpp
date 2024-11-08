@@ -17,7 +17,8 @@ GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     ip_ = ip;
 
     for(int i = 0; i < mobys_.capacity(); i++) {
-        mobys_[i] = nullptr;
+        mobys_[i].moby = nullptr;
+        mobys_[i].uuid = 0;
     }
 
     connection_complete_ = false;
@@ -45,7 +46,88 @@ void GameClient::reset() {
     }
     monitored_addresses_.resize(0);
 
+    Player::shared().spawn_id = 0;
+
     Client::reset();
+}
+
+void GameClient::create_moby(MobyInfo* moby_info) {
+    Moby* moby = moby_info->moby;
+
+    if (moby && moby->state >= 0) {
+        Logger::error("Replaced moby with existing UUID: %d", moby_info->uuid);
+        delete_moby(moby);
+    }
+
+    Logger::info("[%d] Spawning Moby (oClass: %d)", moby_info->uuid, moby_info->o_class);
+
+    moby = (Moby*)MPMoby::spawn(moby_info->uuid, moby_info->o_class, moby_info->flags, moby_info->mode_bits);
+
+    if (!moby) {
+        Logger::error("Failed to spawn moby %d", moby_info->uuid);
+        send_ack(Packet::make_moby_create_failure_packet(moby_info->uuid, MP_MOBY_CREATE_FAILURE_REASON_UNKNOWN));
+        return;
+    }
+
+    if (moby_info->flags & MP_MOBY_FLAG_NO_COLLISION) {
+        moby->collision = nullptr;
+    }
+
+    MPMobyVars* vars = (MPMobyVars*)(moby->vars);
+
+    if (moby_info->flags & MP_MOBY_FLAG_ATTACHED_TO) {
+        if (moby_info->parent_uuid == 0) {
+            Logger::error("Server tried to attach moby %d to parent 0", moby_info->o_class);
+            send_ack(Packet::make_moby_create_failure_packet(moby_info->uuid, MP_MOBY_CREATE_FAILURE_REASON_UNKNOWN));
+            return;
+        }
+
+        MobyInfo* parent_moby_info = &mobys_[moby_info->parent_uuid];
+        if (parent_moby_info->uuid == 0 || parent_moby_info->moby == nullptr || parent_moby_info->moby->state < 0) {
+            Logger::error("Server tried to attach moby %d to an invalid parent %d", moby_info->o_class, moby_info->parent_uuid);
+            send_ack(Packet::make_moby_create_failure_packet(moby_info->uuid, MP_MOBY_CREATE_FAILURE_REASON_NOT_READY));
+            return;
+        }
+
+        Logger::info("Created attached moby %d to parent %d", moby_info->uuid, moby_info->parent_uuid);
+        vars->attached_to_parent = true;
+        vars->parent = mobys_[moby_info->parent_uuid].moby;
+        moby->mode_bits = moby->mode_bits | 0x100;
+    }
+
+    vars->parent_position_bone = moby_info->position_bone;
+    vars->parent_transform_bone = moby_info->transform_bone;
+
+    moby_info->moby = moby;
+}
+
+void GameClient::create_moby(MPPacketMobyCreate* packet) {
+// Check that we're not trying to create a moby beyond our predefined moby space.
+    if (packet->uuid > mobys_.capacity()) {
+        Logger::error("Tried to create illegal Moby UUID: %d", packet->uuid);
+        send_ack(Packet::make_moby_create_failure_packet(packet->uuid, MP_MOBY_CREATE_FAILURE_REASON_MAX_MOBYS));
+
+        return;
+    }
+
+    if (game_state != PlayerControl) {
+        Logger::trace("Moby not creating because game state %d", game_state);
+        send_ack(Packet::make_moby_create_failure_packet(packet->uuid, MP_MOBY_CREATE_FAILURE_REASON_NOT_READY));
+
+        return;
+    }
+
+    MobyInfo* moby_info = &mobys_[packet->uuid];
+
+    moby_info->uuid = packet->uuid;
+    moby_info->parent_uuid = packet->parent_uuid;
+    moby_info->flags = packet->flags;
+    moby_info->o_class = packet->o_class;
+    moby_info->mode_bits = packet->mode_bits;
+    moby_info->position_bone = packet->position_bone;
+    moby_info->transform_bone = packet->transform_bone;
+
+    create_moby(moby_info);
 }
 
 void GameClient::update_moby(MPPacketMobyUpdate* packet) {
@@ -55,80 +137,72 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
         return;
     }
 
-//    if (ticks_ < 60 * 1) {
-//        Logger::trace("Waiting a little before spawning moby. Tick: %d", ticks_);
-//        return;
-//    }
+    if (packet->uuid == 0) {
+        Logger::error("Tried to update Ratchet Moby with MPPacketMobyUpdate");
+        return;
+    }
 
     if (game_state != PlayerControl) {
         Logger::trace("Moby not updating because game state %d", game_state);
         return;
     }
 
-    if (current_planet != packet->level) {
+    MobyInfo* moby_info = &mobys_[packet->uuid];
+    Moby* moby = moby_info->moby;
+
+    if (moby_info->uuid != 0 && moby_info->uuid != packet->uuid) {
+        Logger::error("Mismatch in moby info table, expected %d but got %d", packet->uuid, moby_info->uuid);
         return;
     }
 
-    Moby* moby = mobys_[packet->uuid];
+    if (moby && moby->state >= 0 && moby->o_class != packet->o_class) {
+        Logger::error("[%d] Incoming o_class %d did not match o_class %d for existing moby", packet->uuid, packet->o_class, moby->o_class);
 
-    if (moby && moby->state >= 0 && moby->oClass != packet->o_class) {
-        Logger::error("[%d] Incoming o_class %d did not match o_class %d for existing moby", packet->uuid, packet->o_class, moby->oClass);
-        if (((MPMobyVars*)moby->pVars)->sig != 0x4542) {
-            Logger::debug("Signature also doesn't match a MP moby");
-        }
         delete_moby(moby);
-        mobys_[packet->uuid] = nullptr;
-        moby = nullptr;
-    }
+        moby_info->o_class = packet->o_class;
+        moby_info->moby = nullptr;
 
-    if (!moby) {
-        // Spawn moby
-        Logger::info("[%d] Spawning Moby (oClass: %d) at (%f, %f, %f)", packet->uuid, packet->o_class, packet->x, packet->y, packet->z);
+        create_moby(moby_info);
 
-        if (packet->flags & MP_MOBY_FLAG_ORIG_UDPATE_FUNC) {
-            Logger::debug("Spawned with original update function");
-            moby = Moby::spawn(packet->o_class, packet->flags, packet->modeBits);
-        } else {
-            moby = (Moby*)MPMoby::spawn(packet->uuid, packet->o_class, packet->flags, packet->modeBits);
+        if (moby_info->moby == nullptr) {
+            return;
         }
 
-        mobys_[packet->uuid] = moby;
+        moby = moby_info->moby;
+    }
 
-        if (packet->parent && packet->parent != packet->uuid) {
-            Moby* parent_moby = mobys_[packet->uuid];
-            if (parent_moby) {
-                Logger::debug("Set moby (uid: %d) parent to (uid: %d)\n", packet->uuid, packet->parent);
-                moby->field80_0xb8 = parent_moby;
-            } else {
-                Logger::error("Failed to find moby (uid: %d) to attach to parent (uid: %d)\n", packet->uuid, packet->parent);
-            }
+    if (!moby && moby_info->uuid == 0) {
+        Logger::error("Tried to update non-existent Moby UUID: %d", packet->uuid);
+
+        send_ack(Packet::make_moby_create_failure_packet(packet->uuid, MP_MOBY_CREATE_FAILURE_REASON_UNKNOWN));
+
+        return;
+    } else if (!moby) {
+        Logger::error("Respawning Moby UUID: %d", packet->uuid);
+        create_moby(moby_info);
+
+        if (moby_info->moby == nullptr) {
+            Logger::error("Failed to respawn it!");
+            return;
         }
 
-        if (!moby) return;
+        moby = moby_info->moby;
     }
 
-    if (packet->flags & MP_MOBY_FLAG_NO_COLLISION) {
-        moby->collision = nullptr;
+    MPMobyVars* vars = (MPMobyVars*)(moby->vars);
+
+    if (!vars->attached_to_parent) {
+        moby->position.x = packet->x;
+        moby->position.y = packet->y;
+        moby->position.z = packet->z;
+        moby->rotation.x = packet->rotX;
+        moby->rotation.y = packet->rotY;
+        moby->rotation.z = packet->rotZ;
+        moby->scale = packet->scale;
     }
 
-    moby->position.x = packet->x;
-    moby->position.y = packet->y;
-    moby->position.z = packet->z;
-    moby->rotation.x = packet->rotX;
-    moby->rotation.y = packet->rotY;
-    moby->rotation.z = packet->rotZ;
-    moby->scale = packet->scale;
-
-    moby->alpha = packet->alpha;
-
-    // If this moby uses our custom update func, we can update pVars.
-    if (!(packet->flags & MP_MOBY_FLAG_ORIG_UDPATE_FUNC)) {
-        MPMobyVars *vars = (MPMobyVars *) (moby->pVars);
-        if (vars) {
-            vars->next_animation_id = (char) packet->animation_id;
-            vars->animation_duration = (int) packet->animation_duration;
-        }
-    }
+    vars->next_animation_id = (char)packet->animation_id;
+    vars->animation_duration = (int)packet->animation_duration;
 }
 
 void GameClient::update_moby_ex(MPPacketMobyExtended *packet) {
@@ -143,7 +217,7 @@ void GameClient::update_moby_ex(MPPacketMobyExtended *packet) {
     if (packet->uuid == 0) {
         moby = ratchet_moby;
     } else {
-        moby = mobys_[packet->uuid];
+        moby = mobys_[packet->uuid].moby;
     }
 
     if (moby) {
@@ -174,7 +248,7 @@ void GameClient::change_moby_value(MPPacketChangeMobyValue* packet) {
 
     if (packet->flags & MP_MOBY_FLAG_FIND_BY_UUID) {
         Logger::debug("Changing moby value by UUID %d", packet->id);
-        moby = mobys_[packet->id];
+        moby = mobys_[packet->id].moby;
     } else if (packet->flags & MP_MOBY_FLAG_FIND_BY_UID) {
         Logger::debug("Changing moby value by UID %d", packet->id);
         moby = Moby::find_by_uid(packet->id);
@@ -188,7 +262,7 @@ void GameClient::change_moby_value(MPPacketChangeMobyValue* packet) {
 
     // If we have this moby as a hybrid moby, we should update the old values without notifying the server
     for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
-        if (hybrid_mobys_[i]->uid == moby->UID) {
+        if (hybrid_mobys_[i]->uid == moby->uid) {
             hybrid_mobys_[i]->refresh_old_values_without_notifying_server();
         }
     }
@@ -198,9 +272,13 @@ void GameClient::moby_delete(MPPacketMobyDelete* packet) {
     Logger::trace("Deleting moby %d", packet->value);
 
     if (packet->flags & MP_MOBY_DELETE_FLAG_UUID) {
-        Moby *moby = mobys_[packet->value];
+        MobyInfo* moby_info = &mobys_[packet->value];
+        Moby* moby = moby_info->moby;
+
+        moby_info->uuid = 0;
+        moby_info->moby = nullptr;
+
         if (!moby || moby->state < 0) {
-            mobys_[packet->value] = 0;
             Logger::debug("Already deleted moby %d @ 0x%08x", packet->value, moby);
             return;
         }
@@ -208,38 +286,46 @@ void GameClient::moby_delete(MPPacketMobyDelete* packet) {
         Logger::debug("Deleting moby %d", packet->value);
 
         delete_moby(moby);
-        mobys_[packet->value] = nullptr;
     } else if (packet->flags & MP_MOBY_DELETE_FLAG_OCLASS) {
-        for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
-            if (moby->state < 0x7f && moby->oClass == packet->value) {
+        Moby* moby = moby_ptr;
+        do {
+            if (moby->state >= 0 && moby->o_class == packet->value) {
                 moby->state = -1;
                 delete_moby(moby);
             }
-        }
+
+            moby = (Moby*)moby->p_chain;
+            if (!moby) break;
+        } while (moby <= moby_ptr_end);
     } else if (packet->flags & MP_MOBY_DELETE_FLAG_UID) {
-        for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
-            if (moby->state < 0x7f && moby->UID == packet->value) {
+        Moby* moby = moby_ptr;
+        do {
+            if (moby->state >= 0 && moby->uid == packet->value) {
                 moby->state = -1;
                 delete_moby(moby);
             }
-        }
+
+            moby = (Moby*)moby->p_chain;
+            if (!moby) break;
+        } while (moby <= moby_ptr_end);
     }
 }
 
 void GameClient::moby_clear_all() {
     for(int i = 0; i < mobys_.size(); i++) {
-        mobys_[i] = nullptr;
+        mobys_[i].moby = nullptr;
     }
 }
 
 void GameClient::moby_delete_all() {
     for(int i = 0; i < mobys_.size(); i++) {
-        Moby* moby = mobys_[i];
+        MobyInfo* moby_info = &mobys_[i];
+        Moby* moby = moby_info->moby;
         if (moby != nullptr && moby->state >= 0) {
             delete_moby(moby);
         }
 
-        mobys_[i] = nullptr;
+        moby_info->moby = nullptr;
     }
 }
 
@@ -421,13 +507,13 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
 void GameClient::toast_message(MPPacketToastMessage* packet) {
     String message = String(packet->message);
     strcpy((char*)(0xa15c8c), message.c_str());
-    uint32_t duration = packet->duration;
+    u32 duration = packet->duration;
 
     if (duration < 20) {
         duration = 20;
     }
 
-    (*((int*)0xa15c80)) = packet->duration;
+    (*((u32*)0xa15c80)) = duration;
 }
 
 void GameClient::register_hybrid_moby(MPPacketRegisterHybridMoby* packet) {
@@ -516,6 +602,9 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
 
     // Process packet
     switch(header->type) {
+        case MP_PACKET_MOBY_CREATE:
+            create_moby((MPPacketMobyCreate*)packet_data);
+            break;
         case MP_PACKET_MOBY_UPDATE:
             update_moby((MPPacketMobyUpdate*)packet_data);
             break;

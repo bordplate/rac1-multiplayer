@@ -6,6 +6,7 @@
 #include "multiplayer/Packet.h"
 
 #include <lib/logger.h>
+#include "multiplayer/MPMoby.h"
 
 void Moby::set_animation(char animation_id, char animation_frame, u32 duration)
 {
@@ -13,36 +14,11 @@ void Moby::set_animation(char animation_id, char animation_frame, u32 duration)
 }
 
 void Moby::check_collision() {
-    if (this->state == 0) {
-        this->state = 1;
-    }
-
-    MPMobyVars* vars = (MPMobyVars*)(this->pVars);
-
-    if (!vars) {
-        return;
-    }
-
-    // I'm not sure about these arguments, this kinda works, so I stuck with it.
-    int success = coll_sphere(&this->position, this->scale * 10, 0x1, this);
-
-    if (vars->collision_debounce > 0) {
-        vars->collision_debounce--;
-    }
-
-    if (success > 0 && coll_moby_out != 0 && vars->collision_debounce <= 0) {
-        if (coll_moby_out == ratchet_moby) {
-            if (Game::shared().client()) {
-                Logger::debug("Time to send the collision");
-                Game::shared().client()->send(Packet::make_collision(0, vars->uuid, &this->position, false));
-                vars->collision_debounce = 10;
-            }
-        }
-    }
+    // Not implemented
 }
 
 void Moby::change_values(MPPacketChangeMobyValuePayload* changes, size_t num, u16 value_type) {
-    char* base_address = value_type & MP_MOBY_FLAG_CHANGE_ATTR ? (char*)this : (char*)this->pVars;
+    char* base_address = value_type & MP_MOBY_FLAG_CHANGE_ATTR ? (char*)this : (char*)this->vars;
 
     for(int i = 0; i < num; i++) {
         MPPacketChangeMobyValuePayload* payload = &changes[i];
@@ -74,6 +50,10 @@ void Moby::change_values(MPPacketChangeMobyValuePayload* changes, size_t num, u1
     }
 }
 
+Damage* Moby::get_damage(u32 flags, u32 unk) {
+    return moby_get_damage(this, flags, unk);
+}
+
 Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBits) {
     // If the main hero moby isn't spawned in, we shouldn't try to spawn anything else either.
     if (!ratchet_moby) {
@@ -82,9 +62,9 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBit
 
     Moby* moby = spawn_moby(o_class);
 
-    if ((int)moby->pVars == nullptr) {
-        Logger::error("Moby spawned with invalid pVars: %d. Allocating pVars from custom allocator", (int) moby->pVars);
-        moby->pVars = allocate_memory(0x80);
+    if ((int)moby->vars == nullptr) {
+        Logger::error("Moby spawned with invalid pVars: %d. Allocating pVars from custom allocator", (int) moby->vars);
+        moby->vars = allocate_memory(0x80);
     }
 
     moby->enabled = 1;
@@ -104,22 +84,38 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBit
 
 Moby* Moby::find_by_uid(u16 uid) {
     Logger::trace("Finding moby by UID: %d", uid);
-    for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
-        if (moby->state < 0x7f && moby->UID == uid) {
+
+    Moby* moby = moby_ptr;
+    do {
+        if (moby->state >= 0 && moby->uid == uid) {
             return moby;
         }
-    }
+
+        moby = (Moby*)moby->p_chain;
+
+        if (!moby) {
+            return nullptr;
+        }
+    } while (moby <= moby_ptr_end);
 
     return nullptr;
 }
 
 Moby* Moby::find_first_oclass(u16 o_class) {
     Logger::trace("Finding first moby by oClass: %d", o_class);
-    for (Moby *moby = moby_ptr; moby <= moby_ptr_end; moby++) {
-        if (moby->state < 0x7f && moby->oClass == o_class) {
+
+    Moby* moby = moby_ptr;
+    do {
+        if (moby->state >= 0 && moby->o_class == o_class) {
             return moby;
         }
-    }
+
+        moby = (Moby*)moby->p_chain;
+
+        if (!moby) {
+            return nullptr;
+        }
+    } while (moby <= moby_ptr_end);
 
     return nullptr;
 }

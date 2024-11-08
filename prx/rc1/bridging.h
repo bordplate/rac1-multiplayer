@@ -20,6 +20,8 @@ void _c_on_respawn();
 
 void _c_moby_update(Moby* moby);
 
+void _c_set_ratchet_animation_duration(u32 duration);
+
 #ifdef __cplusplus
 }
 #endif

@@ -62,6 +62,8 @@ void Client::disconnect() {
 }
 
 void Client::reset() {
+    Logger::info("Resetting connection...");
+
     handshake_complete_ = false;
     connected_ = false;
     sockfd_ = 0;
@@ -76,6 +78,23 @@ void Client::reset() {
     send_buffer_len = 0;
 
     _connect();
+}
+
+void Client::send_rpc(Packet* packet, AckCallback callback, void* extra) {
+    packet->header->flags = MP_PACKET_FLAG_RPC;
+    make_ack(packet, callback, extra);
+
+    send(packet);
+}
+
+void Client::send_rpc(Packet* packet, AckCallback callback) {
+    make_rpc(packet, callback);
+    send(packet);
+}
+
+void Client::send_ack(Packet* packet) {
+    make_ack(packet, nullptr);
+    send(packet);
 }
 
 void Client::send(Packet* packet) {

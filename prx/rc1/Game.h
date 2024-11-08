@@ -37,6 +37,7 @@ public:
     void before_player_spawn();
 
     Client* client();
+    Client* connected_client();
 
     static int query_servers_callback(void* data, size_t len, void* extra);
     void connect_to(char* ip, int port);

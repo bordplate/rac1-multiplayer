@@ -63,6 +63,33 @@ Packet* Packet::make_query_directory_packet(int directory_id) {
     return packet;
 }
 
+Packet* Packet::make_moby_create_packet(u16 uuid, u16 parent_uuid, u8 spawn_id, u16 flags, u16 o_class, u16 mode_bits, u8 position_bone, u8 transform_bone) {
+    Packet* packet = new Packet(sizeof(MPPacketMobyCreate));
+    packet->header->type = MP_PACKET_MOBY_CREATE;
+
+    MPPacketMobyCreate* body = (MPPacketMobyCreate*)packet->body;
+    body->uuid = uuid;
+    body->parent_uuid = parent_uuid;
+    body->spawn_id = spawn_id;
+    body->flags = flags;
+    body->o_class = o_class;
+    body->mode_bits = mode_bits;
+    body->position_bone = position_bone;
+    body->transform_bone = transform_bone;
+
+    return packet;
+}
+
+Packet* Packet::make_moby_delete_packet(u16 uuid) {
+    Packet* packet = new Packet(sizeof(MPPacketMobyDelete));
+    packet->header->type = MP_PACKET_MOBY_DELETE;
+
+    MPPacketMobyDelete* body = (MPPacketMobyDelete*)packet->body;
+    body->value = uuid;
+
+    return packet;
+}
+
 /**
  * Makes a packet containing controller input data.
  *
@@ -96,29 +123,20 @@ Packet* Packet::make_controller_input(CONTROLLER_INPUT inputs, u16 flags) {
     return packet;
 }
 
-Packet* Packet::make_collision(u16 uuid, u16 collided_with, Vec4* position, bool aggressive) {
-    Packet* packet = new Packet(sizeof(MPPacketMobyCollision));
-    MPPacketHeader* header = (MPPacketHeader*)packet->header;
-    header->size = sizeof(MPPacketMobyCollision);
-    header->type = MP_PACKET_MOBY_COLLISION;
+Packet* Packet::make_damage_packet(u16 uuid, u16 collided_with_uuid, u32 flags, u16 damaged_o_class, u16 source_o_class, Vec4* position, float damage) {
+    Packet* packet = new Packet(sizeof(MPPacketDamage));
+    packet->header->type = MP_PACKET_MOBY_DAMAGE;
 
-    MPPacketMobyCollision* body = (MPPacketMobyCollision*)packet->body;
-    body->flags = aggressive == true ? MP_COLLISION_FLAG_AGGRESSIVE : 0;
+    MPPacketDamage* body = (MPPacketDamage*)packet->body;
     body->uuid = uuid;
-    body->collided_with = collided_with;
+    body->collided_with_uuid = collided_with_uuid;
+    body->flags = flags;
+    body->damaged_o_class = damaged_o_class;
+    body->source_o_class = source_o_class;
     body->x = position->x;
     body->y = position->y;
     body->z = position->z;
-
-    // Aggressive packets (weapon attacks, etc.) must be acked be the server.
-    // We want to be sure we don't drop any attacks.
-    // Other collision events we just blindly spam and should be fine
-    if (aggressive) {
-        Client* client = Game::shared().client();
-        if (client) {
-            client->make_ack(packet, nullptr);
-        }
-    }
+    body->damage = damage;
 
     return packet;
 }
@@ -154,9 +172,12 @@ Packet* Packet::make_time_request_packet() {
     return packet;
 }
 
-Packet* Packet::make_player_respawned_packet() {
-    Packet* packet = new Packet(0);
+Packet* Packet::make_player_respawned_packet(u8 spawn_id) {
+    Packet* packet = new Packet(sizeof(MPPacketSpawned));
     packet->header->type = MP_PACKET_PLAYER_RESPAWNED;
+
+    MPPacketSpawned* body = (MPPacketSpawned*)packet->body;
+    body->spawn_id = spawn_id;
 
     return packet;
 }
@@ -283,6 +304,18 @@ Packet* Packet::make_bolt_count_changed_packet(s32 bolt_diff, u32 current_bolts)
     body->state_type = MP_STATE_TYPE_GIVE_BOLTS;
     body->value = bolt_diff;
     body->offset = current_bolts;
+
+    return packet;
+}
+
+Packet* Packet::make_moby_create_failure_packet(u16 uuid, u8 reason) {
+    Packet* packet = new Packet(sizeof(MPPacketMobyCreateFailure));
+    packet->header->type = MP_PACKET_MOBY_CREATE_FAILURE;
+    packet->header->size = sizeof(MPPacketMobyCreateFailure);
+
+    MPPacketMobyCreateFailure* body = (MPPacketMobyCreateFailure*)packet->body;
+    body->uuid = uuid;
+    body->reason = reason;
 
     return packet;
 }
