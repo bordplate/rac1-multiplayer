@@ -5,39 +5,79 @@
 #include "ServerListView.h"
 
 #include "../Game.h"
-#include "../TextElement.h"
-#include "../Input.h"
+#include "rc1/ui/TextElement.h"
+#include "rc1/ui/Input.h"
 
-#include "../PersistentStorage.h"
-#include <rc1/Player.h>
+#include "rc1/utils/PersistentStorage.h"
+#include "rc1/multiplayer/Player.h"
 
 
 #include <lib/logger.h>
 
-ServerListView::ServerListView(Vector<GameServer*>* servers) {
-    servers_ = *servers;
+const char* connecting_str = "Loading servers...";
+
+ServerListView::ServerListView() {
+    connecting_label_ = new TextElement(150, 200, "", ViewMovie);
 }
 
 ServerListView::~ServerListView() {
 
 }
 
+void ServerListView::set_servers(Vector<GameServer*>* servers) {
+    servers_ = *servers;
+
+    // Make the server list
+    if (!servers_.empty()) {
+        connecting_label_->text->set("");
+
+        for (int i = 0; i < servers_.size(); i++) {
+            GameServer* server = servers_[i];
+
+            Logger::trace("Adding server '%s'[%d]", server->name->c_str(), i);
+
+            if (server) {
+                ListMenuItem item = ListMenuItem();
+
+                item.title = *server->name;
+                item.details = String::format("%d/%d players", server->num_players, server->max_players);
+
+                servers_list_->add_item(item);
+            }
+        }
+
+        servers_list_->visible = true;
+        servers_list_->focus();
+        this->on_item_selected(0, servers_list_);
+
+        Logger::debug("Made server list");
+    } else {
+        connecting_label_->text->set("No servers available");
+    }
+}
+
 void ServerListView::render() {
+    frames_ += 1;
+    if (frames_ > 8) {
+        game_state = Movie;
+    }
+
     View::render();
 
     username_input_.check_callback();
     direct_ip_input_.check_callback();
 }
 
-void ServerListView::update_server_list() {
-    for (int i = 0; i < servers_elements_.size(); i++) {
-        TextElement* element = servers_elements_[i];
-        if (i == selected_server_) {
-            element->color.b = 0;
-        } else {
-            element->color.b = 255;
-        }
+void ServerListView::refresh() {
+    if (servers_list_ != nullptr) {
+        servers_list_->clear_items();
+        servers_list_->visible = false;
     }
+
+    Logger::info("Querying game servers from directory");
+    Game::shared().query_servers(0, (ServerQueryCallback)&server_query_callback);
+
+    connecting_label_->text->set(connecting_str);
 }
 
 void ServerListView::on_load() {
@@ -72,60 +112,50 @@ void ServerListView::on_load() {
 
     username_label_ = new TextElement(120, 390, label.c_str(), ViewMovie);
 
-    this->add_element(username_label_);
-    this->add_element(new TextElement(380, 390, "\x12 Back", ViewMovie));
-    this->add_element(new TextElement(380, 370, "\x11 Direct IP", ViewMovie));
+    add_element(username_label_);
+    add_element(new TextElement(380, 390, "\x12 Back", ViewMovie));
+    add_element(new TextElement(380, 370, "\x11 Direct IP", ViewMovie));
+    add_element(connecting_label_);
 
-    // Make the server list
-    if (servers_.size() > 0) {
-        for (int i = 0; i < servers_.size(); i++) {
-            GameServer* server = servers_[i];
+    add_element(new TextElement(250, 10, "Select server", ViewMovie));
 
-            Logger::trace("Adding server '%s'[%d]", server->name->c_str(), i);
+    servers_list_ = new ListMenuElement(0, 40, 300, 320);
+    servers_list_->visible = false;
+    servers_list_->margins.width = 5;
+    servers_list_->margins.height = 5;
+    servers_list_->draws_background = true;
+    servers_list_->set_delegate(this);
 
-            if (server) {
-                // Calculate the Y coordinate for the element
-                int total_height = servers_.size() * 30;
-                int y = ((500 - total_height) - total_height / 2) / 2 + i * 30;
+    add_element(servers_list_);
 
-                // Create a new text element for the game server
-                TextElement* element = new TextElement(250, y, "", ViewMovie);
+    description_area_ = new TextAreaElement(310, 40, 190, 160);
+    description_area_->draws_background = true;
+    description_area_->margins.width = 5;
+    description_area_->margins.height = 5;
 
-                // Set the element's color
-                element->color.b = (i == selected_server_) ? 0 : element->color.b;
+    info_area_ = new TextAreaElement(310, 205, 190, 155);
+    info_area_->draws_background = true;
+    info_area_->margins.width = 5;
+    info_area_->margins.height = 5;
 
-                // Set the element's text
-                element->text->setf("%s (%d/%d)", server->name->c_str(), server->num_players, server->max_players);
+    add_element(description_area_);
+    add_element(info_area_);
 
-                this->servers_elements_.push_back(element);
-                this->add_element(element);
-            }
-        }
-
-        Logger::debug("Made server list");
-    }
-
-    // Setting this game state just removes the "Start/load game" buttons on the main screen
-    game_state = Movie;
+    refresh();
 }
 
 void ServerListView::on_unload() {
     View::on_unload();
 
-    game_state = Menu;
+    delete servers_list_;
+    delete connecting_label_;
+    delete username_label_;
+
+    game_state = PlayerControl;
 }
 
 void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
     View::on_pressed_buttons(input);
-
-    // Server list interaction
-    if (input & Up) {
-        selected_server_ = (selected_server_ + servers_.size() - 1) % servers_.size();
-        update_server_list();
-    } else if (input & Down) {
-        selected_server_ = (selected_server_ + 1) % servers_.size();
-        update_server_list();
-    }
 
     if (input & Square) {
         username_input_.activate();
@@ -136,26 +166,12 @@ void ServerListView::on_pressed_buttons(CONTROLLER_INPUT input) {
     }
 
     if (input & Triangle) {
-        // Setting game_state to Menu should make the main MP game loop delete this view and present
-        //  the relevant StartView.
-        game_state = Menu;
-    }
-
-    if (input & Cross) {
-        GameServer* server = servers_[selected_server_];
-
-        // This is kind of dumb, but it was easier than making constructors that takes int as IP address
-        char ip[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &server->ip, ip, INET_ADDRSTRLEN);
-
-        Logger::info("Selected server '%s'", server->name->c_str());
-
-        Game::shared().connect_to(ip, server->port);
+        game_state = PlayerControl;
     }
 }
 
 int ServerListView::username_input_callback(Input *input, void *userdata, int status) {
-    ServerListView *self = (ServerListView *) userdata;
+    ServerListView *self = (ServerListView *)userdata;
 
     if (status == 0) {
         self->username_label_->text->setf("\x13 %s", input->input_text.c_str());
@@ -191,4 +207,37 @@ int ServerListView::direct_ip_input_callback(Input *input, void *userdata, int s
     }
 
     return 0;
+}
+
+void ServerListView::server_query_callback(ServerListView* self, Vector<GameServer*>* servers) {
+    Logger::debug("Got servers from directory");
+
+    self->set_servers(servers);
+}
+
+void ServerListView::on_item_activated(int index, ListMenuElement* list_menu_element) {
+    GameServer* server = servers_[index];
+
+    // This is kind of dumb, but it was easier than making constructors that takes int as IP address
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &server->ip, ip, INET_ADDRSTRLEN);
+
+    Logger::info("Selected server '%s'", server->name->c_str());
+
+    Game::shared().connect_to(ip, server->port);
+}
+
+void ServerListView::on_item_selected(int index, ListMenuElement *list_menu_element) {
+    description_area_->text.setf("%s", servers_[index]->description->c_str());
+
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &servers_[index]->ip, ip, INET_ADDRSTRLEN);
+
+    info_area_->text.setf("Players: %d/%d\1Owner: %s\1\1IP: %s\1Port:%d\1",
+                          servers_[index]->num_players,
+                          servers_[index]->max_players,
+                          servers_[index]->owner_name->c_str(),
+                          ip,
+                          servers_[index]->port
+    );
 }

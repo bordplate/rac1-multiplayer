@@ -15,9 +15,10 @@
 
 #include "views/StartView.h"
 
-#include "Player.h"
-#include "PersistentStorage.h"
-#include "GoldBolt.h"
+#include "rc1/multiplayer/Player.h"
+#include "rc1/utils/PersistentStorage.h"
+#include "rc1/game/GoldBolt.h"
+#include "rc1/views/ServerListView.h"
 
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
@@ -86,7 +87,7 @@ void Game::on_tick() {
         }
 
         if (!current_view && game_state == 3) {
-            StartView* view = new StartView();
+            ServerListView* view = new ServerListView();
             this->transition_to(view);
         }
     } else if (ratchet_moby != nullptr && use_custom_player_color) {
@@ -202,23 +203,35 @@ int Game::query_servers_callback(void* data, size_t len, void* extra) {
         server->num_players = packet->player_count;
 
         char* server_name = (char*)allocate_memory(packet->name_length+1);
+        char* description = (char*)allocate_memory(packet->description_length+1);
+        char* owner_name = (char*)allocate_memory(packet->owner_name_length+1);
+
+        memset(server_name, 0, packet->name_length+1);
+        memset(description, 0, packet->description_length+1);
+        memset(owner_name, 0, packet->owner_name_length+1);
 
         snprintf(server_name, packet->name_length+1, "%s", &((char*)data)[index+sizeof(MPPacketQueryResponseServer)]);
+        snprintf(description, packet->description_length+1, "%s", &((char*)data)[index+sizeof(MPPacketQueryResponseServer)+packet->name_length]);
+        snprintf(owner_name, packet->owner_name_length+1, "%s", &((char*)data)[index+sizeof(MPPacketQueryResponseServer)+packet->name_length+packet->description_length]);
 
         server->name = new String(server_name);
+        server->description = new String(description);
+        server->owner_name = new String(owner_name);
 
         free_memory(server_name);
+        free_memory(description);
+        free_memory(owner_name);
 
-        Logger::debug("Server name: %s; Port: %d; Max players: %d", server->name->c_str(), server->port, server->max_players);
+        Logger::debug("Server name: %s; Port: %d; Max players: %d, Description: %s, Owner: %s", server->name->c_str(), server->port, server->max_players, server->description->c_str(), server->owner_name->c_str());
 
-        index += sizeof(MPPacketQueryResponseServer) + packet->name_length;
+        index += sizeof(MPPacketQueryResponseServer) + packet->name_length + packet->description_length + packet->owner_name_length;
         items += 1;
 
         servers->push_back(server);
     }
 
     if (server_query_callback_) {
-        server_query_callback_(servers);
+        server_query_callback_((ServerListView*)Game::shared().current_view, servers);
     }
 
     delete servers;
@@ -236,7 +249,8 @@ void Game::query_servers(int directory_id, ServerQueryCallback callback) {
     // - 172.104.144.15 -> boltcrate.space
     // We use IP instead of domain name because I don't trust that name resolution
     //   on PS3 will be stable forever or for everyone.
-    client_ = new DirectoryClient("172.104.144.15", 2407);
+//    client_ = new DirectoryClient("172.104.144.15", 2407);
+    client_ = new DirectoryClient("10.9.0.2", 2407);
     client_->_connect();
 
     server_query_callback_ = callback;

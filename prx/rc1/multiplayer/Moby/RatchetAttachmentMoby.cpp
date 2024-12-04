@@ -3,11 +3,11 @@
 //
 
 #include "RatchetAttachmentMoby.h"
-#include "rc1/multiplayer/Client.h"
+#include "rc1/multiplayer/network/Client.h"
 #include "rc1/Game.h"
 
-#include <rc1/multiplayer/Packet.h>
-#include <rc1/Player.h>
+#include "rc1/multiplayer/network/Packet.h"
+#include "rc1/multiplayer/Player.h"
 
 SyncedMoby* RatchetAttachmentMoby::make_synced_moby(Moby* moby, u8 position_bone, u8 transform_bone) {
     Logger::info("Making backpack moby");

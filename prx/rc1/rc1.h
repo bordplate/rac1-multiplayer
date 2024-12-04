@@ -3,18 +3,12 @@
 #ifndef RC1_H
 #define RC1_H
 
-#define RGBA(r, g, b, a) \
-    (((unsigned int)(a) << 24) | \
-     ((unsigned int)(b) << 16) | \
-     ((unsigned int)(g) << 8)  | \
-     ((unsigned int)(r)))
-
 #include <lib/shk.h>
 #include <lib/types.h>
-#include "Moby.h"
+#include "rc1/game/Moby.h"
 
 #ifdef __cplusplus
-#include "Moby.h"
+#include "game/Moby.h"
 
 extern "C" {
 #endif
@@ -38,6 +32,19 @@ typedef enum PlayerType {
     PlayerTypeHologuise = 0x3,
 } PlayerType;
 
+typedef struct {
+    s16 y_min;
+    s16 y_max;
+    s16 x_min;
+    s16 x_max;
+    s16 x;
+    s16 y;
+    u16 unk_0c; /* probably an output */
+    u16 unk_0e; /* probably an output */
+    s16 line_spacing;
+    u16 flags;
+} TextOpt;
+
 // Our global variables
 extern int game_ticks;
 
@@ -55,6 +62,10 @@ SHK_FUNCTION_DEFINE_STATIC_0(0x164c58, void, load_destination_planet);
 SHK_FUNCTION_DEFINE_STATIC_1(0xccda0, void, toast_message, char*, message);
 SHK_FUNCTION_DEFINE_STATIC_1(0x112c20, void, unlock_planet, int, planet);
 SHK_FUNCTION_DEFINE_STATIC_4(0xdbc38, void, load_moby_model, void**, addr, int, unk0, int, unk1, short, oClass);
+SHK_FUNCTION_DEFINE_STATIC_5(0x6a718, void, draw_rounded_box, int, y1, int, y2, int, x1, int, x2, u32, alpha);
+SHK_FUNCTION_DEFINE_STATIC_4(0x7100c, void, _draw_text_opt, TextOpt*, text_opt, u32, color, char*, text, ssize_t, len);
+
+void draw_text_opt(TextOpt* text_opt, Color color, char* text, ssize_t len, float text_size);
 
 SHK_FUNCTION_DEFINE_STATIC_2(0x151e70, void, set_spawn_point, Vec4*, position, Vec4*, rotation);
 

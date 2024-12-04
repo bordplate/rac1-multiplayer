@@ -11,6 +11,8 @@ struct GameServer {
     int ip;
     unsigned short port;
     String* name;
+    String* description;
+    String* owner_name;
     int num_players;
     int max_players;
 

@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "Moby.h"
+#include "rc1/game/Moby.h"
 
 void cpp_start();
 

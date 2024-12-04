@@ -3,7 +3,7 @@
 //
 
 #include "MPMoby.h"
-#include "Packet.h"
+#include "rc1/multiplayer/network/Packet.h"
 
 #include <rc1/rc1.h>
 #include <rc1/Game.h>

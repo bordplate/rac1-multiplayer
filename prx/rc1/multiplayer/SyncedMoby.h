@@ -6,7 +6,7 @@
 #define RAC1_MULTIPLAYER_SYNCEDMOBY_H
 
 #include <lib/types.h>
-#include <rc1/Moby.h>
+#include "rc1/game/Moby.h"
 
 typedef enum {
     SyncedMobyStatusNone = 0,

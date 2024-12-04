@@ -3,7 +3,7 @@
 //
 
 #include "SyncedMoby.h"
-#include "rc1/Player.h"
+#include "Player.h"
 #include <rc1/rc1.h>
 #include <rc1/Game.h>
 

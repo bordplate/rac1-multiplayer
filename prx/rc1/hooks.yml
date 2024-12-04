@@ -56,6 +56,10 @@ _unlock_skillpoint:
     addr: 0x11b728
     replacedInstr: stdu r1, -0xa0(r1)
 
+menu_item_tick:
+    addr: 0x141408
+    replacedInstr: stdu r1, -0xc0(r1)
+
 set_ratchet_animation:
     addr: 0x85300
     replacedInstr: stdu r1, -0xc0(r1)

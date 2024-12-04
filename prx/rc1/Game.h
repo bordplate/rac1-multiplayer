@@ -7,13 +7,14 @@
 
 #include <rc1/common.h>
 
-#include "View.h"
-#include "multiplayer/Client.h"
-#include "multiplayer/DirectoryClient.h"
-#include "multiplayer/GameClient.h"
+#include "rc1/ui/View.h"
+#include "rc1/multiplayer/network/Client.h"
+#include "rc1/multiplayer/network/DirectoryClient.h"
+#include "rc1/multiplayer/network/GameClient.h"
 #include "multiplayer/GameServer.h"
+#include "rc1/views/ServerListView.h"
 
-typedef void (*ServerQueryCallback)(Vector<GameServer*>* servers);
+typedef void (*ServerQueryCallback)(ServerListView* self, Vector<GameServer*>* servers);
 
 static char* level_flags1 = (char*)0xa0ca84;
 static char* level_flags2 = (char*)0xa0cd1c;
@@ -25,6 +26,7 @@ public:
         return game;
     }
 
+    View* current_view;
     int userid;
 
     void start();
@@ -53,8 +55,6 @@ private:
         previous_user_option_camera_rotation_speed = -1;
     }
     Game(Game const&);
-
-    View* current_view;
 
     Client* client_;
 

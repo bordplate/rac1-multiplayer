@@ -5,8 +5,8 @@
 #ifndef RAC1_MULTIPLAYER_REMOTEVIEW_H
 #define RAC1_MULTIPLAYER_REMOTEVIEW_H
 
-#include "../View.h"
-#include "../TextElement.h"
+#include "rc1/ui/View.h"
+#include "rc1/ui/TextElement.h"
 
 #include <lib/vector.h>
 

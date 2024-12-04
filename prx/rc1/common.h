@@ -12,6 +12,11 @@
 #define MULTI_TRACE(msg, ...) do {} while (false)
 #endif
 
+struct Size {
+    u32 width;
+    u32 height;
+};
+
 typedef enum ITEM {
     HeliPack=2,
     ThrusterPack=3,

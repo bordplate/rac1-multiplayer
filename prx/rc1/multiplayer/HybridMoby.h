@@ -5,7 +5,7 @@
 #ifndef RAC1_MULTIPLAYER_HYBRIDMOBY_H
 #define RAC1_MULTIPLAYER_HYBRIDMOBY_H
 
-#include <rc1/Moby.h>
+#include "rc1/game/Moby.h"
 #include "MonitoredValue.h"
 
 struct HybridMoby {

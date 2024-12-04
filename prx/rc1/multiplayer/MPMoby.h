@@ -5,7 +5,7 @@
 #ifndef PS3_CKIT_MPMOBY_H
 #define PS3_CKIT_MPMOBY_H
 
-#include <rc1/moby.h>
+#include "rc1/game/Moby.h"
 
 typedef struct {
     u8 pad[10];

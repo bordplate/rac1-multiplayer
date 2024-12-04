@@ -8,11 +8,10 @@
 #include <cell/cell_fs.h>
 
 #include <rc1/Game.h>
-#include "multiplayer/Packet.h"
+#include "rc1/multiplayer/network/Packet.h"
 #include "multiplayer/SyncedMoby.h"
 #include "multiplayer/Moby/RatchetAttachmentMoby.h"
-#include "multiplayer/Moby/ClankAttachmentMoby.h"
-#include "Player.h"
+#include "rc1/multiplayer/Player.h"
 
 #include "bridging.h"
 
@@ -140,7 +139,7 @@ int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     return 0;
 }
 
-#include "GoldBolt.h"
+#include "rc1/game/GoldBolt.h"
 
 SHK_HOOK(void, goldBoltUpdate, Moby* moby);
 void goldBoltUpdateHook(Moby* moby) {
@@ -191,6 +190,11 @@ void unlock_skillpoint(u8 skillpoint) {
     SHK_CALL_HOOK(_unlock_skillpoint, skillpoint);
 }
 
+SHK_HOOK(void, menu_item_tick, MenuItem*);
+void menu_item_tick_hook(MenuItem* menu_item) {
+    SHK_CALL_HOOK(menu_item_tick, menu_item);
+}
+
 SHK_HOOK(void, set_ratchet_animation, u32 animation_id, char animation_frame);
 void set_ratchet_animation_hook(u32 animation_id, char animation_frame) {
     // Get PowerPC f1 register using inline assembly because SHK_HOOK doesn't properly work with float parameters
@@ -198,9 +202,9 @@ void set_ratchet_animation_hook(u32 animation_id, char animation_frame) {
     volatile double duration;
     asm volatile("stfd 1, %0" : "=m"(duration));
 
-    _c_set_ratchet_animation_duration((int)duration);
-
     SHK_CALL_HOOK(set_ratchet_animation, animation_id, animation_frame);
+
+    _c_set_ratchet_animation_duration((int)duration);
 }
 
 SHK_HOOK(Moby*, _spawn_moby, u16 o_class);
@@ -277,6 +281,13 @@ struct Damage* moby_get_damage(Moby* moby, u32 flags, u32 unk) {
     return SHK_CALL_HOOK(_moby_get_damage, moby, flags, unk);
 }
 
+void draw_text_opt(TextOpt* text_opt, Color color, char* text, ssize_t len, float text_size) {
+    // Set float with PowerPC assembly due to the lack of float support in the SHK_FUNCTION_DEFINE_STATIC_4 macro
+    asm volatile("lfs 1, %0" : : "m"(text_size));
+
+    _draw_text_opt(text_opt, color.to_u32(), text, len);
+}
+
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
@@ -297,6 +308,7 @@ void rc1_init() {
     SHK_BIND_HOOK(_unlock_item, _unlock_item_hook);
     SHK_BIND_HOOK(_unlock_level, _unlock_level_hook);
     SHK_BIND_HOOK(_unlock_skillpoint, _unlock_skillpoint_hook);
+    SHK_BIND_HOOK(menu_item_tick, menu_item_tick_hook);
     SHK_BIND_HOOK(set_ratchet_animation, set_ratchet_animation_hook);
     SHK_BIND_HOOK(_spawn_moby, spawn_moby_hook);
     SHK_BIND_HOOK(_moby_get_damage, _moby_get_damage_hook);
