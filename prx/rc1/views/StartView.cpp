@@ -38,7 +38,7 @@
 //void StartView::render() {
 //    char* blah = "Hello there!\0";
 //
-//    draw_text_opt(&test_opt, 0x80ffa888, blah, -1, 1.0f);
+////    draw_text_opt(&test_opt, 0x80ffa888, blah, -1, 1.0f);
 //
 //    View::render();
 //}
@@ -46,7 +46,7 @@
 //void StartView::on_pressed_buttons(CONTROLLER_INPUT input) {
 //    if (input & Square) {
 //        Logger::info("Querying game servers from directory");
-//        Game::shared().query_servers(0, (ServerQueryCallback)&server_query_callback);
+////        Game::shared().query_servers(0, (ServerQueryCallback)&server_query_callback);
 //
 //        label_->text->set(connecting_str);
 //    }
