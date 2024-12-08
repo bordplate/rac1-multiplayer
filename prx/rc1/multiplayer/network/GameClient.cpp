@@ -27,8 +27,11 @@ void GameClient::disconnect() {
     Client::disconnect();
 
     if (ratchet_moby == nullptr && current_planet == 0) {
-        game_state = Menu;
+        game_state = Movie;
     }
+
+    ServerListView* view = new ServerListView();
+    Game::shared().transition_to(view);
 }
 
 void GameClient::reset() {
