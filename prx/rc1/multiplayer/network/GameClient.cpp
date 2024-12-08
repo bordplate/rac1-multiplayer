@@ -465,12 +465,12 @@ void GameClient::update_set_text(MPPacketSetHUDText* packet) {
 
     if (packet->flags & HUDElementDelete) {
         Logger::trace("Deleting HUD element");
-        remote_view_->delete_element(packet->id);
+        remote_view_->delete_text_element(packet->id);
 
         return;
     }
 
-    TextElement* element = remote_view_->get_element(packet->id);
+    TextElement* element = remote_view_->get_text_element(packet->id);
 
     if (!element) {
         Logger::critical("Unable to create text element for remote view: %d", packet->id);
@@ -650,6 +650,26 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
         }
         case MP_PACKET_MONITOR_ADDRESS: {
             monitor_address((MPPacketMonitorAddress*)packet_data);
+            break;
+        }
+        case MP_PACKET_UI: {
+            if (remote_view_ == nullptr) {
+                Logger::error("No remote view to handle UI updates.");
+                break;
+            }
+
+            remote_view_->handle_packet((MPPacketUI*)packet_data);
+
+            break;
+        }
+        case MP_PACKET_UI_EVENT: {
+            if (remote_view_ == nullptr) {
+                Logger::error("No remote view to handle UI events.");
+                break;
+            }
+
+            remote_view_->handle_event((MPPacketUIEvent*)packet_data);
+
             break;
         }
         default:

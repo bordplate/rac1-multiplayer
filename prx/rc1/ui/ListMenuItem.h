@@ -10,6 +10,7 @@
 struct ListMenuItem {
     String title;
     String details;
+    String accessory;
 };
 
 

@@ -87,6 +87,17 @@ public:
         }
     }
 
+    T* erase(T* pos) {
+        if (pos < begin() || pos >= end()) {
+            return end();
+        }
+
+        for (T* p = pos; p < end() - 1; ++p) {
+            *p = *(p + 1);
+        }
+        --size_;
+        return pos;
+    }
 private:
     T *data_;
     int size_;

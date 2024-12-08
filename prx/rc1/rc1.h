@@ -258,6 +258,8 @@ extern int user_option_camera_left_right_movement;
 extern int user_option_camera_up_down_movement;
 extern int user_option_camera_rotation_speed;
 
+extern u8 latin_glyph_sizes;
+
 extern PlayerType player_type;
 
 void unlock_item(int item_id, uint8_t equip);

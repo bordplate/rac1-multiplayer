@@ -43,3 +43,5 @@ player_type = 0x96bd84;
 user_option_camera_left_right_movement = 0x71fb38;
 user_option_camera_up_down_movement = 0x71fb3c;
 user_option_camera_rotation_speed = 0x71fb40;
+
+latin_glyph_sizes = 0x736c50;

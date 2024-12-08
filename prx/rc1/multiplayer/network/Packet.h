@@ -81,6 +81,8 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_MONITOR_ADDRESS    26
 #define MP_PACKET_ADDRESS_CHANGED    27
 #define MP_PACKET_MOBY_CREATE_FAILURE 28
+#define MP_PACKET_UI                  29
+#define MP_PACKET_UI_EVENT            30
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -295,6 +297,33 @@ typedef struct {
     char text[50];
 } MPPacketSetHUDText;
 
+#define MP_UI_OPERATION_CREATE      1 << 0
+#define MP_UI_OPERATION_UPDATE      1 << 1
+#define MP_UI_OPERATION_DELETE      1 << 2
+#define MP_UI_OPERATION_CLEAR_ALL   1 << 3
+
+typedef struct {
+    u16 id;
+    u16 element_type;
+    u8 operations;
+    u8 items;
+} MPPacketUI;
+
+typedef struct {
+    u16 id;
+    u8 operations;
+    u8 pad;
+    u16 attribute;
+    u16 data_length;
+} MPPacketUIItem;
+
+typedef struct {
+    u16 event_type;
+    u16 element_id;
+    u32 data;
+    u16 extra_length;
+} MPPacketUIEvent;
+
 // Packet used to query a directory for game servers
 typedef struct {
     u8 version;
@@ -391,6 +420,8 @@ struct Packet {
     static Packet* make_address_changed_packet(u32 address, u16 size, u32 old_value, u32 new_value);
     static Packet* make_bolt_count_changed_packet(s32 bolt_diff, u32 current_bolts);
     static Packet* make_moby_create_failure_packet(u16 uuid, u8 reason);
+    static Packet* make_ui_event_packet(u16 event_type, u16 element_id, u32 data);
+    static Packet* make_ui_event_with_text_packet(u16 event_type, u16 element_id, u32 data, const char* text);
 };
 
 #endif

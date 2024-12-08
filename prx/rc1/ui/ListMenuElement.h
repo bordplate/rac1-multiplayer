@@ -25,6 +25,9 @@ public:
     TextOpt details_options;
     float details_size;
 
+    TextOpt accessory_options;
+    float accessory_size;
+
     Color default_color;
     Color selected_color;
 
@@ -32,7 +35,10 @@ public:
 
     int element_spacing;
 
+    size_t item_count() { return items_.size(); }
+    ListMenuItem* get_item(u16 id) { return &items_[id]; }
     void add_item(ListMenuItem& item) { items_.push_back(item); }
+    void remove_item(u16 id) { items_.erase(items_.begin() + id); }
     void render();
     void set_delegate(ListMenuDelegate* delegate) { delegate_ = delegate; }
 

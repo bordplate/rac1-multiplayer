@@ -5,10 +5,12 @@
 #include "ListMenuElement.h"
 #include "../rc1.h"
 #include "../../lib/types.h"
+#include "../../lib/logger.h"
 
 ListMenuElement::ListMenuElement(int x, int y, int width, int height) : ViewElement(x, y, width, height) {
     title_size = 1.0f;
     details_size = 0.7f;
+    accessory_size = 1.0f;
 
     title_options.x_min = x;
     title_options.y_min = y;
@@ -19,6 +21,8 @@ ListMenuElement::ListMenuElement(int x, int y, int width, int height) : ViewElem
     details_options.y_min = y;
     details_options.x_max = x + width;
     details_options.y_max = y + height;
+
+    accessory_options.flags = 0;
 
     selected_item = 0;
 
@@ -33,6 +37,21 @@ void ListMenuElement::render() {
         return;
     }
 
+    title_options.x_min = x;
+    title_options.y_min = y;
+    title_options.x_max = x + size.width;
+    title_options.y_max = y + size.height;
+
+    details_options.x_min = x;
+    details_options.y_min = y;
+    details_options.x_max = x + size.width;
+    details_options.y_max = y + size.height;
+
+    accessory_options.x_min = x;
+    accessory_options.y_min = y;
+    accessory_options.x_max = x + size.width;
+    accessory_options.y_max = y + size.height;
+
     ViewElement::render();
 
     int x = this->x + margins.width * 2;
@@ -43,6 +62,19 @@ void ListMenuElement::render() {
 
         title_options.x = x;
         title_options.y = y;
+
+        if (item.accessory.length() > 0) {
+            // Calculate size of the text so we can right-align it
+            u8* glyph_sizes = (u8*)&latin_glyph_sizes;
+            int text_size = 5;
+
+            for (int j = 0; j < item.accessory.length(); j++) {
+                text_size += *(u8*)(glyph_sizes + item.accessory[j] * 4 + 3);
+            }
+
+            accessory_options.x = x + size.width - (margins.width*2) - text_size;
+            accessory_options.y = y;
+        }
 
         if (item.details.length() != 0) {
             y += element_spacing * details_size;
@@ -59,6 +91,7 @@ void ListMenuElement::render() {
         }
 
         draw_text_opt(&title_options, color, (char*)item.title.c_str(), -1, title_size);
+        draw_text_opt(&accessory_options, color, (char*)item.accessory.c_str(), -1, accessory_size);
         draw_text_opt(&details_options, color, (char*)item.details.c_str(), -1, details_size);
     }
 }

@@ -9,6 +9,20 @@
 #include "network/Packet.h"
 
 void Player::on_tick() {
+    Client* client = Game::shared().connected_client();
+
+    if (client) {
+        if (held_buttons != 0) {
+            Packet* controller_input = Packet::make_controller_input(held_buttons, MP_CONTROLLER_FLAGS_HELD);
+            client->send(controller_input);
+        }
+
+        if (pressed_buttons != 0) {
+            Packet* controller_input = Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED);
+            client->send(controller_input);
+        }
+    }
+
     if (!ratchet_moby) {
         return;
     }
@@ -41,19 +55,7 @@ void Player::on_tick() {
     Logger::trace("Sent update packet");
     Game::shared().client()->send(packet);
 
-    // Send which buttons we're holding, if any.
-    Client* client = Game::shared().connected_client();
     if (client) {
-        if (held_buttons != 0) {
-            Packet* controller_input = Packet::make_controller_input(held_buttons, MP_CONTROLLER_FLAGS_HELD);
-            client->send(controller_input);
-        }
-
-        if (pressed_buttons != 0) {
-            Packet* controller_input = Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED);
-            client->send(controller_input);
-        }
-
         if (last_game_state != game_state) {
             Packet* game_state_packet = Packet::make_game_state_changed_packet(game_state);
             client->send(game_state_packet);

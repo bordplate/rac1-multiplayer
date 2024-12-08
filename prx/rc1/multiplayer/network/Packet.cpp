@@ -317,3 +317,33 @@ Packet* Packet::make_moby_create_failure_packet(u16 uuid, u8 reason) {
 
     return packet;
 }
+
+Packet* Packet::make_ui_event_packet(u16 event_type, u16 element_id, u32 data) {
+Packet* packet = new Packet(sizeof(MPPacketUIEvent));
+    packet->header->type = MP_PACKET_UI_EVENT;
+    packet->header->size = sizeof(MPPacketUIEvent);
+
+    MPPacketUIEvent* body = (MPPacketUIEvent*)packet->body;
+    body->event_type = event_type;
+    body->element_id = element_id;
+    body->data = data;
+    body->extra_length = 0;
+
+    return packet;
+}
+
+Packet* Packet::make_ui_event_with_text_packet(u16 event_type, u16 element_id, u32 data, const char* text) {
+    Packet* packet = new Packet(sizeof(MPPacketUIEvent) + strlen(text));
+    packet->header->type = MP_PACKET_UI_EVENT;
+    packet->header->size = sizeof(MPPacketUIEvent) + strlen(text);
+
+    MPPacketUIEvent* body = (MPPacketUIEvent*)packet->body;
+    body->event_type = event_type;
+    body->element_id = element_id;
+    body->data = data;
+    body->extra_length = strlen(text);
+
+    memcpy((char*)packet->body + sizeof(MPPacketUIEvent), text, strlen(text));
+
+    return packet;
+}

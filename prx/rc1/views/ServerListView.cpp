@@ -233,7 +233,7 @@ void ServerListView::on_item_selected(int index, ListMenuElement *list_menu_elem
     char ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &servers_[index]->ip, ip, INET_ADDRSTRLEN);
 
-    info_area_->text.setf("Players: %d/%d\1Owner: %s\1\1IP: %s\1Port:%d\1",
+    info_area_->text.setf("Players: %d/%d\1Owner: %s\1\1IP: %s\1Port: %d\1",
                           servers_[index]->num_players,
                           servers_[index]->max_players,
                           servers_[index]->owner_name->c_str(),
