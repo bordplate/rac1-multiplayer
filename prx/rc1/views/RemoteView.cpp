@@ -280,7 +280,11 @@ void RemoteView::handle_packet(MPPacketUI* packet) {
                     break;
                 }
                 case MPUIElementAttributeTextSize: {
-                    ((TextAreaElement*)element)->text_size = *(float*)data;
+                    float size = 0.0f;
+
+                    memcpy(&size, data, sizeof(float));
+
+                    ((TextAreaElement*)element)->text_size = size;
                     break;
                 }
                 case MPUIElementAttributeTextColor: {
@@ -296,7 +300,9 @@ void RemoteView::handle_packet(MPPacketUI* packet) {
                     break;
                 }
                 case MPUIElementAttributeTitleTextSize: {
-                    ((ListMenuElement*)element)->title_size = *(float*)data;
+                    float size = 0.0f;
+                    memcpy(&size, data, sizeof(float));
+                    ((ListMenuElement*)element)->title_size = size;
                     break;
                 }
                 case MPUIElementAttributeTitleTextColor: {
@@ -304,7 +310,9 @@ void RemoteView::handle_packet(MPPacketUI* packet) {
                     break;
                 }
                 case MPUIElementAttributeDetailsTextSize: {
-                    ((ListMenuElement*)element)->details_size = *(float*)data;
+                    float size = 0.0f;
+                    memcpy(&size, data, sizeof(float));
+                    ((ListMenuElement*)element)->details_size = size;
                     break;
                 }
                 case MPUIElementAttributeDetailsTextColor: {
