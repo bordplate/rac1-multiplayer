@@ -67,27 +67,9 @@ void Player::on_tick() {
             previous_bolt_count = player_bolts;
         }
 
-        if (backpack_moby && backpack_moby->get_vars()->status == SyncedMobyStatusActive) {
-            if (backpack_attachment_moby) {
-                switch (backpack_attachment_moby->get_vars()->status) {
-                    case SyncedMobyStatusReady:
-//                        backpack_attachment_moby->get_vars()->parent_uuid = backpack_moby->get_vars()->uuid;
-                        backpack_attachment_moby->activate();
-                        break;
-                    case SyncedMobyStatusActive:
-                        backpack_attachment_moby->update();
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            backpack_moby->update();
-        }
-
-        if (helmet_moby && helmet_moby->get_vars()->status == SyncedMobyStatusActive) {
-            helmet_moby->update();
-        }
+        if (backpack_moby) backpack_moby->update();
+        if (backpack_attachment_moby) backpack_attachment_moby->update();
+        if (helmet_moby) helmet_moby->update();
 
         if (map_o_matic_moby && map_o_matic_moby->get_vars()->status == SyncedMobyStatusActive) {
             map_o_matic_moby->update();

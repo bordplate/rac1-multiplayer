@@ -234,6 +234,7 @@ Moby* spawn_moby_hook(u16 o_class) {
         case 608: // Thruster pack
         case 609: // Hydro pack
             Player::shared().backpack_attachment_moby = RatchetAttachmentMoby::make_synced_moby(moby, 5, 5);
+            Player::shared().backpack_attachment_moby->activate();
             break;
         case 1289: // O2 Mask
         case 1290: // Pilots helmet

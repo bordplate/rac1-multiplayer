@@ -33,6 +33,11 @@ void SyncedMoby::activate() {
         return;
     }
 
+    if (game_state != PlayerControl) {
+        vars->status = SyncedMobyStatusWaiting;
+        return;
+    }
+
     Client* client = Game::shared().connected_client();
     if (client != nullptr) {
         client->send_rpc(Packet::make_moby_create_packet(
@@ -68,6 +73,11 @@ void SyncedMoby::update() {
     }
 
     Client* client = Game::shared().connected_client();
+
+    if (vars->status == SyncedMobyStatusWaiting && game_state == PlayerControl && vars->parent_uuid == 0 && client) {
+        activate();
+        return;
+    }
 
     if ((vars->flags & MP_MOBY_FLAG_ATTACHED_TO) && vars->status == SyncedMobyStatusWaiting && vars->parent_uuid != 0) {
         activate();
