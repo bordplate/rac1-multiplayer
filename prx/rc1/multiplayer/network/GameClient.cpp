@@ -84,7 +84,7 @@ void GameClient::create_moby(MobyInfo* moby_info) {
 
         MobyInfo* parent_moby_info = &mobys_[moby_info->parent_uuid];
         if (parent_moby_info->uuid == 0 || parent_moby_info->moby == nullptr || parent_moby_info->moby->state < 0) {
-            Logger::error("Server tried to attach moby %d to an invalid parent %d", moby_info->o_class, moby_info->parent_uuid);
+            Logger::trace("Server tried to attach moby %d to an invalid parent %d, but we are not ready", moby_info->o_class, moby_info->parent_uuid);
             send_ack(Packet::make_moby_create_failure_packet(moby_info->uuid, MP_MOBY_CREATE_FAILURE_REASON_NOT_READY));
             return;
         }
@@ -99,6 +99,8 @@ void GameClient::create_moby(MobyInfo* moby_info) {
     vars->parent_transform_bone = moby_info->transform_bone;
 
     moby_info->moby = moby;
+
+    send_ack(Packet::make_moby_create_failure_packet(moby_info->uuid, MP_MOBY_CREATE_FAILURE_REASON_SUCCESS));
 }
 
 void GameClient::create_moby(MPPacketMobyCreate* packet) {
@@ -156,7 +158,7 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     }
 
     if (moby && moby->state >= 0 && moby->o_class != packet->o_class) {
-        Logger::error("[%d] Incoming o_class %d did not match o_class %d for existing moby", packet->uuid, packet->o_class, moby->o_class);
+        Logger::debug("[%d] Incoming o_class %d changed o_class %d for existing moby", packet->uuid, packet->o_class, moby->o_class);
 
         delete_moby(moby);
         moby_info->o_class = packet->o_class;
@@ -174,7 +176,7 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     if (!moby && moby_info->uuid == 0) {
         Logger::error("Tried to update non-existent Moby UUID: %d", packet->uuid);
 
-        send_ack(Packet::make_moby_create_failure_packet(packet->uuid, MP_MOBY_CREATE_FAILURE_REASON_UNKNOWN));
+        send_ack(Packet::make_moby_create_failure_packet(packet->uuid, MP_MOBY_CREATE_FAILURE_REASON_UPDATE_NON_EXISTENT));
 
         return;
     } else if (!moby) {
@@ -287,27 +289,19 @@ void GameClient::moby_delete(MPPacketMobyDelete* packet) {
 
         delete_moby(moby);
     } else if (packet->flags & MP_MOBY_DELETE_FLAG_OCLASS) {
-        Moby* moby = moby_ptr;
-        do {
+        for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
             if (moby->state >= 0 && moby->o_class == packet->value) {
                 moby->state = -1;
                 delete_moby(moby);
             }
-
-            moby = (Moby*)moby->p_chain;
-            if (!moby) break;
-        } while (moby <= moby_ptr_end);
+        }
     } else if (packet->flags & MP_MOBY_DELETE_FLAG_UID) {
-        Moby* moby = moby_ptr;
-        do {
+        for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
             if (moby->state >= 0 && moby->uid == packet->value) {
                 moby->state = -1;
                 delete_moby(moby);
             }
-
-            moby = (Moby*)moby->p_chain;
-            if (!moby) break;
-        } while (moby <= moby_ptr_end);
+        }
     }
 }
 
@@ -325,7 +319,7 @@ void GameClient::moby_delete_all() {
             delete_moby(moby);
         }
 
-        moby_info->moby = nullptr;
+        memset(moby_info, 0, sizeof(MobyInfo));
     }
 }
 

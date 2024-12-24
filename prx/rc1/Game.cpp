@@ -124,6 +124,7 @@ void Game::before_player_spawn() {
         if (last_planet_ != current_planet) {
             last_planet_ = current_planet;
 
+            ((GameClient*)client())->moby_delete_all();
             ((GameClient*)client())->clear_hybrid_mobys();
         }
     }
