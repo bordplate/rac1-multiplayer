@@ -28,7 +28,7 @@ void Player::on_tick() {
     }
 
     if (!moved_since_respawn_) {
-        player_ghost_frames = 30;
+        player_ghost_frames = 60;
     }
 
     if (held_buttons) {
