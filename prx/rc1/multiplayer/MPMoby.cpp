@@ -34,7 +34,11 @@ void MPMoby::update() {
         }
     }
 
-    if (vars->attached_to_parent && vars->parent) {
+    if (
+        vars->attached_to_parent && vars->parent &&
+        vars->parent->p_class->joint_cnt > vars->parent_position_bone &&
+        vars->parent->p_class->joint_cnt > vars->parent_transform_bone
+    ) {
         Vec4 bone_position;
         get_bone_position(vars->parent, vars->parent_position_bone, &bone_position);
 

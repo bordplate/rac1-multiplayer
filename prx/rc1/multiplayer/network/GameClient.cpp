@@ -65,6 +65,7 @@ void GameClient::create_moby(MobyInfo* moby_info) {
 
     if (!moby) {
         Logger::error("Failed to spawn moby %d", moby_info->uuid);
+        moby_info->moby = nullptr;
         send_ack(Packet::make_moby_create_failure_packet(moby_info->uuid, MP_MOBY_CREATE_FAILURE_REASON_UNKNOWN));
         return;
     }
