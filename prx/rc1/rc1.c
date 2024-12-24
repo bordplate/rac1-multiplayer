@@ -220,6 +220,8 @@ Moby* spawn_moby_hook(u16 o_class) {
     }
 
     switch(moby->o_class) {
+        // Weapons and projectiles
+        case 121: // Bomb glove bomb
         case 0xcb: // Decoy
         case 0xac: // Visibomb missile
         case 0x1df: // Drone
@@ -228,6 +230,8 @@ Moby* spawn_moby_hook(u16 o_class) {
         case 0x4a: // Mine
         case 0xba: // Doom bot
         case 457:  // RYNO missile
+        case 270: // Chicken
+        case 428: // Feather (from killing chickens)
             SyncedMoby::make_synced_moby(moby)->activate();
             break;
         case 601: // Clank Backpack
