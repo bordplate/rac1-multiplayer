@@ -60,6 +60,10 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBit
     }
 
     Moby* moby = spawn_moby(o_class);
+    if (moby == nullptr) {
+        Logger::error("Failed to spawn moby %d", o_class);
+        return nullptr;
+    }
 
     if ((int)moby->vars == nullptr) {
         Logger::error("Moby spawned with invalid pVars: %d. Allocating pVars from custom allocator", (int) moby->vars);
