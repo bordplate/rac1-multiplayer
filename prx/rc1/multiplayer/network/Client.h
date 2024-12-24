@@ -15,7 +15,7 @@
 #include <arpa/inet.h>
 
 #define SEND_BUFFER_SIZE 1024
-#define RECV_BUFFER_SIZE (1024 * 8)
+#define RECV_BUFFER_SIZE (1024 * 16)
 
 extern int64_t get_time();
 

@@ -211,6 +211,10 @@ SHK_HOOK(Moby*, _spawn_moby, u16 o_class);
 Moby* spawn_moby_hook(u16 o_class) {
     Moby* moby = SHK_CALL_HOOK(_spawn_moby, o_class);
 
+    if (moby == nullptr) {
+        return nullptr;
+    }
+
     if (game_state == Menu) {
         return moby;
     }
