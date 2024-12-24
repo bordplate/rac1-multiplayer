@@ -270,7 +270,6 @@ void Game::alert(String& message) {
 }
 
 void Game::refresh_level_flags() {
-    Logger::trace("Reloading level flags");
     memcpy(&level_flags1_, level_flags1 + 0x10 * current_planet, 0x10);
     memcpy(&level_flags2_, level_flags2 + 0x100 * current_planet, 0x100);
 }
@@ -284,7 +283,6 @@ void Game::check_level_flags() {
         refresh_level_flags();
     }
 
-    Logger::trace("Checking level flags");
     for (int i = 0; i < 0x10; i++) {
         if (level_flags1_[i] != level_flags1[0x10 * current_planet + i]) {
             level_flags1_[i] = level_flags1[0x10 * current_planet + i];

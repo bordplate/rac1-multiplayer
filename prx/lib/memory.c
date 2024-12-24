@@ -41,10 +41,6 @@ void *allocate_memory(size_t size) {
     size_t word_size = sizeof(void *);
     size = ((size + word_size - 1) & ~(word_size - 1)) + sizeof(struct memory_canary);
 
-#ifdef __cplusplus
-    Logger::trace("Allocating memory of size %d", size);
-#endif
-
     // Iterate through the blocks and find the best fit
     struct memory_block *current = head;
     struct memory_block *best_fit = NULL;
@@ -72,10 +68,6 @@ void *allocate_memory(size_t size) {
 
         // If the best fit block is larger than the allocation request, split it into two blocks. Don't split blocks smaller than 8 bytes.
         if (remaining_size > sizeof(struct memory_block) + 8) {
-#ifdef __cplusplus
-            Logger::trace("Making a new block for size %d. Setting its next to 0x%08X", remaining_size, best_fit->next);
-#endif
-
             struct memory_block *new_block = (struct memory_block *)((char *)best_fit + sizeof(struct memory_block) + size);
             new_block->size = remaining_size - sizeof(struct memory_block);
             new_block->is_allocated = 0;
@@ -99,10 +91,6 @@ void *allocate_memory(size_t size) {
         used_memory += best_fit->size + sizeof(struct memory_block);
         allocations += 1;
         num_allocated += 1;
-
-#ifdef __cplusplus
-        Logger::trace("Allocated memory of size %d at 0x%08x. Num objs: %d. Used memory: %d. Num allocations: %d, frees: %d", best_fit->size, (void *)((unsigned long)best_fit + sizeof(struct memory_block)), num_allocated, used_memory, allocations, frees);
-#endif
 
         void* ptr = (void *)((unsigned long)best_fit + sizeof(struct memory_block));
 
@@ -161,10 +149,6 @@ void free_memory(void *ptr) {
     num_allocated -= 1;
 
     current->is_allocated = 0;
-
-#ifdef __cplusplus
-    Logger::trace("Freed memory at 0x%08x:%d; next: 0x%p. Num objs: %d. Used memory: %d. Num allocs: %d, frees: %d", ptr, current->size, current->next, num_allocated, used_memory, allocations, frees);
-#endif
 }
 
 #ifdef __cplusplus

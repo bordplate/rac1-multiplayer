@@ -198,6 +198,8 @@ void RemoteView::handle_packet(MPPacketUI* packet) {
             return;
         }
 
+        Logger::trace("Handling packet for UI element %d", packet->id);
+
         size_t idx = 0;
         MPPacketUIItem* item = (MPPacketUIItem*)((char*)packet + sizeof(MPPacketUI));
         for (u16 i = 0; i < packet->items; i++) {
@@ -448,8 +450,6 @@ void RemoteView::on_item_activated(int index, ListMenuElement* list_menu_element
 }
 
 void RemoteView::on_item_selected(int index, ListMenuElement *list_menu_element) {
-    Logger::trace("Selected item %d", index);
-
     int element_id = get_index_for_element(list_menu_element);
     if (element_id < 0) {
         return;

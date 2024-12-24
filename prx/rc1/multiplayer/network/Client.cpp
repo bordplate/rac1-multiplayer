@@ -201,8 +201,6 @@ void Client::ack(char* packet, size_t len) {
         unacked->ack_cb(&packet[sizeof(MPPacketHeader)], header->size, unacked->extra);
 
         Logger::trace("Acked message %d with size %d", header->type, header->size);
-    } else {
-        Logger::trace("Acked packet type %d:%d without data", header->type, header->size);
     }
 }
 
