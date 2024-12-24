@@ -98,6 +98,7 @@ void Player::on_tick() {
 void Player::on_respawned() {
     backpack_moby = nullptr;
     backpack_attachment_moby = nullptr;
+    helmet_moby = nullptr;
 
     spawn_id += 1;
 
