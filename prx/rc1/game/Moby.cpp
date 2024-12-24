@@ -84,18 +84,11 @@ Moby* Moby::spawn(unsigned short o_class, unsigned short flags, uint16_t modeBit
 Moby* Moby::find_by_uid(u16 uid) {
     Logger::trace("Finding moby by UID: %d", uid);
 
-    Moby* moby = moby_ptr;
-    do {
+    for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
         if (moby->state >= 0 && moby->uid == uid) {
             return moby;
         }
-
-        moby = (Moby*)moby->p_chain;
-
-        if (!moby) {
-            return nullptr;
-        }
-    } while (moby <= moby_ptr_end);
+    }
 
     return nullptr;
 }
@@ -103,18 +96,11 @@ Moby* Moby::find_by_uid(u16 uid) {
 Moby* Moby::find_first_oclass(u16 o_class) {
     Logger::trace("Finding first moby by oClass: %d", o_class);
 
-    Moby* moby = moby_ptr;
-    do {
+    for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
         if (moby->state >= 0 && moby->o_class == o_class) {
             return moby;
         }
-
-        moby = (Moby*)moby->p_chain;
-
-        if (!moby) {
-            return nullptr;
-        }
-    } while (moby <= moby_ptr_end);
+    }
 
     return nullptr;
 }
