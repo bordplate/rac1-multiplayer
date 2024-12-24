@@ -516,6 +516,7 @@ void GameClient::register_hybrid_moby(MPPacketRegisterHybridMoby* packet) {
     Moby* native_moby = Moby::find_by_uid(packet->moby_uid);
 
     if (native_moby == nullptr) {
+        Logger::error("Server tried to register hybrid moby %d, but it doesn't exist. Frame count: %d", packet->moby_uid, frame_count);
         return;
     }
 
@@ -742,7 +743,7 @@ void GameClient::on_tick() {
         MonitoredValue* address_value = monitored_addresses_[i];
 
         u32 value;
-        memcpy(&value, (char*)address_value->offset, address_value->size);
+        memcpy(((char*)&value)+4-address_value->size, (char*)address_value->offset, address_value->size);
 
         if (value != address_value->old_value) {
             Packet* packet = Packet::make_address_changed_packet(address_value->offset, address_value->size, address_value->old_value, value);
