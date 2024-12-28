@@ -51,6 +51,9 @@ void Game::on_tick() {
         }
     }
 
+    option_helpdesk_text = 0;
+    option_helpdesk_voice = 0;
+
     if (previous_user_option_camera_left_right_movement == -1) {
         previous_user_option_camera_left_right_movement = user_option_camera_left_right_movement;
         previous_user_option_camera_up_down_movement = user_option_camera_up_down_movement;
