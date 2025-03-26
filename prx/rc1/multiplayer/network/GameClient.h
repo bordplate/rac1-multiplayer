@@ -6,6 +6,7 @@
 #define RAC1_MULTIPLAYER_GAMECLIENT_H
 
 #include "Client.h"
+#include "rc1/Profiler.h"
 
 #include <rc1/rc1.h>
 #include <rc1/game/Moby.h>

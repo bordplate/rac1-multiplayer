@@ -10,7 +10,16 @@
 #include "Client.h"
 
 Packet::Packet(size_t body_len) {
-    this->header = (MPPacketHeader*)allocate_memory(sizeof(MPPacketHeader) + body_len);
+    size_t total_len = sizeof(MPPacketHeader) + body_len;
+
+    // If the packet is too large to fit in the payload buffer, allocate memory for it
+    // Otherwise, use the payload buffer to save memory allocations
+    if (total_len > sizeof(payload_buffer)) {
+        this->header = (MPPacketHeader*)allocate_memory(total_len);
+    } else {
+        this->header = (MPPacketHeader*)payload_buffer;
+    }
+
     memset(this->header, 0, sizeof(MPPacketHeader) + body_len);
 
     this->header->size = body_len;
@@ -18,12 +27,13 @@ Packet::Packet(size_t body_len) {
     this->len = sizeof(MPPacketHeader) + body_len;
     this->retain_after_send = false;
 
-    //this->body = &((char*)this->header)[sizeof(MPPacketHeader)];
     this->body = ((char*)this->header) + sizeof(MPPacketHeader);
 }
 
 Packet::~Packet() {
-    free_memory(this->header);
+    if (header != (MPPacketHeader*)payload_buffer) {
+        free_memory(this->header);
+    }
 }
 
 Packet* Packet::make_handshake_packet() {
@@ -170,12 +180,13 @@ Packet* Packet::make_time_request_packet() {
     return packet;
 }
 
-Packet* Packet::make_player_respawned_packet(u8 spawn_id) {
+Packet* Packet::make_player_respawned_packet(u8 spawn_id, u16 level_id) {
     Packet* packet = new Packet(sizeof(MPPacketSpawned));
     packet->header->type = MP_PACKET_PLAYER_RESPAWNED;
 
     MPPacketSpawned* body = (MPPacketSpawned*)packet->body;
     body->spawn_id = spawn_id;
+    body->level_id = level_id;
 
     return packet;
 }

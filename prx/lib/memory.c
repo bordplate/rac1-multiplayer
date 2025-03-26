@@ -26,6 +26,8 @@ int allocations = 0;
 int num_allocated = 0;
 int frees = 0;
 
+static char allocator_is_initialized = 0;
+
 struct memory_block* head;
 
 void init_memory_allocator(void* start, size_t size) {
@@ -37,6 +39,14 @@ void init_memory_allocator(void* start, size_t size) {
 }
 
 void *allocate_memory(size_t size) {
+    if (allocator_is_initialized == 0) {
+        init_memory_allocator(memory_area, sizeof(memory_area));
+        allocator_is_initialized = 1;
+#ifdef __cplusplus
+        Logger::info("Initialized memory allocator");
+#endif
+    }
+
     // Round up the size to the next multiple of the word size
     size_t word_size = sizeof(void *);
     size = ((size + word_size - 1) & ~(word_size - 1)) + sizeof(struct memory_canary);
@@ -118,6 +128,13 @@ void *allocate_memory(size_t size) {
 }
 
 void free_memory(void *ptr) {
+    if (ptr == nullptr) {
+#ifdef __cplusplus
+        Logger::error("Free called on nullptr");
+#endif
+        return;
+    }
+
     struct memory_block *current = (struct memory_block*)((char*)ptr - sizeof(struct memory_block));
 
     struct memory_canary *canary = (struct memory_canary*)((char*)ptr + current->size-sizeof(struct memory_canary));
@@ -142,11 +159,11 @@ void free_memory(void *ptr) {
         Logger::error("Possible double-free called for memory at 0x%08x:%d; next: 0x%p", ptr, current->size, current->next);
         hexDump("> Memory data", &ptr, current->size);
 #endif
+    } else {
+        used_memory -= current->size + sizeof(struct memory_block);
+        frees += 1;
+        num_allocated -= 1;
     }
-
-    used_memory -= current->size + sizeof(struct memory_block);
-    frees += 1;
-    num_allocated -= 1;
 
     current->is_allocated = 0;
 }
@@ -160,6 +177,10 @@ void* operator new(size_t size) {
 }
 
 void operator delete(void* pointer) {
+    if (pointer == nullptr) {
+        return;
+    }
+
     free_memory(pointer);
 
     return;
@@ -172,6 +193,10 @@ void* operator new[](size_t size) {
 }
 
 void operator delete[](void* pointer) {
+    if (pointer == nullptr) {
+        return;
+    }
+
     free_memory(pointer);
 
     return;

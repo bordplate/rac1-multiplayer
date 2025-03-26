@@ -13,6 +13,7 @@
 #include "rc1/multiplayer/network/GameClient.h"
 #include "multiplayer/GameServer.h"
 #include "rc1/views/ServerListView.h"
+#include "Profiler.h"
 
 typedef void (*ServerQueryCallback)(ServerListView* self, Vector<GameServer*>* servers);
 

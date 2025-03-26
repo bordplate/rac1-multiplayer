@@ -300,10 +300,6 @@ void draw_text_opt(TextOpt* text_opt, Color color, char* text, ssize_t len, floa
 void rc1_init() {
     MULTI_LOG("Multiplayer initializing.\n");
 
-    init_memory_allocator(memory_area, sizeof(memory_area));
-
-    MULTI_LOG("Initialized memory allocator. Binding hooks\n");
-
     SHK_BIND_HOOK(STUB_0006544c, STUB_0006544c_hook);  // Used as a "trampoline" to our custom Moby update func
     SHK_BIND_HOOK(game_loop_start, game_loop_start_hook);
     SHK_BIND_HOOK(game_loop_intro_start, game_loop_intro_start_hook);

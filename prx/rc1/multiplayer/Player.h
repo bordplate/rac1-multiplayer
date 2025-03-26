@@ -12,6 +12,7 @@
 
 #include "SyncedMoby.h"
 #include "Moby/RatchetAttachmentMoby.h"
+#include "../Profiler.h"
 
 struct Player {
     static Player& shared() {

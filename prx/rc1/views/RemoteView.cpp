@@ -9,9 +9,12 @@
 void RemoteView::on_load() {
     memory_info_text_ = new TextElement(80, 0, "<memory>", ViewMenu);
     ping_text_ = new TextElement(0, 20, "<ping>", ViewMenu);
+    profiler_text_ = new TextAreaElement(-70, 40, 250, 300);
+    profiler_text_->draws_background = true;
 
     add_element(memory_info_text_);
     add_element(ping_text_);
+    add_element(profiler_text_);
 }
 
 void RemoteView::render() {
@@ -22,6 +25,8 @@ void RemoteView::render() {
         memory_info_text_->text->set("");
         ping_text_->text->set("");
     }
+
+    profiler_text_->text = Profiler::get_profile_data();
 
     View::render();
 }
@@ -198,7 +203,7 @@ void RemoteView::handle_packet(MPPacketUI* packet) {
             return;
         }
 
-        Logger::trace("Handling packet for UI element %d", packet->id);
+        Logger::trace("Handling packet for UI element %d (%d)", packet->id, packet->element_type);
 
         size_t idx = 0;
         MPPacketUIItem* item = (MPPacketUIItem*)((char*)packet + sizeof(MPPacketUI));

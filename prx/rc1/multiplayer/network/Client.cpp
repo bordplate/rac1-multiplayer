@@ -54,6 +54,7 @@ void Client::_connect() {
 void Client::disconnect() {
     send(Packet::make_disconnect_packet());
 
+    flush();
     socketclose(sockfd_);
 
     connected_ = false;
@@ -97,7 +98,10 @@ void Client::send_ack(Packet* packet) {
     send(packet);
 }
 
+static Profiler send_timer_("send");
 void Client::send(Packet* packet) {
+    Profiler::Scope scope(&send_timer_);
+
     packet->header->timeSent = get_time();
 
     // Calculate the total size of the packet.
@@ -120,9 +124,12 @@ void Client::send(Packet* packet) {
     }
 }
 
+static Profiler flush_timer_("flush");
 void Client::flush() {
+    Profiler::Scope scope(&flush_timer_);
+
     if (sockfd_ && send_buffer_len > 0) {
-        sendto(sockfd_, &send_buffer, send_buffer_len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
+        sendto(sockfd_, &send_buffer, send_buffer_len, MSG_DONTWAIT, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
         send_buffer_len = 0;
     }
 }
@@ -363,7 +370,7 @@ int64_t Client::server_time_difference(int64_t time) {
 
 void Client::on_tick() {
     int64_t current_time = get_time();
-    for(int i = 0; i < sizeof(unacked_)/sizeof(unacked_[0]); ++i) {
+    for (int i = 0; i < sizeof(unacked_)/sizeof(unacked_[0]); ++i) {
         MPUnacked* unacked = &(unacked_[i]);
         if (unacked->data != nullptr && !unacked->acked && current_time - unacked->send_time > 1000) {
             Logger::trace("Resending packet");

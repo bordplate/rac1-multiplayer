@@ -23,7 +23,7 @@
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
 // Maybe better to just have it here anyway. Idk.
-LogLevel Logger::log_level_ = Debug;
+LogLevel Logger::log_level_ = Trace;
 
 ServerQueryCallback Game::server_query_callback_ = NULL;
 
@@ -42,17 +42,31 @@ void Game::start() {
     memset(blocked_bolts, 0, 100);
 }
 
+static Profiler full_tick_timer_("full tick");
+static Profiler tick_timer_("tick");
+static Profiler check_level_flags_("check level flags");
 void Game::on_tick() {
+    Profiler::reset_all();
+
+    Profiler::Scope s(&full_tick_timer_);
+
     if (client_) {
-        client_->on_tick();
+        {
+            Profiler::Scope scope(&tick_timer_);
+
+            client_->on_tick();
+        }
 
         if (ratchet_moby != nullptr) {
-            check_level_flags();
+            {
+                Profiler::Scope scope(&check_level_flags_);
+                check_level_flags();
+            }
         }
     }
 
-    option_helpdesk_text = 0;
-    option_helpdesk_voice = 0;
+    option_helpdesk_text = false;
+    option_helpdesk_voice = false;
 
     if (previous_user_option_camera_left_right_movement == -1) {
         previous_user_option_camera_left_right_movement = user_option_camera_left_right_movement;
@@ -96,6 +110,53 @@ void Game::on_tick() {
     } else if (ratchet_moby != nullptr && use_custom_player_color) {
         ratchet_moby->color = custom_player_color;
     }
+//
+//    if (ratchet_moby != nullptr && frame_count == 300) {
+//        Logger::debug("Eylo!");
+//
+//        u16 o_class = 157;
+//        u8 m_class = ((u8*)0xa354c0)[o_class];
+//
+//        Logger::debug("Eylo!!");
+//
+//        void* what = allocate_memory(((u32*)0xa4d600)[0x1]);
+//
+//        Logger::debug("Eylo!!! memcpy(0x%p, 0x%p, %d)", what, ((char*)0xa4d5a0 + 4 * 1), ((u32*)0xa4d600)[0x1]);
+//        memcpy(what, ((char*)0xa4d5a0 + 4 * 1), ((u32*)0xa4d600)[0x1]);
+//        Logger::debug("Eylo!!!!");
+//
+//        ((u32*)0xa34c00)[m_class] = (u32)what;
+//
+//        ((void (*)(u16))0x7064b8)(o_class);
+//
+//        // hex print first 64 bytes of what
+//        hexDump("DATA:", what, 64);
+//
+//        hexDump("DATA BUT AGAIN:", (char*)(*(u32*)what), 64);
+//
+//        load_moby_model((u32**)what, 0, 0, o_class);
+//
+//        Logger::debug("Hello!!!!! Spawning %d (%d) at loaded %p", o_class, m_class, what);
+//
+//        test = spawn_moby(o_class);
+//        Logger::debug("OYLO!! It spawned! look at the 0x%p", test->p_class);
+//
+//        test->enabled = 1;
+//        test->draw_distance = 0xff;
+//        test->p_update = nullptr;
+//        test->scale = 2.0f;
+//        set_moby_animation(test, 1, 0, 10);
+//
+//        test->position.x = player_pos.x;
+//        test->position.y = player_pos.y;
+//        test->position.z = player_pos.z + 2;
+//
+//        idk(test);
+//    }
+//
+//    if (test != nullptr) {
+//
+//    }
 
     if (client_) {
         client_->flush();
@@ -133,7 +194,10 @@ void Game::before_player_spawn() {
     }
 }
 
+//static Profiler render_timer_ = Profiler("render");
 void Game::on_render() {
+//    Profiler::Scope scope(&render_timer_);
+
     // If loading, we shouldn't render anything;
     if (game_state == 6) {
         if (Game::shared().client()) {

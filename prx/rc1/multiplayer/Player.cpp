@@ -8,6 +8,8 @@
 #include <rc1/Game.h>
 #include "network/Packet.h"
 
+static Profiler states_timer_("player states");
+static Profiler synced_mobys_timer_("synced mobys");
 void Player::on_tick() {
     Client* client = Game::shared().connected_client();
 
@@ -35,11 +37,12 @@ void Player::on_tick() {
         moved_since_respawn_ = true;
     }
 
-    Packet* packet = new Packet(sizeof(MPPacketMobyUpdate));
+    Packet packet = Packet(sizeof(MPPacketMobyUpdate));
 
-    packet->header->type = MP_PACKET_MOBY_UPDATE;
+    packet.header->type = MP_PACKET_MOBY_UPDATE;
+    packet.retain_after_send = true;  // Since we stack allocate the packet, we flag to the client that it should not free the packet after sending
 
-    MPPacketMobyUpdate* payload = (MPPacketMobyUpdate*)packet->body;
+    MPPacketMobyUpdate* payload = (MPPacketMobyUpdate*)packet.body;
     payload->uuid = 0;  // Player moby is always uuid 0
     payload->o_class = ratchet_moby->o_class;
     payload->animation_id = ratchet_moby != nullptr ? ratchet_moby->animation_id : 0;
@@ -53,9 +56,11 @@ void Player::on_tick() {
     payload->scale = ratchet_moby->scale;
 
     Logger::trace("Sent update packet");
-    Game::shared().client()->send(packet);
+    Game::shared().client()->send(&packet);
 
     if (client) {
+        Profiler::Scope scope(&states_timer_);
+
         if (last_game_state != game_state) {
             Packet* game_state_packet = Packet::make_game_state_changed_packet(game_state);
             client->send(game_state_packet);
@@ -67,28 +72,32 @@ void Player::on_tick() {
             previous_bolt_count = player_bolts;
         }
 
-        if (backpack_moby) backpack_moby->update();
-        if (backpack_attachment_moby) backpack_attachment_moby->update();
-        if (helmet_moby) helmet_moby->update();
+        {
+            Profiler::Scope s(&synced_mobys_timer_);
 
-        if (map_o_matic_moby && map_o_matic_moby->get_vars()->status == SyncedMobyStatusActive) {
-            map_o_matic_moby->update();
-        }
+            if (backpack_moby) backpack_moby->update();
+            if (backpack_attachment_moby) backpack_attachment_moby->update();
+            if (helmet_moby) helmet_moby->update();
 
-        if (persuader_moby && persuader_moby->get_vars()->status == SyncedMobyStatusActive) {
-            persuader_moby->update();
-        }
+            if (map_o_matic_moby && map_o_matic_moby->get_vars()->status == SyncedMobyStatusActive) {
+                map_o_matic_moby->update();
+            }
 
-        if (bolt_magnetizer_moby && bolt_magnetizer_moby->get_vars()->status == SyncedMobyStatusActive) {
-            bolt_magnetizer_moby->update();
-        }
+            if (persuader_moby && persuader_moby->get_vars()->status == SyncedMobyStatusActive) {
+                persuader_moby->update();
+            }
 
-        if (left_shoe_moby && left_shoe_moby->get_vars()->status == SyncedMobyStatusActive) {
-            left_shoe_moby->update();
-        }
+            if (bolt_magnetizer_moby && bolt_magnetizer_moby->get_vars()->status == SyncedMobyStatusActive) {
+                bolt_magnetizer_moby->update();
+            }
 
-        if (right_shoe_moby && right_shoe_moby->get_vars()->status == SyncedMobyStatusActive) {
-            right_shoe_moby->update();
+            if (left_shoe_moby && left_shoe_moby->get_vars()->status == SyncedMobyStatusActive) {
+                left_shoe_moby->update();
+            }
+
+            if (right_shoe_moby && right_shoe_moby->get_vars()->status == SyncedMobyStatusActive) {
+                right_shoe_moby->update();
+            }
         }
     }
 
@@ -109,7 +118,7 @@ void Player::on_respawned() {
     if (Game::shared().client()) {
         Client* client = Game::shared().client();
 
-        client->send_ack(Packet::make_player_respawned_packet(spawn_id));
+        client->send_ack(Packet::make_player_respawned_packet(spawn_id, current_planet));
     }
 }
 

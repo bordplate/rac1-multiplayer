@@ -61,9 +61,10 @@ SHK_FUNCTION_DEFINE_STATIC_2(0xb72b0, u64, transition_to_movement_state, u32, st
 SHK_FUNCTION_DEFINE_STATIC_0(0x164c58, void, load_destination_planet);
 SHK_FUNCTION_DEFINE_STATIC_1(0xccda0, void, toast_message, char*, message);
 SHK_FUNCTION_DEFINE_STATIC_1(0x112c20, void, unlock_planet, int, planet);
-SHK_FUNCTION_DEFINE_STATIC_4(0xdbc38, void, load_moby_model, void**, addr, int, unk0, int, unk1, short, oClass);
+SHK_FUNCTION_DEFINE_STATIC_4(0xdbc38, void, load_moby_model, u32**, addr, int, unk0, int, unk1, short, oClass);
 SHK_FUNCTION_DEFINE_STATIC_5(0x6a718, void, draw_rounded_box, int, y1, int, y2, int, x1, int, x2, u32, alpha);
 SHK_FUNCTION_DEFINE_STATIC_4(0x7100c, void, _draw_text_opt, TextOpt*, text_opt, u32, color, char*, text, ssize_t, len);
+SHK_FUNCTION_DEFINE_STATIC_2(0xef810, void, init_moby, Moby*, moby, u16, o_class);
 
 void draw_text_opt(TextOpt* text_opt, Color color, char* text, ssize_t len, float text_size);
 
@@ -96,7 +97,7 @@ struct CollOutput {
     int pad3;
     int count;
     int damage_next;
-    Moby* pMoby;
+    Moby* p_moby;
     int poly;
     Vec4 ip;
     Vec4 push;

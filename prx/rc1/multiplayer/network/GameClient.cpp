@@ -235,8 +235,8 @@ void GameClient::update_moby_ex(MPPacketMobyExtended *packet) {
 
             // Handle edge case with hero moby coloring
             if (moby == ratchet_moby && payload->offset == 0x38) {
-                use_custom_player_color = true;
-                custom_player_color = payload->value;
+//                use_custom_player_color = true;
+//                custom_player_color = payload->value;
 
                 continue;
             }
@@ -584,105 +584,117 @@ void GameClient::monitor_address(MPPacketMonitorAddress* packet) {
     monitored_addresses_.push_back(value);
 }
 
+static Profiler client_update_timer_("client update");
+static Profiler game_update_timer_("game update");
 bool GameClient::update(MPPacketHeader *header, void *packet_data) {
-    if (!Client::update(header, packet_data)) {
-        return false;
+    {
+        Profiler::Scope scope(&client_update_timer_);
+
+        if (!Client::update(header, packet_data)) {
+            return false;
+        }
     }
 
-    // Don't update if handshake isn't complete
-    // We also wait a couple of frames after spawning to mitigate an unknown crash that occurs sometimes when we spawn
-    //  mobys too quickly after spawn
-    if (!handshake_complete()) {
-        return false;
-    }
+    {
+        Profiler::Scope scope(&game_update_timer_);
 
-    // Process packet
-    switch(header->type) {
-        case MP_PACKET_MOBY_CREATE:
-            create_moby((MPPacketMobyCreate*)packet_data);
-            break;
-        case MP_PACKET_MOBY_UPDATE:
-            update_moby((MPPacketMobyUpdate*)packet_data);
-            break;
-        case MP_PACKET_MOBY_EX:
-            update_moby_ex((MPPacketMobyExtended*)packet_data);
-            break;
-        case MP_PACKET_CHANGE_MOBY_VALUE:
-            change_moby_value((MPPacketChangeMobyValue*)packet_data);
-            break;
-        case MP_PACKET_MOBY_DELETE:
-            moby_delete((MPPacketMobyDelete*)packet_data);
-            break;
-        case MP_PACKET_SET_STATE: {
-            // Server can send multiple of these messages in 1 packet to ensure the actions are performed in the right sequence.
-            int recvd = 0;
-            while (recvd < header->size) {
-                MPPacketSetState* state_data = (MPPacketSetState*)((char*)packet_data + recvd);
-                update_set_state(state_data);
+        // Don't update if handshake isn't complete
+        // We also wait a couple of frames after spawning to mitigate an unknown crash that occurs sometimes when we spawn
+        //  mobys too quickly after spawn
+        if (!handshake_complete()) {
+            return false;
+        }
 
-                recvd += sizeof(MPPacketSetState);
-            }
+        // Process packet
+        switch (header->type) {
+            case MP_PACKET_MOBY_CREATE:
+                create_moby((MPPacketMobyCreate*)packet_data);
+                break;
+            case MP_PACKET_MOBY_UPDATE:
+                update_moby((MPPacketMobyUpdate*)packet_data);
+                break;
+            case MP_PACKET_MOBY_EX:
+                update_moby_ex((MPPacketMobyExtended*)packet_data);
+                break;
+            case MP_PACKET_CHANGE_MOBY_VALUE:
+                change_moby_value((MPPacketChangeMobyValue*)packet_data);
+                break;
+            case MP_PACKET_MOBY_DELETE:
+                moby_delete((MPPacketMobyDelete*)packet_data);
+                break;
+            case MP_PACKET_SET_STATE: {
+                // Server can send multiple of these messages in 1 packet to ensure the actions are performed in the right sequence.
+                int recvd = 0;
+                while (recvd < header->size) {
+                    MPPacketSetState* state_data = (MPPacketSetState*)((char*)packet_data + recvd);
+                    update_set_state(state_data);
 
-            break;
-        }
-        case MP_PACKET_SET_HUD_TEXT: {
-            update_set_text((MPPacketSetHUDText*)packet_data);
-            break;
-        }
-        case MP_PACKET_TOAST_MESSAGE: {
-            toast_message((MPPacketToastMessage*)packet_data);
-            break;
-        }
-        case MP_PACKET_ERROR_MESSAGE: {
-            MPPacketErrorMessage* error = (MPPacketErrorMessage*)packet_data;
+                    recvd += sizeof(MPPacketSetState);
+                }
 
-            String message = String((const char*)((char*)packet_data + sizeof(MPPacketErrorMessage)));
-            message = message.slice(0, error->message_length);
-
-            Game::shared().alert(message);
-
-            break;
-        }
-        case MP_PACKET_REGISTER_HYBRID_MOBY: {
-            register_hybrid_moby((MPPacketRegisterHybridMoby*)packet_data);
-            break;
-        }
-        case MP_PACKET_MONITOR_ADDRESS: {
-            monitor_address((MPPacketMonitorAddress*)packet_data);
-            break;
-        }
-        case MP_PACKET_UI: {
-            if (remote_view_ == nullptr) {
-                Logger::error("No remote view to handle UI updates.");
                 break;
             }
-
-            remote_view_->handle_packet((MPPacketUI*)packet_data);
-
-            break;
-        }
-        case MP_PACKET_UI_EVENT: {
-            if (remote_view_ == nullptr) {
-                Logger::error("No remote view to handle UI events.");
+            case MP_PACKET_SET_HUD_TEXT: {
+                update_set_text((MPPacketSetHUDText*)packet_data);
                 break;
             }
-
-            remote_view_->handle_event((MPPacketUIEvent*)packet_data);
-
-            break;
-        }
-        default:
-            Logger::error("Received %ld bytes of unknown packet %d:", received(), header->type);
-            Logger::error("> Advertised size: %d", sizeof(MPPacketHeader)+header->size);
-            Logger::error("> Ack ID: %d. Cycle: %d", header->requires_ack, header->ack_cycle);
-            Logger::error("> Flags: %d", header->flags);
-            if (header->size > 0 && header->size <= received()-sizeof(MPPacketHeader)) {
-                hexDump("> Packet body data", packet_data, header->size);
-            } else if (header->size <= 0 && received()-sizeof(MPPacketHeader) <= 0) {
-                Logger::error(">!Advertised packet body size is 0, but we received %d more bytes than size of header.", received()-sizeof(MPPacketHeader));
-            } else {
-                Logger::error(">!Received less bytes than advertised size, not printing data");
+            case MP_PACKET_TOAST_MESSAGE: {
+                toast_message((MPPacketToastMessage*)packet_data);
+                break;
             }
+            case MP_PACKET_ERROR_MESSAGE: {
+                MPPacketErrorMessage* error = (MPPacketErrorMessage*)packet_data;
+
+                String message = String((const char*)((char*)packet_data + sizeof(MPPacketErrorMessage)));
+                message = message.slice(0, error->message_length);
+
+                Game::shared().alert(message);
+
+                break;
+            }
+            case MP_PACKET_REGISTER_HYBRID_MOBY: {
+                register_hybrid_moby((MPPacketRegisterHybridMoby*)packet_data);
+                break;
+            }
+            case MP_PACKET_MONITOR_ADDRESS: {
+                monitor_address((MPPacketMonitorAddress*)packet_data);
+                break;
+            }
+            case MP_PACKET_UI: {
+                if (remote_view_ == nullptr) {
+                    Logger::error("No remote view to handle UI updates.");
+                    break;
+                }
+
+                remote_view_->handle_packet((MPPacketUI*)packet_data);
+
+                break;
+            }
+            case MP_PACKET_UI_EVENT: {
+                if (remote_view_ == nullptr) {
+                    Logger::error("No remote view to handle UI events.");
+                    break;
+                }
+
+                remote_view_->handle_event((MPPacketUIEvent*)packet_data);
+
+                break;
+            }
+            default:
+                Logger::error("Received %ld bytes of unknown packet %d:", received(), header->type);
+                Logger::error("> Advertised size: %d", sizeof(MPPacketHeader) + header->size);
+                Logger::error("> Ack ID: %d. Cycle: %d", header->requires_ack, header->ack_cycle);
+                Logger::error("> Flags: %d", header->flags);
+                if (header->size > 0 && header->size <= received() - sizeof(MPPacketHeader)) {
+                    hexDump("> Packet body data", packet_data, header->size);
+                } else if (header->size <= 0 && received() - sizeof(MPPacketHeader) <= 0) {
+                    Logger::error(
+                            ">!Advertised packet body size is 0, but we received %d more bytes than size of header.",
+                            received() - sizeof(MPPacketHeader));
+                } else {
+                    Logger::error(">!Received less bytes than advertised size, not printing data");
+                }
+        }
     }
 
     return true;
@@ -728,31 +740,48 @@ int GameClient::connect_callback(void* packetData, size_t size, void* userdata) 
     return 0;
 }
 
+static Profiler game_client_timer_("game client");
+static Profiler hybrid_mobys_timer_("hybrid mobys");
+static Profiler monitored_addresses_timer_("monitored addresses");
+static Profiler player_update_timer_("player update");
 void GameClient::on_tick() {
-    Client::on_tick();
+    {
+        Profiler::Scope scope(&game_client_timer_);
+
+        Client::on_tick();
+    }
 
     if (!remote_view_) {
         remote_view_ = new RemoteView();
         Game::shared().transition_to(remote_view_);
     }
 
-    for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
-        hybrid_mobys_[i]->on_tick();
+    {
+        Profiler::Scope scope(&hybrid_mobys_timer_);
+
+        for (size_t i = 0; i < hybrid_mobys_.size(); i++) {
+            hybrid_mobys_[i]->on_tick();
+        }
     }
 
-    for (size_t i = 0; i < monitored_addresses_.size(); i++) {
-        MonitoredValue* address_value = monitored_addresses_[i];
+    {
+        Profiler::Scope scope(&monitored_addresses_timer_);
 
-        u32 value;
-        memcpy(((char*)&value)+4-address_value->size, (char*)address_value->offset, address_value->size);
+        for (size_t i = 0; i < monitored_addresses_.size(); i++) {
+            MonitoredValue* address_value = monitored_addresses_[i];
 
-        if (value != address_value->old_value) {
-            Packet* packet = Packet::make_address_changed_packet(address_value->offset, address_value->size, address_value->old_value, value);
-            make_ack(packet, nullptr);
-            send(packet);
+            u32 value;
+            memcpy(((char*)&value) + 4 - address_value->size, (char*)address_value->offset, address_value->size);
+
+            if (value != address_value->old_value) {
+                Packet* packet = Packet::make_address_changed_packet(address_value->offset, address_value->size,
+                                                                     address_value->old_value, value);
+                make_ack(packet, nullptr);
+                send(packet);
+            }
+
+            address_value->old_value = value;
         }
-
-        address_value->old_value = value;
     }
 
     ticks_ += 1;
@@ -775,5 +804,8 @@ void GameClient::on_tick() {
         return;
     }
 
-    Player::shared().on_tick();
+    {
+        Profiler::Scope scope(&player_update_timer_);
+        Player::shared().on_tick();
+    }
 }

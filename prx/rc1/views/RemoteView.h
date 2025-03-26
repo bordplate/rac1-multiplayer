@@ -10,6 +10,7 @@
 #include "rc1/ui/ListMenuElement.h"
 #include "rc1/ui/Input.h"
 #include "rc1/ui/InputElement.h"
+#include "rc1/ui/TextAreaElement.h"
 
 #include <lib/vector.h>
 #include <rc1/multiplayer/network/Packet.h>
@@ -89,6 +90,8 @@ private:
 
     TextElement* ping_text_;
     TextElement* memory_info_text_;
+
+    TextAreaElement* profiler_text_;
 
     ViewElement* create_element_with_type(u16 id, MPUIElementType element_type);
 };

@@ -107,10 +107,11 @@ void SyncedMoby::update() {
 
     if (client != nullptr && vars->uuid != 0) {
         if (state >= 0) {
-            Packet *packet = new Packet(sizeof(MPPacketMobyUpdate));
-            packet->header->type = MP_PACKET_MOBY_UPDATE;
+            Packet packet = Packet(sizeof(MPPacketMobyUpdate));
+            packet.header->type = MP_PACKET_MOBY_UPDATE;
+            packet.retain_after_send = true;
 
-            MPPacketMobyUpdate* payload = (MPPacketMobyUpdate*)packet->body;
+            MPPacketMobyUpdate* payload = (MPPacketMobyUpdate*)packet.body;
             payload->uuid = vars->uuid;
             payload->o_class = o_class;
             payload->animation_id = animation_id;
@@ -123,7 +124,7 @@ void SyncedMoby::update() {
             payload->rotZ = rotation.z;
             payload->scale = scale;
 
-            client->send(packet);
+            client->send(&packet);
         }
     }
 }

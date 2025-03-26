@@ -388,6 +388,7 @@ typedef struct {
 
 typedef struct {
     u8 spawn_id;
+    u16 level_id;
 } MPPacketSpawned;
 
 #pragma pack(pop)
@@ -397,6 +398,7 @@ struct Packet {
     void* body;
     size_t len;
     bool retain_after_send;
+    char payload_buffer[256];
 
     Packet(size_t body_len);
     ~Packet();
@@ -411,7 +413,7 @@ struct Packet {
     static Packet* make_connect_packet(const String& nickname, int32_t userid);
     static Packet* make_disconnect_packet();
     static Packet* make_time_request_packet();
-    static Packet* make_player_respawned_packet(u8 spawn_id);
+    static Packet* make_player_respawned_packet(u8 spawn_id, u16 level_id);
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
     static Packet* make_unlock_item_packet(int item_id, bool equip);
