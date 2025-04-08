@@ -23,7 +23,7 @@
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
 // Maybe better to just have it here anyway. Idk.
-LogLevel Logger::log_level_ = Trace;
+LogLevel Logger::log_level_ = Debug;
 
 ServerQueryCallback Game::server_query_callback_ = NULL;
 
@@ -58,10 +58,8 @@ void Game::on_tick() {
         }
 
         if (ratchet_moby != nullptr) {
-            {
-                Profiler::Scope scope(&check_level_flags_);
-                check_level_flags();
-            }
+            Profiler::Scope scope(&check_level_flags_);
+            check_level_flags();
         }
     }
 
@@ -110,53 +108,6 @@ void Game::on_tick() {
     } else if (ratchet_moby != nullptr && use_custom_player_color) {
         ratchet_moby->color = custom_player_color;
     }
-//
-//    if (ratchet_moby != nullptr && frame_count == 300) {
-//        Logger::debug("Eylo!");
-//
-//        u16 o_class = 157;
-//        u8 m_class = ((u8*)0xa354c0)[o_class];
-//
-//        Logger::debug("Eylo!!");
-//
-//        void* what = allocate_memory(((u32*)0xa4d600)[0x1]);
-//
-//        Logger::debug("Eylo!!! memcpy(0x%p, 0x%p, %d)", what, ((char*)0xa4d5a0 + 4 * 1), ((u32*)0xa4d600)[0x1]);
-//        memcpy(what, ((char*)0xa4d5a0 + 4 * 1), ((u32*)0xa4d600)[0x1]);
-//        Logger::debug("Eylo!!!!");
-//
-//        ((u32*)0xa34c00)[m_class] = (u32)what;
-//
-//        ((void (*)(u16))0x7064b8)(o_class);
-//
-//        // hex print first 64 bytes of what
-//        hexDump("DATA:", what, 64);
-//
-//        hexDump("DATA BUT AGAIN:", (char*)(*(u32*)what), 64);
-//
-//        load_moby_model((u32**)what, 0, 0, o_class);
-//
-//        Logger::debug("Hello!!!!! Spawning %d (%d) at loaded %p", o_class, m_class, what);
-//
-//        test = spawn_moby(o_class);
-//        Logger::debug("OYLO!! It spawned! look at the 0x%p", test->p_class);
-//
-//        test->enabled = 1;
-//        test->draw_distance = 0xff;
-//        test->p_update = nullptr;
-//        test->scale = 2.0f;
-//        set_moby_animation(test, 1, 0, 10);
-//
-//        test->position.x = player_pos.x;
-//        test->position.y = player_pos.y;
-//        test->position.z = player_pos.z + 2;
-//
-//        idk(test);
-//    }
-//
-//    if (test != nullptr) {
-//
-//    }
 
     if (client_) {
         client_->flush();
@@ -188,8 +139,8 @@ void Game::before_player_spawn() {
         if (last_planet_ != current_planet) {
             last_planet_ = current_planet;
 
-            ((GameClient*)client())->moby_delete_all();
             ((GameClient*)client())->clear_hybrid_mobys();
+            ((GameClient*)client())->moby_delete_all();
         }
     }
 }
@@ -317,8 +268,7 @@ void Game::query_servers(int directory_id, ServerQueryCallback callback) {
     // - 172.104.144.15 -> boltcrate.space
     // We use IP instead of domain name because I don't trust that name resolution
     //   on PS3 will be stable forever or for everyone.
-//    client_ = new DirectoryClient("172.104.144.15", 2407);
-    client_ = new DirectoryClient("10.9.0.2", 2407);
+    client_ = new DirectoryClient("172.104.144.15", 2407);
     client_->_connect();
 
     server_query_callback_ = callback;
@@ -351,28 +301,42 @@ void Game::check_level_flags() {
         refresh_level_flags();
     }
 
+    MPPacketLevelFlag flags1[0x10];
+    size_t flags1_changed = 0;
     for (int i = 0; i < 0x10; i++) {
         if (level_flags1_[i] != level_flags1[0x10 * current_planet + i]) {
             level_flags1_[i] = level_flags1[0x10 * current_planet + i];
 
-            Client* client = connected_client();
-            if (client != nullptr) {
-                Packet* packet = Packet::make_level_flag_changed_packet(MP_LEVEL_FLAG_TYPE_1, current_planet, 1, i, level_flags1_[i]);
-                client->make_ack(packet, nullptr);
-                client->send(packet);
-            }
+            MPPacketLevelFlag flag = {1, i, level_flags1_[i]};
+            flags1[flags1_changed] = flag;
+            flags1_changed += 1;
         }
     }
 
+    MPPacketLevelFlag flags2[0x100];
+    size_t flags2_changed = 0;
     for (int i = 0; i < 0x100; i++) {
         if (level_flags2_[i] != level_flags2[0x100 * current_planet + i]) {
             level_flags2_[i] = level_flags2[0x100 * current_planet + i];
 
-            if (client_ && client_->handshake_complete()) {
-                Packet* packet = Packet::make_level_flag_changed_packet(MP_LEVEL_FLAG_TYPE_2, current_planet, 1, i, level_flags2_[i]);
-                client_->make_ack(packet, nullptr);
-                client_->send(packet);
-            }
+            MPPacketLevelFlag flag = {1, i, level_flags2_[i]};
+            flags2[flags2_changed] = flag;
+            flags2_changed += 1;
+        }
+    }
+
+    Client* client = connected_client();
+    if (client != nullptr) {
+        if (flags1_changed) {
+            Packet *packet = Packet::make_level_flags_changed_packet(MP_LEVEL_FLAG_TYPE_1, current_planet, flags1_changed, flags1);
+            client->make_ack(packet, nullptr);
+            client->send(packet);
+        }
+
+        if (flags2_changed) {
+            Packet* packet = Packet::make_level_flags_changed_packet(MP_LEVEL_FLAG_TYPE_2, current_planet, flags2_changed, flags2);
+            client_->make_ack(packet, nullptr);
+            client_->send(packet);
         }
     }
 }

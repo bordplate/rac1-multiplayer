@@ -42,7 +42,7 @@ public:
         m_length = strlen(str);
         m_str = new char[m_length + 1];
         strcpy(m_str, str);
-        m_str[m_length + 1] = 0;
+        m_str[m_length] = 0;
     }
 
     void setf(const char* format, ...) {
@@ -55,8 +55,7 @@ public:
     }
 
     void setf_args(const char* format, va_list args) {
-        Logger::trace("We're setfing!");
-        // Determine the length of the formatted string
+      // Determine the length of the formatted string
         va_list args_copy;
         va_copy(args_copy, args);
         size_t length = vsnprintf(nullptr, 0, format, args_copy);
@@ -73,8 +72,6 @@ public:
 
         // Clean up
         delete[] buffer;
-
-        Logger::trace("We setfed!");
     }
 
     // Accessors

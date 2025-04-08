@@ -369,10 +369,14 @@ struct MPPacketErrorMessage {
 typedef struct {
     u16 type;
     u8 level;
+    u8 flags;
+} MPPacketLevelFlagsChanged;
+
+typedef struct {
     u8 size;
     u16 index;
     u32 value;
-} MPPacketLevelFlagChanged;
+} MPPacketLevelFlag;
 
 typedef struct {
     u8 flags;
@@ -399,7 +403,7 @@ struct Packet {
     void* body;
     size_t len;
     bool retain_after_send;
-    char payload_buffer[256];
+    char payload_buffer[512];
 
     Packet(size_t body_len);
     ~Packet();
@@ -421,7 +425,7 @@ struct Packet {
     static Packet* make_unlock_level_packet(int level);
     static Packet* make_unlock_skillpoint_packet(u8 skillpoint);
     static Packet* make_monitored_value_changed_packet(u16 uid, u32 offset, u32 size, u8 flags, u32 old_value, u32 new_value);
-    static Packet* make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value);
+    static Packet* make_level_flags_changed_packet(u16 type, u8 level, size_t num_changed_flags, MPPacketLevelFlag* level_flags);
     static Packet* make_address_changed_packet(u32 address, u16 size, u32 old_value, u32 new_value);
     static Packet* make_bolt_count_changed_packet(s32 bolt_diff, u32 current_bolts);
     static Packet* make_moby_create_failure_packet(u16 uuid, u8 reason);

@@ -9,12 +9,12 @@
 void RemoteView::on_load() {
     memory_info_text_ = new TextElement(80, 0, "<memory>", ViewMenu);
     ping_text_ = new TextElement(0, 20, "<ping>", ViewMenu);
-    profiler_text_ = new TextAreaElement(-70, 40, 250, 300);
-    profiler_text_->draws_background = true;
+//    profiler_text_ = new TextAreaElement(-70, 40, 250, 300);
+//    profiler_text_->draws_background = true;
 
     add_element(memory_info_text_);
     add_element(ping_text_);
-    add_element(profiler_text_);
+//    add_element(profiler_text_);
 }
 
 void RemoteView::render() {
@@ -26,7 +26,7 @@ void RemoteView::render() {
         ping_text_->text->set("");
     }
 
-    profiler_text_->text = Profiler::get_profile_data();
+    //profiler_text_->text = Profiler::get_profile_data();
 
     View::render();
 }

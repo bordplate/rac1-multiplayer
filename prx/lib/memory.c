@@ -31,20 +31,28 @@ static char allocator_is_initialized = 0;
 struct memory_block* head;
 
 void init_memory_allocator(void* start, size_t size) {
+    if (allocator_is_initialized) {
+#ifdef __cplusplus
+        Logger::error("Memory allocator already initialized");
+#endif
+        return;
+    }
+
     // Create the head of the linked list
     head = (struct memory_block*)start;
     head->size = size - sizeof(struct memory_block);
     head->is_allocated = 0;
     head->next = NULL;
+
+#ifdef __cplusplus
+    Logger::info("Initialized memory allocator");
+#endif
 }
 
 void *allocate_memory(size_t size) {
     if (allocator_is_initialized == 0) {
         init_memory_allocator(memory_area, sizeof(memory_area));
         allocator_is_initialized = 1;
-#ifdef __cplusplus
-        Logger::info("Initialized memory allocator");
-#endif
     }
 
     // Round up the size to the next multiple of the word size

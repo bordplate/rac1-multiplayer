@@ -60,7 +60,7 @@ void MPMoby::update() {
 //            position.z += up->z * 0.2f + forward->z * 0.05f;
 //        }
 
-        idk(this);
+//        idk(this);
     }
 
     this->damage = -1;
@@ -94,6 +94,8 @@ MPMoby* MPMoby::spawn(unsigned short uuid, unsigned short o_class, unsigned shor
     if (vars) {
         vars->uuid = uuid;
     }
+
+    idk(moby);
 
     return moby;
 }

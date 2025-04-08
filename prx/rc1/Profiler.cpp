@@ -4,4 +4,4 @@
 
 #include "Profiler.h"
 
-Vector<Profiler*> Profiler::_s_profilers = Vector<Profiler*>();
+Vector<Profiler*>* Profiler::_s_profilers = Profiler::_s_profilers;

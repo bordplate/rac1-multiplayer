@@ -275,17 +275,16 @@ Packet* Packet::make_monitored_value_changed_packet(u16 uid, u32 offset, u32 siz
 }
 
 
-Packet* Packet::make_level_flag_changed_packet(u16 type, u8 level, u8 size, u16 index, u32 value) {
-    Packet* packet = new Packet(sizeof(MPPacketLevelFlagChanged));
+Packet* Packet::make_level_flags_changed_packet(u16 type, u8 level, size_t num_changed_flags, MPPacketLevelFlag* level_flags) {
+    Packet* packet = new Packet(sizeof(MPPacketLevelFlagsChanged) + sizeof(MPPacketLevelFlag) * num_changed_flags);
     packet->header->type = MP_PACKET_LEVEL_FLAG_CHANGED;
-    packet->header->size = sizeof(MPPacketLevelFlagChanged);
 
-    MPPacketLevelFlagChanged* body = (MPPacketLevelFlagChanged*)packet->body;
+    MPPacketLevelFlagsChanged* body = (MPPacketLevelFlagsChanged*)packet->body;
     body->type = type;
     body->level = level;
-    body->size = size;
-    body->index = index;
-    body->value = value;
+    body->flags = num_changed_flags;
+
+    memcpy((char*)packet->body + sizeof(MPPacketLevelFlagsChanged), level_flags, sizeof(MPPacketLevelFlag) * num_changed_flags);
 
     return packet;
 }

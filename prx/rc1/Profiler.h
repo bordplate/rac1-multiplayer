@@ -12,7 +12,13 @@
 class Profiler {
 public:
     explicit Profiler(const String& name) : name(name), average_time(0), _start_time(0), frame_time(0) {
-        _s_profilers.push_back(this);
+        Logger::info("Profiler created: %s", name.c_str());
+
+        if (Profiler::_s_profilers == nullptr) {
+            Profiler::_s_profilers = new Vector<Profiler*>();
+        }
+
+        Profiler::_s_profilers->push_back(this);
     }
 
     String name;
@@ -36,9 +42,9 @@ public:
     }
 
     static Profiler* get(const String& name) {
-        for (int i = 0; i < _s_profilers.size(); i++) {
-            if (_s_profilers[i]->name == name) {
-                return _s_profilers[i];
+        for (int i = 0; i < Profiler::_s_profilers->size(); i++) {
+            if (Profiler::_s_profilers->at(i)->name == name) {
+                return Profiler::_s_profilers->at(i);
             }
         }
 
@@ -50,24 +56,17 @@ public:
     static String get_profile_data() {
         String data = "Profiling:\1";
 
-        for (int i = 0; i < _s_profilers.size(); i++) {
-            Profiler* profiler = _s_profilers[i];
-//            data += String::format("%s: %dus\1", profiler->name.c_str(), profiler->frame_time);
-            data += profiler->name;
-            data += ": ";
-//            data += String::format("%dus\1", profiler->frame_time);
-            data += "blah\1";
-//            data = String::format("%s: %dus\1", data.c_str(), profiler->name.c_str(), profiler->frame_time);
-//            data += String::format(": %dus\1", profiler->frame_time);
-//            data += profiler->name;
+        for (int i = 0; i < Profiler::_s_profilers->size(); i++) {
+            Profiler* profiler = Profiler::_s_profilers->at(i);
+            data += String::format("%s: %dus\1", profiler->name.c_str(), profiler->average_time);
         }
 
         return data;
     }
 
     static void reset_all() {
-        for (int i = 0; i < _s_profilers.size(); i++) {
-            _s_profilers[i]->reset();
+        for (int i = 0; i < Profiler::_s_profilers->size(); i++) {
+            Profiler::_s_profilers->at(i)->reset();
         }
     }
 
@@ -84,11 +83,10 @@ public:
 
         Profiler* profiler;
     };
-private:
-    static Vector<Profiler*> _s_profilers;
 
+    static Vector<Profiler*>* _s_profilers;
+private:
     system_time_t _start_time;
 };
-
 
 #endif //RAC1_MULTIPLAYER_PROFILER_H
