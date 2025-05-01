@@ -17,6 +17,7 @@
 
 bool use_custom_player_color = false;
 uint32_t custom_player_color = 0;
+EnableCommunicationsFlags enable_communication_bitmap = ENABLE_ALL;
 
 extern "C" {
 void game_tick() {
@@ -149,6 +150,10 @@ void goldBoltUpdateHook(Moby* moby) {
 // Hook the item_unlock function
 SHK_HOOK(void, _unlock_item, int, uint8_t);
 void _unlock_item_hook(int item_id, uint8_t equip) {
+    if (!(enable_communication_bitmap & ENABLE_ON_UNLOCK_ITEM)) {
+        MULTI_LOG("unlock_item communication disabled. acting autonomously.\n");
+        unlock_item(item_id, equip);
+    }
     Client *client = Game::shared().client();
     if (client != nullptr) {
         Packet *packet = Packet::make_unlock_item_packet(item_id, equip);
@@ -164,6 +169,10 @@ void unlock_item(int item_id, uint8_t equip) {
 
 SHK_HOOK(void, _unlock_level, int);
 void _unlock_level_hook(int level) {
+    if (!(enable_communication_bitmap & ENABLE_ON_UNLOCK_LEVEL)) {
+        MULTI_LOG("unlock_level communication disabled. acting autonomously.\n");
+        unlock_level(level);
+    }
     Client *client = Game::shared().client();
     if (client != nullptr) {
         Packet *packet = Packet::make_unlock_level_packet(level);
