@@ -54,7 +54,8 @@ void Player::on_tick() {
             client->send(game_state_packet);
         }
 
-        if (previous_bolt_count != player_bolts) {
+        if ((enable_communication_bitmap & ENABLE_ON_GET_BOLTS) &&
+                previous_bolt_count != player_bolts) {
             s32 bolt_diff = player_bolts - previous_bolt_count;
             client->send(Packet::make_bolt_count_changed_packet(bolt_diff, player_bolts));
             previous_bolt_count = player_bolts;

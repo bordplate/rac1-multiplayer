@@ -38,6 +38,17 @@ typedef enum PlayerType {
     PlayerTypeHologuise = 0x3,
 } PlayerType;
 
+typedef enum EnableCommunicationsFlags {
+    ENABLE_ON_UNLOCK_ITEM     =0x00000001,
+    ENABLE_ON_UNLOCK_LEVEL    =0x00000002,
+    ENABLE_ON_PICKUP_GOLD_BOLT=0x00000004,
+    ENABLE_ON_GET_BOLTS       =0x00000008,
+
+    ENABLE_ALL=                0xffffffff
+} EnableCommunicationsFlags;
+
+extern EnableCommunicationsFlags enable_communication_bitmap;
+
 // Our global variables
 extern int game_ticks;
 

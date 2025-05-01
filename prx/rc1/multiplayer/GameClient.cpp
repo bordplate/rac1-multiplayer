@@ -364,6 +364,10 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             Game::shared().refresh_level_flags();
             break;
         }
+        case MP_STATE_TYPE_COMMUNICATION_FLAGS: {
+            enable_communication_bitmap = (EnableCommunicationsFlags)packet->value;
+            break;
+        }
         default: {
             Logger::error("Server asked us to set unknown state type %d", packet->state_type);
         }
