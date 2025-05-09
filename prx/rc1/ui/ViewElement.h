@@ -4,15 +4,54 @@
 
 #ifndef PS3_CKIT_VIEWELEMENT_H
 #define PS3_CKIT_VIEWELEMENT_H
-#include "rc1.h"
+
+#include <rc1/rc1.h>
+#include <rc1/common.h>
+
+#include "View.h"
 
 struct ViewElement {
+public:
+    ViewElement(int x, int y, int width, int height) {
+        this->x = x;
+        this->y = y;
+        this->size.width = width;
+        this->size.height = height;
+        this->margins.width = 0;
+        this->margins.height = 0;
+        this->draws_background = false;
+        this->visible = true;
+        this->states = 0xFF;
+    }
+
     int x;
     int y;
 
+    View* view;
+
+    Size size;
+    Size margins;
+
+    bool draws_background;
+    bool visible;
+
     u8 states;
 
-    virtual void render() = 0;
+    void focus() {
+        if (view != nullptr) {
+            view->focused_element = this;
+        }
+    }
+
+    bool is_focused() {
+        if (view != nullptr) {
+            return view->focused_element == this;
+        }
+        return false;
+    }
+
+    virtual void render();
+    virtual void on_pressed_buttons(CONTROLLER_INPUT input) {}
 
     bool active_for_state(GameState game_state) {
             switch (game_state) {

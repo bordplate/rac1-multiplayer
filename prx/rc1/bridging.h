@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "Moby.h"
+#include "rc1/game/Moby.h"
 
 void cpp_start();
 
@@ -19,6 +19,8 @@ void _c_game_render();
 void _c_on_respawn();
 
 void _c_moby_update(Moby* moby);
+
+void _c_set_ratchet_animation_duration(u32 duration);
 
 #ifdef __cplusplus
 }

@@ -10,7 +10,7 @@
 #include <lib/vector.h>
 #include <rc1/rc1.h>
 
-#include "ViewElement.h"
+struct ViewElement;
 
 extern "C" {
 SHK_FUNCTION_DEFINE_STATIC_5(0x70514, void, draw_center_medium_text, int, x, int, y, Color, color, const char*, p4, int, p5);
@@ -20,6 +20,8 @@ struct View {
 public:
     View();
     ~View();
+
+    ViewElement* focused_element;
 
     virtual void on_load() {}
     virtual void on_unload() {}

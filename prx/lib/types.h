@@ -47,7 +47,20 @@ typedef struct Color {
     unsigned char b;
     unsigned char g;
     unsigned char r;
+
+    u32 to_u32() {
+        u32 result = 0;
+
+        result |= a << 24;
+        result |= b << 16;
+        result |= g << 8;
+        result |= r;
+
+        return result;
+    }
 } Color;
+
+#define RGBA(r,g,b,a) ((Color){a,b,g,r})
 
 #ifndef NULL
 #define NULL 0

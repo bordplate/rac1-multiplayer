@@ -15,7 +15,7 @@
 #include <arpa/inet.h>
 
 #define SEND_BUFFER_SIZE 1024
-#define RECV_BUFFER_SIZE 1024
+#define RECV_BUFFER_SIZE (1024 * 16)
 
 extern int64_t get_time();
 
@@ -43,6 +43,9 @@ public:
     void make_rpc(Packet* packet, AckCallback callback);
     void make_self_referencing_rpc(Packet* packet, AckCallback callback);
 
+    void send_rpc(Packet* packet, AckCallback callback, void* extra);
+    void send_rpc(Packet* packet, AckCallback callback);
+    void send_ack(Packet* packet);
     void send(Packet* packet);
     void flush();
     void send_handshake();
@@ -56,13 +59,14 @@ public:
     virtual void drop_receive();
 
     int64_t latency_;
+    uint64_t connection_start_time_;
 
     void calculate_offset(int64_t client_send_time, int64_t server_receive_time);
     int64_t server_time_difference(int64_t time);
 
-    bool connected() { return connected_; }
-    bool handshake_complete() { return handshake_complete_; }
-    long received() { return received_; }
+    bool connected() const { return connected_; }
+    bool handshake_complete() const { return handshake_complete_; }
+    long received() const { return received_; }
 private:
     int sockfd_;
     struct sockaddr_in sockaddr_;
@@ -86,7 +90,6 @@ private:
 
     bool connected_;
     bool handshake_complete_;
-    uint64_t connection_start_time_;
 
     void ack(char* packet, size_t len);
 
