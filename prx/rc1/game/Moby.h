@@ -3,22 +3,32 @@
 
 #include <lib/shk.h>
 #include <lib/types.h>
-
-//#include <lib/common.h>
-//#include <rc1/common.h>
+#include "Moby.h"
 
 #ifdef __cplusplus
+
+struct Manipulator {
+    char animation_bone;
+    char state;
+    char scaleOn;
+    char absolute;
+    int bone_id;
+    Manipulator *pNext;
+    float animation_blend_t;
+    Vec4 rotation;
+    Vec4 scale;
+    Vec4 translation;
+};
+
+// Should be in Packet.h, but something is stopping us from including it here so we'll just define it here
+typedef struct {
+    u16 offset;
+    u16 size;
+    u32 value;
+} MPPacketChangeMobyValuePayload;
+
 extern "C" {
 #endif
-
-typedef struct {
-    u16 uuid;
-    char next_animation_id;
-    char o_class;
-    int animation_duration;
-    u16 sig;
-    u8 collision_debounce;
-} MPMobyVars;
 
 typedef struct MobySeq { /* From Deadlocked types */
     undefined field0_0x0;
@@ -100,12 +110,12 @@ typedef struct MobyClass { /* MobyClass from Deadlocked Types, probably very wro
 struct Moby {
     Vec4 coll_pos;
     Vec4 position;
-    char state;
+    s8 state;
     char group;
-    char mClass;
+    char m_class;
     char alpha;
-    MobyClass *pClass;
-    void *pChain;
+    MobyClass *p_class;
+    void *p_chain;
     float scale;
     char update_distance;
     char enabled;
@@ -119,27 +129,27 @@ struct Moby {
     char field24_0x3f;
     Vec4 rotation;
     char field26_0x50;
-    char animationFrame;
-    u8 updateID;
-    u8 animationID;
+    char animation_frame;
+    u8 update_id;
+    u8 animation_id;
     float field30_0x54;
     float field34_0x58;
     float field35_0x5c;
     void *field36_0x60;
-    char *field40_0x64;
+    struct Manipulator* manipulator1;
     void *field41_0x68;
     void *field42_0x6c;
     char field43_0x70;
     char field44_0x71;
     char field45_0x72;
     char field46_0x73;
-    void *pUpdate;
-    void *pVars;
+    void* p_update;
+    void* vars;
     char field49_0x7c;
     char field50_0x7d;
     char field51_0x7e;
     char animStateMaybe;
-    unsigned int field53_0x80;
+    struct Manipulator* manipulator2;
     int field54_0x84;
     int field55_0x88;
     char field56_0x8c;
@@ -148,20 +158,20 @@ struct Moby {
     char field59_0x8f;
     unsigned int field60_0x90;
     unsigned short *collision;
-    float *collisionMesh;
+    float *collision_mesh;
     unsigned int field63_0x9c;
     char field64_0xa0;
     char field65_0xa1;
     char field66_0xa2;
     char field67_0xa3;
-    char field68_0xa4;
+    s8 damage;
     char field69_0xa5;
-    short oClass;
+    short o_class;
     int field71_0xa8;
     unsigned int field72_0xac;
     char field73_0xb0;
     char field74_0xb1;
-    unsigned short UID;
+    unsigned short uid;
     char field76_0xb4;
     char field77_0xb5;
     char field78_0xb6;
@@ -171,61 +181,21 @@ struct Moby {
     char field82_0xbd;
     char field83_0xbe;
     char field84_0xbf;
-    float field85_0xc0;
-    float field86_0xc4;
-    char field87_0xc8;
-    char field88_0xc9;
-    char field89_0xca;
-    char field90_0xcb;
-    char field91_0xcc;
-    char field92_0xcd;
-    char field93_0xce;
-    char field94_0xcf;
-    char field95_0xd0;
-    char field96_0xd1;
-    char field97_0xd2;
-    char field98_0xd3;
-    char field99_0xd4;
-    char field100_0xd5;
-    char field101_0xd6;
-    char field102_0xd7;
-    char field103_0xd8;
-    char field104_0xd9;
-    char field105_0xda;
-    char field106_0xdb;
-    char field107_0xdc;
-    char field108_0xdd;
-    char field109_0xde;
-    char field110_0xdf;
-    char field111_0xe0;
-    char field112_0xe1;
-    char field113_0xe2;
-    char field114_0xe3;
-    char field115_0xe4;
-    char field116_0xe5;
-    char field117_0xe6;
-    char field118_0xe7;
-    char field119_0xe8;
-    char field120_0xe9;
-    char field121_0xea;
-    char field122_0xeb;
-    char field123_0xec;
-    char field124_0xed;
-    char field125_0xee;
-    char field126_0xef;
-    u16 field127_0xf0;
-    u32 field128_0xf2;
-    u16 field129_0xf6;
-    u32 field132_0xf8;
-    unsigned int field136_0xfc;
+    Vec4 transform[4];
 
 #ifdef __cplusplus
     void set_animation(char animation_id, char animation_frame, u32 duration);
     void check_collision();
 
+    void change_values(MPPacketChangeMobyValuePayload* changes, size_t num, u16 value_type);
+    struct Damage* get_damage(u32 flags, u32 unk);
+
     static Moby* spawn(unsigned short o_class, unsigned short flags, uint16_t modeBits);
+    static Moby* find_by_uid(u16 uid);
+    static Moby* find_first_oclass(u16 o_class);
 #endif
 }
+
 #ifdef __cplusplus
 __attribute__((aligned(1)));
 
@@ -237,21 +207,11 @@ __attribute__((aligned(1)));
 typedef struct Moby Moby;
 #endif
 
-Moby *moby_spawn_hook(s32 o_class);
-
-void moby_animate(Moby *self);
-
-void moby_update(Moby *self);
-
-//          CollMobysSphere(double param_1,vec4 *param_2,undefined8 param_3,uint flags,Moby *param_5,
-//                        undefined8 param_6)
-
 SHK_FUNCTION_DEFINE_STATIC_6(0x5e598, int, coll_mobys_sphere, float, param_1, Vec4*, param_2, int, param_3, u32, flags,
                              Moby*, param_5, int*, param_6);
 SHK_FUNCTION_DEFINE_STATIC_4(0x59e20, int, coll_sphere, Vec4*, position, float, param_2, int, flags, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_4(0xfddc0, void, set_moby_animation, Moby*, moby, u32, param_2, u32, param_3, u32, param_4);
-SHK_FUNCTION_DEFINE_STATIC_1(0xefa28, Moby*, spawn_moby, int, o_class);
-SHK_FUNCTION_DEFINE_STATIC_1(0xf31a8, int, idk, void*, p1);
+SHK_FUNCTION_DEFINE_STATIC_1(0xf31a8, int, idk, Moby*, p1);
 SHK_FUNCTION_DEFINE_STATIC_5(0xf1ea0, int, idk2, void*, p1, s64, p2, u64, p3, s64, p4, s64, p5);
 SHK_FUNCTION_DEFINE_STATIC_1(0xefb38, void, delete_moby, Moby*, moby);
 
@@ -260,15 +220,12 @@ SHK_FUNCTION_DEFINE_STATIC_1(0x502730, double, int_to_double, int, p1);
 SHK_FUNCTION_DEFINE_STATIC_1(0xef74c, int, moby_frame_data_something, void*, p1);
 SHK_FUNCTION_DEFINE_STATIC_1(0x502730, double, long_long_to_double, u64, p1);
 SHK_FUNCTION_DEFINE_STATIC_2(0xfde80, int, FUN_000fa940, void*, p1, u32, p2);
-
-//void set_moby_animation(Moby *moby, u8 param_2, u8 param_3, double param_4);
-
-
-int idk(void *);
-
-int idk2(void *p1, s64 p2, u64 p3, s64 p4, s64 p5);
-
-//int item_to_oclass(ITEM item);
+SHK_FUNCTION_DEFINE_STATIC_3(0x119a18, void, do_manipulator, Moby*, moby, u32, bone, Manipulator*, manipulator);
+SHK_FUNCTION_DEFINE_STATIC_3(0x0f0ea8, void, set_manipulator, Moby*, moby, u32, bone, Manipulator*, manipulator);
+SHK_FUNCTION_DEFINE_STATIC_3(0xf1114, void, get_bone_position, Moby*, moby, u32, bone, Vec4*, out);
+SHK_FUNCTION_DEFINE_STATIC_3(0xf1038, void, get_bone_transformations, Moby*, moby, u32, bone, Vec4*, out);
+SHK_FUNCTION_DEFINE_STATIC_2(0x500fa8, void, apply_transformations, Vec4*, p1, Vec4*, p2);
+//SHK_FUNCTION_DEFINE_STATIC_3(0x10675c, Damage*, get_damage, Moby*, moby, u32, flags, u32, unk);
 
 #ifdef __cplusplus
 }

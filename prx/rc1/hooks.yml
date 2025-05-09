@@ -51,3 +51,23 @@ _unlock_item:
 _unlock_level:
     addr: 0x112c20
     replacedInstr: stdu r1, -0xe0(r1)
+
+_unlock_skillpoint:
+    addr: 0x11b728
+    replacedInstr: stdu r1, -0xa0(r1)
+
+menu_item_tick:
+    addr: 0x141408
+    replacedInstr: stdu r1, -0xc0(r1)
+
+set_ratchet_animation:
+    addr: 0x85300
+    replacedInstr: stdu r1, -0xc0(r1)
+
+_spawn_moby:
+    addr: 0xefa28
+    replacedInstr: stdu r1, -0x80(r1)
+
+_moby_get_damage:
+    addr: 0x10675c
+    replacedInstr: cmpwi cr1, r5, 0x0

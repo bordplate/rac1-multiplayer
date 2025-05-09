@@ -26,24 +26,38 @@ int allocations = 0;
 int num_allocated = 0;
 int frees = 0;
 
+static char allocator_is_initialized = 0;
+
 struct memory_block* head;
 
 void init_memory_allocator(void* start, size_t size) {
+    if (allocator_is_initialized) {
+#ifdef __cplusplus
+        Logger::error("Memory allocator already initialized");
+#endif
+        return;
+    }
+
     // Create the head of the linked list
     head = (struct memory_block*)start;
     head->size = size - sizeof(struct memory_block);
     head->is_allocated = 0;
     head->next = NULL;
+
+#ifdef __cplusplus
+    Logger::info("Initialized memory allocator");
+#endif
 }
 
 void *allocate_memory(size_t size) {
+    if (allocator_is_initialized == 0) {
+        init_memory_allocator(memory_area, sizeof(memory_area));
+        allocator_is_initialized = 1;
+    }
+
     // Round up the size to the next multiple of the word size
     size_t word_size = sizeof(void *);
     size = ((size + word_size - 1) & ~(word_size - 1)) + sizeof(struct memory_canary);
-
-#ifdef __cplusplus
-    Logger::trace("Allocating memory of size %d", size);
-#endif
 
     // Iterate through the blocks and find the best fit
     struct memory_block *current = head;
@@ -72,10 +86,6 @@ void *allocate_memory(size_t size) {
 
         // If the best fit block is larger than the allocation request, split it into two blocks. Don't split blocks smaller than 8 bytes.
         if (remaining_size > sizeof(struct memory_block) + 8) {
-#ifdef __cplusplus
-            Logger::trace("Making a new block for size %d. Setting its next to 0x%08X", remaining_size, best_fit->next);
-#endif
-
             struct memory_block *new_block = (struct memory_block *)((char *)best_fit + sizeof(struct memory_block) + size);
             new_block->size = remaining_size - sizeof(struct memory_block);
             new_block->is_allocated = 0;
@@ -99,10 +109,6 @@ void *allocate_memory(size_t size) {
         used_memory += best_fit->size + sizeof(struct memory_block);
         allocations += 1;
         num_allocated += 1;
-
-#ifdef __cplusplus
-        Logger::trace("Allocated memory of size %d at 0x%08x. Num objs: %d. Used memory: %d. Num allocations: %d, frees: %d", best_fit->size, (void *)((unsigned long)best_fit + sizeof(struct memory_block)), num_allocated, used_memory, allocations, frees);
-#endif
 
         void* ptr = (void *)((unsigned long)best_fit + sizeof(struct memory_block));
 
@@ -130,6 +136,13 @@ void *allocate_memory(size_t size) {
 }
 
 void free_memory(void *ptr) {
+    if (ptr == nullptr) {
+#ifdef __cplusplus
+        Logger::error("Free called on nullptr");
+#endif
+        return;
+    }
+
     struct memory_block *current = (struct memory_block*)((char*)ptr - sizeof(struct memory_block));
 
     struct memory_canary *canary = (struct memory_canary*)((char*)ptr + current->size-sizeof(struct memory_canary));
@@ -154,17 +167,13 @@ void free_memory(void *ptr) {
         Logger::error("Possible double-free called for memory at 0x%08x:%d; next: 0x%p", ptr, current->size, current->next);
         hexDump("> Memory data", &ptr, current->size);
 #endif
+    } else {
+        used_memory -= current->size + sizeof(struct memory_block);
+        frees += 1;
+        num_allocated -= 1;
     }
 
-    used_memory -= current->size + sizeof(struct memory_block);
-    frees += 1;
-    num_allocated -= 1;
-
     current->is_allocated = 0;
-
-#ifdef __cplusplus
-    Logger::trace("Freed memory at 0x%08x:%d; next: 0x%p. Num objs: %d. Used memory: %d. Num allocs: %d, frees: %d", ptr, current->size, current->next, num_allocated, used_memory, allocations, frees);
-#endif
 }
 
 #ifdef __cplusplus
@@ -176,6 +185,10 @@ void* operator new(size_t size) {
 }
 
 void operator delete(void* pointer) {
+    if (pointer == nullptr) {
+        return;
+    }
+
     free_memory(pointer);
 
     return;
@@ -188,6 +201,10 @@ void* operator new[](size_t size) {
 }
 
 void operator delete[](void* pointer) {
+    if (pointer == nullptr) {
+        return;
+    }
+
     free_memory(pointer);
 
     return;

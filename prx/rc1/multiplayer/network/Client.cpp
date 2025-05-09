@@ -54,6 +54,7 @@ void Client::_connect() {
 void Client::disconnect() {
     send(Packet::make_disconnect_packet());
 
+    flush();
     socketclose(sockfd_);
 
     connected_ = false;
@@ -62,14 +63,45 @@ void Client::disconnect() {
 }
 
 void Client::reset() {
+    Logger::info("Resetting connection...");
+
     handshake_complete_ = false;
     connected_ = false;
     sockfd_ = 0;
 
+    ack_id_ = 0;
+    ack_cycle_ = 0;
+
+    memset(&acked_, 0, sizeof(acked_));
+    memset(&unacked_, 0, sizeof(unacked_));
+
+    received_ = 0;
+    send_buffer_len = 0;
+
     _connect();
 }
 
+void Client::send_rpc(Packet* packet, AckCallback callback, void* extra) {
+    packet->header->flags = MP_PACKET_FLAG_RPC;
+    make_ack(packet, callback, extra);
+
+    send(packet);
+}
+
+void Client::send_rpc(Packet* packet, AckCallback callback) {
+    make_rpc(packet, callback);
+    send(packet);
+}
+
+void Client::send_ack(Packet* packet) {
+    make_ack(packet, nullptr);
+    send(packet);
+}
+
+static Profiler send_timer_("send");
 void Client::send(Packet* packet) {
+    Profiler::Scope scope(&send_timer_);
+
     packet->header->timeSent = get_time();
 
     // Calculate the total size of the packet.
@@ -92,9 +124,12 @@ void Client::send(Packet* packet) {
     }
 }
 
+static Profiler flush_timer_("flush");
 void Client::flush() {
+    Profiler::Scope scope(&flush_timer_);
+
     if (sockfd_ && send_buffer_len > 0) {
-        sendto(sockfd_, &send_buffer, send_buffer_len, 0, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
+        sendto(sockfd_, &send_buffer, send_buffer_len, MSG_DONTWAIT, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
         send_buffer_len = 0;
     }
 }
@@ -173,8 +208,6 @@ void Client::ack(char* packet, size_t len) {
         unacked->ack_cb(&packet[sizeof(MPPacketHeader)], header->size, unacked->extra);
 
         Logger::trace("Acked message %d with size %d", header->type, header->size);
-    } else {
-        Logger::trace("Acked packet type %d:%d without data", header->type, header->size);
     }
 }
 
@@ -246,16 +279,25 @@ bool Client::update(MPPacketHeader* header, void* packet_data) {
     return true;
 }
 
+static Profiler receive_timer_("receive");
+static Profiler full_update_timer_("full update");
+static Profiler pure_receive_("pure receive");
 void Client::receive() {
+    Profiler::Scope scope(&receive_timer_);
+
     received_ = 0;
     do {
-        memset(&recv_buffer, 0, sizeof(recv_buffer));
-        socklen_t paddrlen = sizeof(struct sockaddr_in);
-
         sockaddr _sockaddr;
         _sockaddr.sa_family = AF_INET;
 
-        received_ = recv(sockfd_, &recv_buffer, sizeof(recv_buffer), MSG_DONTWAIT);
+        {
+            Profiler::Scope s(&pure_receive_);
+            received_ = recv(sockfd_, &recv_buffer, sizeof(recv_buffer), MSG_DONTWAIT);
+        }
+
+        if (received_ <= 0) {
+            break;
+        }
 
         // Anything above this value means an error message
         if (received_ > 0x80000000) {
@@ -265,22 +307,23 @@ void Client::receive() {
             continue;
         }
 
-        int index = 0;
-        while (index < received_ && received_ - index >= sizeof(MPPacketHeader)) {
-            MPPacketHeader *packet_header = (MPPacketHeader *) &recv_buffer[index];
+        {
+            Profiler::Scope s(&full_update_timer_);
 
-            this->update(packet_header, &(recv_buffer[index + sizeof(MPPacketHeader)]));
+            int index = 0;
+            while (index < received_ && received_ - index >= sizeof(MPPacketHeader)) {
+                MPPacketHeader *packet_header = (MPPacketHeader *) &recv_buffer[index];
 
-            index += sizeof(MPPacketHeader) + packet_header->size;
+                this->update(packet_header, &(recv_buffer[index + sizeof(MPPacketHeader)]));
+
+                index += sizeof(MPPacketHeader) + packet_header->size;
+            }
         }
     } while (received_ > 0);
 }
 
 void Client::drop_receive() {
     do {
-        memset(&recv_buffer, 0, sizeof(recv_buffer));
-        socklen_t paddrlen = sizeof(struct sockaddr_in);
-
         sockaddr _sockaddr;
         _sockaddr.sa_family = AF_INET;
 
@@ -335,15 +378,20 @@ int64_t Client::server_time_difference(int64_t time) {
     return get_estimated_server_time() - time;
 }
 
+static Profiler unack_check_timer_("unack check");
 void Client::on_tick() {
-    int64_t current_time = get_time();
-    for(int i = 0; i < sizeof(unacked_)/sizeof(unacked_[0]); ++i) {
-        MPUnacked* unacked = &(unacked_[i]);
-        if (unacked->data != nullptr && !unacked->acked && current_time - unacked->send_time > 1000) {
-            Logger::trace("Resending packet");
-            // Resend packet
-            send(unacked->data);
-            unacked->send_time = current_time;
+    {
+        Profiler::Scope scope(&unack_check_timer_);
+
+        int64_t current_time = get_time();
+        for (int i = 0; i < sizeof(unacked_) / sizeof(unacked_[0]); ++i) {
+            MPUnacked *unacked = &(unacked_[i]);
+            if (unacked->data != nullptr && !unacked->acked && current_time - unacked->send_time > 1000) {
+                Logger::trace("Resending packet");
+                // Resend packet
+                send(unacked->data);
+                unacked->send_time = current_time;
+            }
         }
     }
 

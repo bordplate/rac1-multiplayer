@@ -4,7 +4,7 @@
 
 #include "TextElement.h"
 
-TextElement::TextElement(int x, int y, const char* text, u8 states) {
+TextElement::TextElement(int x, int y, const char* text, u8 states) : ViewElement(x, y, 0, 0) {
     this->x = x;
     this->y = y;
 

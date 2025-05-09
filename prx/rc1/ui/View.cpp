@@ -3,6 +3,7 @@
 //
 
 #include "View.h"
+#include "ViewElement.h"
 
 View::View() {
 
@@ -18,10 +19,13 @@ void View::render() {
 }
 
 void View::on_pressed_buttons(CONTROLLER_INPUT input) {
-
+    if (focused_element != nullptr) {
+        focused_element->on_pressed_buttons(input);
+    }
 }
 
 void View::add_element(ViewElement* element) {
+    element->view = this;
     this->elements_.push_back(element);
 }
 

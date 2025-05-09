@@ -11,6 +11,7 @@
 
 #include "logger.h"
 #include "vector.h"
+#include "memory.h"
 
 class String {
 private:
@@ -37,9 +38,11 @@ public:
     // Modifiers
     void set(const char* str) {
         delete[] m_str;
+
         m_length = strlen(str);
         m_str = new char[m_length + 1];
         strcpy(m_str, str);
+        m_str[m_length] = 0;
     }
 
     void setf(const char* format, ...) {
@@ -52,8 +55,11 @@ public:
     }
 
     void setf_args(const char* format, va_list args) {
-        // Determine the length of the formatted string
-        size_t length = vsnprintf(nullptr, 0, format, args);
+      // Determine the length of the formatted string
+        va_list args_copy;
+        va_copy(args_copy, args);
+        size_t length = vsnprintf(nullptr, 0, format, args_copy);
+        va_end(args_copy);
 
         // Allocate a buffer for the formatted string
         char* buffer = new char[length + 1];
@@ -136,6 +142,8 @@ public:
 
     // Operators
     String& operator=(const String& other) {
+        if (this == &other)
+            return *this;
         set(other.m_str);
         return *this;
     }

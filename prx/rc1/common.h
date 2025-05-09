@@ -12,6 +12,11 @@
 #define MULTI_TRACE(msg, ...) do {} while (false)
 #endif
 
+struct Size {
+    u32 width;
+    u32 height;
+};
+
 typedef enum ITEM {
     HeliPack=2,
     ThrusterPack=3,
@@ -49,5 +54,15 @@ typedef enum ITEM {
     Persuader=35
 } ITEM;
 
+typedef enum EnableCommunicationsFlags {
+    ENABLE_ON_UNLOCK_ITEM     =0x00000001,
+    ENABLE_ON_UNLOCK_LEVEL    =0x00000002,
+    ENABLE_ON_PICKUP_GOLD_BOLT=0x00000004,
+    ENABLE_ON_GET_BOLTS       =0x00000008,
+
+    ENABLE_ALL=                0xffffffff
+} EnableCommunicationsFlags;
+
+extern EnableCommunicationsFlags enable_communication_bitmap;
 
 #endif

@@ -15,9 +15,10 @@
 
 #include "views/StartView.h"
 
-#include "Player.h"
-#include "PersistentStorage.h"
-#include "GoldBolt.h"
+#include "rc1/multiplayer/Player.h"
+#include "rc1/utils/PersistentStorage.h"
+#include "rc1/game/GoldBolt.h"
+#include "rc1/views/ServerListView.h"
 
 // For whatever dumb reason I can't get the compiler to include
 //  .cpp files under /lib/, so it's defined here.
@@ -41,10 +42,29 @@ void Game::start() {
     memset(blocked_bolts, 0, 100);
 }
 
+static Profiler full_tick_timer_("full tick");
+static Profiler tick_timer_("tick");
+static Profiler check_level_flags_("check level flags");
 void Game::on_tick() {
+    Profiler::reset_all();
+
+    Profiler::Scope s(&full_tick_timer_);
+
     if (client_) {
-        client_->on_tick();
+        {
+            Profiler::Scope scope(&tick_timer_);
+
+            client_->on_tick();
+        }
+
+        if (ratchet_moby != nullptr) {
+            Profiler::Scope scope(&check_level_flags_);
+            check_level_flags();
+        }
     }
+
+    option_helpdesk_text = false;
+    option_helpdesk_voice = false;
 
     if (previous_user_option_camera_left_right_movement == -1) {
         previous_user_option_camera_left_right_movement = user_option_camera_left_right_movement;
@@ -72,10 +92,6 @@ void Game::on_tick() {
             Logger::trace("Pressed buttons (%08X) sent to view", pressed_buttons);
             current_view->on_pressed_buttons(pressed_buttons);
         }
-
-        if (client_ && client_->connected()) {
-            //client_->send(Packet::make_controller_input(pressed_buttons, MP_CONTROLLER_FLAGS_PRESSED));
-        }
     }
 
     // Player is most likely on intro menu scene. Present and handle multiplayer startup stuff.
@@ -86,7 +102,7 @@ void Game::on_tick() {
         }
 
         if (!current_view && game_state == 3) {
-            StartView* view = new StartView();
+            ServerListView* view = new ServerListView();
             this->transition_to(view);
         }
     } else if (ratchet_moby != nullptr && use_custom_player_color) {
@@ -117,11 +133,22 @@ void Game::before_player_spawn() {
             restored_camera_options_ = true;
         }
 
-        ((GameClient *) client())->moby_clear_all();
+        ((GameClient*)client())->moby_clear_all();
+        ((GameClient*)client())->refresh_hybrid_mobys();
+
+        if (last_planet_ != current_planet) {
+            last_planet_ = current_planet;
+
+            ((GameClient*)client())->clear_hybrid_mobys();
+            ((GameClient*)client())->moby_delete_all();
+        }
     }
 }
 
+//static Profiler render_timer_ = Profiler("render");
 void Game::on_render() {
+//    Profiler::Scope scope(&render_timer_);
+
     // If loading, we shouldn't render anything;
     if (game_state == 6) {
         if (Game::shared().client()) {
@@ -153,6 +180,14 @@ void Game::transition_to(View *view) {
 
 Client* Game::client() {
     return client_;
+}
+
+Client* Game::connected_client() {
+    if (client_ && client_->connected() && client_->handshake_complete()) {
+        return client_;
+    }
+
+    return nullptr;
 }
 
 int Game::query_servers_callback(void* data, size_t len, void* extra) {
@@ -187,23 +222,35 @@ int Game::query_servers_callback(void* data, size_t len, void* extra) {
         server->num_players = packet->player_count;
 
         char* server_name = (char*)allocate_memory(packet->name_length+1);
+        char* description = (char*)allocate_memory(packet->description_length+1);
+        char* owner_name = (char*)allocate_memory(packet->owner_name_length+1);
+
+        memset(server_name, 0, packet->name_length+1);
+        memset(description, 0, packet->description_length+1);
+        memset(owner_name, 0, packet->owner_name_length+1);
 
         snprintf(server_name, packet->name_length+1, "%s", &((char*)data)[index+sizeof(MPPacketQueryResponseServer)]);
+        snprintf(description, packet->description_length+1, "%s", &((char*)data)[index+sizeof(MPPacketQueryResponseServer)+packet->name_length]);
+        snprintf(owner_name, packet->owner_name_length+1, "%s", &((char*)data)[index+sizeof(MPPacketQueryResponseServer)+packet->name_length+packet->description_length]);
 
         server->name = new String(server_name);
+        server->description = new String(description);
+        server->owner_name = new String(owner_name);
 
         free_memory(server_name);
+        free_memory(description);
+        free_memory(owner_name);
 
-        Logger::debug("Server name: %s; Port: %d; Max players: %d", server->name->c_str(), server->port, server->max_players);
+        Logger::debug("Server name: %s; Port: %d; Max players: %d, Description: %s, Owner: %s", server->name->c_str(), server->port, server->max_players, server->description->c_str(), server->owner_name->c_str());
 
-        index += sizeof(MPPacketQueryResponseServer) + packet->name_length;
+        index += sizeof(MPPacketQueryResponseServer) + packet->name_length + packet->description_length + packet->owner_name_length;
         items += 1;
 
         servers->push_back(server);
     }
 
     if (server_query_callback_) {
-        server_query_callback_(servers);
+        server_query_callback_((ServerListView*)Game::shared().current_view, servers);
     }
 
     delete servers;
@@ -238,6 +285,60 @@ void Game::connect_to(char* ip, int port) {
 
 void Game::alert(String& message) {
     cellMsgDialogOpen2(CELL_MSGDIALOG_TYPE_SE_TYPE_NORMAL, message.c_str(), nullptr, nullptr, nullptr);
+}
+
+void Game::refresh_level_flags() {
+    memcpy(&level_flags1_, level_flags1 + 0x10 * current_planet, 0x10);
+    memcpy(&level_flags2_, level_flags2 + 0x100 * current_planet, 0x100);
+}
+
+void Game::check_level_flags() {
+    if (should_load_destination_planet) {
+        reload_level_flags_ = true;
+        return;
+    } else if (reload_level_flags_) {
+        reload_level_flags_ = false;
+        refresh_level_flags();
+    }
+
+    MPPacketLevelFlag flags1[0x10];
+    size_t flags1_changed = 0;
+    for (int i = 0; i < 0x10; i++) {
+        if (level_flags1_[i] != level_flags1[0x10 * current_planet + i]) {
+            level_flags1_[i] = level_flags1[0x10 * current_planet + i];
+
+            MPPacketLevelFlag flag = {1, i, level_flags1_[i]};
+            flags1[flags1_changed] = flag;
+            flags1_changed += 1;
+        }
+    }
+
+    MPPacketLevelFlag flags2[0x100];
+    size_t flags2_changed = 0;
+    for (int i = 0; i < 0x100; i++) {
+        if (level_flags2_[i] != level_flags2[0x100 * current_planet + i]) {
+            level_flags2_[i] = level_flags2[0x100 * current_planet + i];
+
+            MPPacketLevelFlag flag = {1, i, level_flags2_[i]};
+            flags2[flags2_changed] = flag;
+            flags2_changed += 1;
+        }
+    }
+
+    Client* client = connected_client();
+    if (client != nullptr) {
+        if (flags1_changed) {
+            Packet *packet = Packet::make_level_flags_changed_packet(MP_LEVEL_FLAG_TYPE_1, current_planet, flags1_changed, flags1);
+            client->make_ack(packet, nullptr);
+            client->send(packet);
+        }
+
+        if (flags2_changed) {
+            Packet* packet = Packet::make_level_flags_changed_packet(MP_LEVEL_FLAG_TYPE_2, current_planet, flags2_changed, flags2);
+            client_->make_ack(packet, nullptr);
+            client_->send(packet);
+        }
+    }
 }
 
 

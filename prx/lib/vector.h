@@ -12,14 +12,21 @@ class Vector {
 public:
     // Constructors
     Vector() : data_(0), size_(0), capacity_(0) {}
-    Vector(int size) : data_(0), size_(0), capacity_(0) { reserve(size); }
+    Vector(int size) : data_(0), size_(0), capacity_(0) {
+        data_ = new T[size];
+        capacity_ = size;
+    }
 
     // Destructor
-    ~Vector() { delete[] data_; }
+    ~Vector() {
+        delete[] data_;
+    }
 
     // Element access
     T &operator[](int index) { return data_[index]; }
     const T &operator[](int index) const { return data_[index]; }
+
+    T &at(int index) { return data_[index]; }
 
     // Copy assignment
     Vector& operator=(const Vector& other) {
@@ -37,6 +44,18 @@ public:
             size_ = other.size_;
         }
 
+        return *this;
+    }
+
+    Vector& operator+=(const Vector& other) {
+        for (int i = 0; i < other.size(); i++) {
+            push_back(other[i]);
+        }
+        return *this;
+    }
+
+    Vector& operator+=(const T& value) {
+        push_back(value);
         return *this;
     }
 
@@ -87,6 +106,17 @@ public:
         }
     }
 
+    T* erase(T* pos) {
+        if (pos < begin() || pos >= end()) {
+            return end();
+        }
+
+        for (T* p = pos; p < end() - 1; ++p) {
+            *p = *(p + 1);
+        }
+        --size_;
+        return pos;
+    }
 private:
     T *data_;
     int size_;

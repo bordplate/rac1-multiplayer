@@ -3,15 +3,14 @@
 //
 
 #include "GoldBolt.h"
-#include "Game.h"
-
-#include "multiplayer/Packet.h"
+#include <rc1/Game.h>
+#include <rc1/multiplayer/network/Packet.h>
 
 #include <lib/shk.h>
 
 extern "C" SHK_HOOK(void, goldBoltUpdate, Moby* moby);
 void GoldBolt::update() {
-    GoldBoltVars* vars = (GoldBoltVars*)this->pVars;
+    GoldBoltVars* vars = (GoldBoltVars*)this->vars;
 
     if (this->state != 2 && blocked_bolts[(current_planet * 4) + vars->number] != 0) {
         delete_moby(this);

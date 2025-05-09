@@ -29,13 +29,9 @@ void PersistentStorage::persist() {
 void PersistentStorage::load() {
     int err = cellFsOpen(String::format("/dev_hdd0/game/NPEA00385/USRDIR/%s", filename.c_str()).c_str(), CELL_FS_O_RDONLY|CELL_FS_O_CREAT, &file_descriptor_, nullptr, 0);
 
-    Logger::debug("oh wow we're loading wowow");
-
     char buffer[4096];
     uint64_t num_read;
     cellFsRead(file_descriptor_, (void*)buffer, sizeof(buffer), &num_read);
-
-    Logger::debug("Read that shit");
 
     Vector<String> parts = String(buffer).split("\n");
     for (int i = 0; i < parts.size(); i++) {
@@ -43,8 +39,6 @@ void PersistentStorage::load() {
         if (key_value.size() < 2) {
             continue;
         }
-
-        Logger::debug("Oh we in here");
 
         String key = key_value[0];
         String value = key_value[1];
@@ -59,8 +53,6 @@ void PersistentStorage::load() {
             set(key, __atoi(value.c_str()));
         }
     }
-
-    Logger::debug("we out");
 
     cellFsClose(file_descriptor_);
 }
