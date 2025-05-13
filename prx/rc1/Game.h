@@ -17,8 +17,8 @@
 
 typedef void (*ServerQueryCallback)(ServerListView* self, Vector<GameServer*>* servers);
 
-static char* level_flags1 = (char*)0xa0ca84;
-static char* level_flags2 = (char*)0xa0cd1c;
+static u8* level_flags1 = (u8*)0xa0ca84;
+static u8* level_flags2 = (u8*)0xa0cd1c;
 
 struct Game {
 public:
