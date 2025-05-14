@@ -36,6 +36,8 @@ coll_output = 0xa10940;
 n_coll_mobys = 0xa10950;
 coll_moby_out = 0xa10958;
 
+ratchets_ship = 0x964570;
+
 mclass_table = 0xa34c00;
 
 player_type = 0x96bd84;

@@ -224,6 +224,8 @@ extern Moby* moby_ptr_end;
 
 extern MobyClass** mclass_table;
 
+extern Moby* ratchets_ship;
+
 // player
 
 // The player's current bolt count.
