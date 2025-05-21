@@ -272,6 +272,7 @@ typedef struct {
 #define MP_STATE_TYPE_LEVEL_FLAG 15
 #define MP_STATE_TYPE_UNLOCK_SKILLPOINT 16
 #define MP_STATE_TYPE_COMMUNICATION_FLAGS 17
+#define MP_STATE_TYPE_DETECTOR_MULT 18
 
 typedef struct {
     u16 flags;

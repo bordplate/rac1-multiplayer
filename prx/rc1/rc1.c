@@ -18,6 +18,7 @@
 bool use_custom_player_color = false;
 uint32_t custom_player_color = 0;
 EnableCommunicationsFlags enable_communication_bitmap = ENABLE_ALL;
+u8 metal_detector_bolt_multiplier = 1;
 
 extern "C" {
 void game_tick() {
@@ -199,6 +200,17 @@ void unlock_skillpoint(u8 skillpoint) {
     SHK_CALL_HOOK(_unlock_skillpoint, skillpoint);
 }
 
+SHK_HOOK(void, metal_detector_spot_update_func, Moby*);
+void metal_detector_spot_update_func_hook(Moby* moby) {
+    if (moby->state == 0) {
+        struct MetalDetectorSpotVars *vars = (struct MetalDetectorSpotVars *)(moby->vars);
+
+        vars->bolts = vars->bolts * metal_detector_bolt_multiplier;
+    }
+
+    SHK_CALL_HOOK(metal_detector_spot_update_func, moby);
+}
+
 SHK_HOOK(void, menu_item_tick, MenuItem*);
 void menu_item_tick_hook(MenuItem* menu_item) {
     SHK_CALL_HOOK(menu_item_tick, menu_item);
@@ -326,6 +338,7 @@ void rc1_init() {
     SHK_BIND_HOOK(set_ratchet_animation, set_ratchet_animation_hook);
     SHK_BIND_HOOK(_spawn_moby, spawn_moby_hook);
     SHK_BIND_HOOK(_moby_get_damage, _moby_get_damage_hook);
+    SHK_BIND_HOOK(metal_detector_spot_update_func, metal_detector_spot_update_func_hook);
 
     MULTI_LOG("Bound hooks\n");
 }
