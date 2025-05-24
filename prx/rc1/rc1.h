@@ -278,8 +278,6 @@ void unlock_skillpoint(u8 skillpoint);
 Moby* spawn_moby(u16 o_class);
 struct Damage* moby_get_damage(Moby* moby, u32 flags, u32 unk);
 
-extern u8 metal_detector_bolt_multiplier;
-
 #ifdef __cplusplus
 // Pointer to Ratchet moby.
 extern Moby *ratchet_moby;
