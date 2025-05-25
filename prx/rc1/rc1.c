@@ -214,7 +214,10 @@ void metal_detector_spot_update_func_hook(Moby* moby) {
 SHK_HOOK(void, skid_update_func, Moby*);
 void skid_update_func_hook(Moby* moby) {
     if (moby->state == 0) {
-        if (PREVENT_DELETE_SKID) moby->state = 1;
+        if (PREVENT_DELETE_SKID) {
+            moby->state = 1;
+            moby->update_distance = 0xff;
+        }
     }
     SHK_CALL_HOOK(skid_update_func, moby);
 }
