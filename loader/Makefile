@@ -27,14 +27,14 @@ binary: compile
 
 patch:
 	cd $(PS3_SDK)/Tools && \
-	$(WINE) $(SCETOOL) -d "$(RPCS3_DIR)/dev_hdd0/game/NPEA00385/USRDIR/EBOOT.BIN" "$(CURDIR)/$(BUILD_DIR)/EBOOT.ELF"
+	$(SCETOOL) -d "$(RPCS3_DIR)/dev_hdd0/game/NPEA00385/USRDIR/EBOOT.BIN" "$(CURDIR)/$(BUILD_DIR)/EBOOT.ELF"
 
 	cd "$(CURDIR)"
 
 	$(PYTHON) $(APPLYPATCH) --patch "$(BUILD_DIR)/patch.txt" --input "$(BUILD_DIR)/EBOOT.ELF" --output "$(BUILD_DIR)/EBOOT.patched.ELF"
 
 	cd $(PS3_SDK)/Tools && \
-	$(WINE) $(SCETOOL) \
+	$(SCETOOL) \
 		--sce-type=SELF \
 		--compress-data=TRUE \
 		--skip-sections=TRUE \
