@@ -60,6 +60,7 @@ public:
 
     int64_t latency_;
     uint64_t connection_start_time_;
+    bool suppress_timeout_alert_;
 
     void calculate_offset(int64_t client_send_time, int64_t server_receive_time);
     int64_t server_time_difference(int64_t time);

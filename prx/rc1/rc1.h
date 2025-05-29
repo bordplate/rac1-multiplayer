@@ -65,6 +65,8 @@ SHK_FUNCTION_DEFINE_STATIC_4(0xdbc38, void, load_moby_model, u32**, addr, int, u
 SHK_FUNCTION_DEFINE_STATIC_5(0x6a718, void, draw_rounded_box, int, y1, int, y2, int, x1, int, x2, u32, alpha);
 SHK_FUNCTION_DEFINE_STATIC_4(0x7100c, void, _draw_text_opt, TextOpt*, text_opt, u32, color, char*, text, ssize_t, len);
 SHK_FUNCTION_DEFINE_STATIC_2(0xef810, void, init_moby, Moby*, moby, u16, o_class);
+SHK_FUNCTION_DEFINE_STATIC_2(0x65490, void, world_pos_to_screen_pos, Vec4*, out_screen_pos, Vec4*, world_pos);
+SHK_FUNCTION_DEFINE_STATIC_5(0x57820, int, coll_line, Vec4*, position1, Vec4*, position2, int, flags, Moby*, moby, Vec4*, unk_vec);
 
 void draw_text_opt(TextOpt* text_opt, Color color, char* text, ssize_t len, float text_size);
 
@@ -245,8 +247,8 @@ extern int player_state_input;
 // The player's current HP.
 extern int player_health;
 
-extern Vec3 camera_pos;
-extern Vec3 camera_rot;
+extern Vec4 camera_pos;
+extern Vec4 camera_rot;
 
 extern int player_animation_duration;
 
@@ -254,6 +256,9 @@ extern enum CONTROLLER_INPUT pressed_buttons;
 extern enum CONTROLLER_INPUT held_buttons;
 
 extern int in_cutscene;
+
+extern int screen_projection_map_x;
+extern int screen_projection_map_y;
 
 extern float animation_speed;
 

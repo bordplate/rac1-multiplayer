@@ -49,3 +49,6 @@ option_helpdesk_voice = 0x71fb58;
 option_helpdesk_text = 0x71fb59;
 
 latin_glyph_sizes = 0x736c50;
+
+screen_projection_map_x = 0x966b10;
+screen_projection_map_y = 0x966b14;

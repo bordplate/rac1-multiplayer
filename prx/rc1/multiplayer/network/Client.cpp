@@ -31,6 +31,8 @@ Client::Client(char* ip, int port) {
     last_sync_time = 0;
     has_first_time_sync = false;
     send_buffer_len = 0;
+
+    suppress_timeout_alert_ = false;
 }
 
 void Client::_connect() {
@@ -397,8 +399,10 @@ void Client::on_tick() {
 
     // Timeout
     if (connected_ && !handshake_complete_ && get_time() - connection_start_time_ > 5 * 1000) {
-        String message = String("Timed out trying to connect to server.");
-        Game::shared().alert(message);
+        if (!suppress_timeout_alert_) {
+            String message = String("Timed out trying to connect to server.");
+            Game::shared().alert(message);
+        }
         this->disconnect();
     }
 

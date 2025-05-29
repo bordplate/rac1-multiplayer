@@ -38,6 +38,10 @@ void GameClient::reset() {
     waiting_for_connect_ = false;
     connection_complete_ = false;
 
+    if (remote_view_ != nullptr) {
+        remote_view_->clear_all();
+    }
+
     clear_hybrid_mobys();
     moby_delete_all();
 
@@ -437,7 +441,7 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             int type = (int)(packet->offset >> 16) & 0xFF;
             int offset = (int)(packet->offset) & 0xFFFF;
 
-            Logger::trace("Setting level flag %d %d %d", level, type, offset);
+            Logger::debug("Setting level flag for %d; type: %d; %d->%d", level, type, offset, packet->value);
 
             if (type == MP_LEVEL_FLAG_TYPE_1) {
                 level_flags1[level * 0x10 + offset] = packet->value;

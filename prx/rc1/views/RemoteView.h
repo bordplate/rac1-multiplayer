@@ -48,6 +48,10 @@ enum MPUIElementAttribute {
     MPUIElementAttributeMenuItems,
     MPUIElementAttributeShadow,
     MPUIElementAttributeInputPrompt,
+    MPUIElementAttributeWorldSpacePosition,
+    MPUIElementAttributeAlignment,
+    MPUIElementAttributeWorldSpaceFlags,
+    MPUIElementAttributeWorldSpaceMaxDistance,
 };
 
 enum MPUIElementEventType {
