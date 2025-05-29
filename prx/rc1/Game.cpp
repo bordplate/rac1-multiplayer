@@ -305,6 +305,7 @@ void Game::check_level_flags() {
     size_t flags1_changed = 0;
     for (int i = 0; i < 0x10; i++) {
         if (level_flags1_[i] != level_flags1[0x10 * current_planet + i]) {
+            Logger::debug("Level flag %d changed from %d to %d", i, level_flags1_[i], level_flags1[0x10 * current_planet + i]);
             level_flags1_[i] = level_flags1[0x10 * current_planet + i];
 
             MPPacketLevelFlag flag = {1, i, level_flags1_[i]};

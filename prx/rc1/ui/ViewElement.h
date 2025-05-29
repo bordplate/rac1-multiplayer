@@ -10,6 +10,18 @@
 
 #include "View.h"
 
+enum MPUIElementAlignment {
+    MPUIElementAlignmentLeft,
+    MPUIElementAlignmentCentered,
+    MPUIElementAlignmentRight,
+};
+
+enum MPUIElementWorldSpaceFlag {
+    MPUIElementWorldSpaceFlagNone = 0,
+    MPUIElementWorldSpaceFlagHideWhenObstructed = 1 << 0,
+    MPUIElementWorldSpaceFlagScaleWithDistance = 1 << 1
+};
+
 struct ViewElement {
 public:
     ViewElement(int x, int y, int width, int height) {
@@ -22,10 +34,32 @@ public:
         this->draws_background = false;
         this->visible = true;
         this->states = 0xFF;
+
+        this->world_position.x = 0.0f;
+        this->world_position.y = 0.0f;
+        this->world_position.z = 0.0f;
+        this->world_position.w = 1.0f;
+
+        this->world_space_max_distance = 64000.0f;
+        this->distance_from_camera = 64000.0f;
+
+        this->uses_world_space = false;
+        this->world_space_hide_when_obstructed = false;
+        this->world_space_scales_with_distance = false;
+
+        this->alignment = MPUIElementAlignmentLeft;
     }
 
     int x;
     int y;
+
+    Vec4 world_position;
+    float world_space_max_distance;
+
+    bool uses_world_space;
+    bool world_space_hide_when_obstructed;
+    bool world_space_scales_with_distance;
+    float distance_from_camera;
 
     View* view;
 
@@ -34,6 +68,8 @@ public:
 
     bool draws_background;
     bool visible;
+
+    MPUIElementAlignment alignment;
 
     u8 states;
 
@@ -49,6 +85,8 @@ public:
         }
         return false;
     }
+
+    void calculate_distance_from_camera();
 
     virtual void render();
     virtual void on_pressed_buttons(CONTROLLER_INPUT input) {}

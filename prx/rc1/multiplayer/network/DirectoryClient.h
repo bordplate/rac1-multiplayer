@@ -9,7 +9,9 @@
 
 class DirectoryClient : public Client {
 public:
-    DirectoryClient(char* ip, int port) : Client(ip, port) {};
+    DirectoryClient(char* ip, int port) : Client(ip, port) {
+        suppress_timeout_alert_ = true;
+    };
 
     void query_directory(int directory_id, AckCallback callback);
 

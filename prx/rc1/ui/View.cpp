@@ -10,11 +10,35 @@ View::View() {
 }
 
 void View::render() {
+    ViewElement* pocket = nullptr;
+
     for (int i = 0; i < this->elements_.size(); i++) {
         ViewElement* element = this->elements_[i];
         if (element && element->active_for_state(game_state)) {
+            if (element->visible && element->uses_world_space) {
+                element->calculate_distance_from_camera();
+
+                if (!pocket) {
+                    pocket = element;
+                    continue;
+                }
+
+                if (element->distance_from_camera < pocket->distance_from_camera) {
+                    pocket->render();
+                    pocket = element;
+                } else {
+                    element->render();
+                }
+
+                continue;
+            }
+
             element->render();
         }
+    }
+
+    if (pocket) {
+        pocket->render();
     }
 }
 

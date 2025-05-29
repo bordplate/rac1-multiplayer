@@ -105,6 +105,12 @@ void RemoteView::delete_element(u16 id) {
                 previous->next_element = current->next_element;
             }
 
+            if (focused_element == current->element) {
+                focused_element = nullptr;
+            }
+
+            remove_element(current->element);
+
             delete current;
             return;
         }
@@ -112,11 +118,14 @@ void RemoteView::delete_element(u16 id) {
         previous = current;
         current = current->next_element;
     }
+
+    Logger::error("Server tried to delete element %d, but we couldn't find it.", id);
 }
 
 void RemoteView::clear_all() {
     for (RemoteViewElement* current = first_element_; current != nullptr; current = current->next_element) {
         focused_element = nullptr;
+        current->id = 0;
         remove_element(current->element);
 
         delete current;
@@ -220,7 +229,26 @@ void RemoteView::handle_packet(MPPacketUI* packet) {
 
                     element->x = x;
                     element->y = y;
-
+                    element->uses_world_space = false;
+                    break;
+                }
+                case MPUIElementAttributeWorldSpacePosition: {
+                    memcpy(&element->world_position, data, sizeof(Vec3));
+                    element->uses_world_space = true;
+                    break;
+                }
+                case MPUIElementAttributeWorldSpaceFlags: {
+                    MPUIElementWorldSpaceFlag flags = *(MPUIElementWorldSpaceFlag*)data;
+                    element->world_space_hide_when_obstructed = (flags & MPUIElementWorldSpaceFlagHideWhenObstructed) > 0;
+                    element->world_space_scales_with_distance = (flags & MPUIElementWorldSpaceFlagScaleWithDistance) > 0;
+                    break;
+                }
+                case MPUIElementAttributeWorldSpaceMaxDistance: {
+                    memcpy(&element->world_space_max_distance, data, sizeof(float));
+                    break;
+                }
+                case MPUIElementAttributeAlignment: {
+                    element->alignment = (MPUIElementAlignment)*(u32*)data;
                     break;
                 }
                 case MPUIElementAttributeSize: {
@@ -337,9 +365,12 @@ void RemoteView::handle_packet(MPPacketUI* packet) {
                     break;
                 }
                 case MPUIElementAttributeShadow: {
-                    switch ((MPUIElementType)item->attribute) {
+                    switch ((MPUIElementType)packet->element_type) {
                         case MPUIElementTypeText:
                             ((TextElement*)element)->has_shadow = *(bool*)data;
+                            break;
+                        case MPUIElementTypeTextArea:
+                            ((TextAreaElement*)element)->has_shadow = *(bool*)data;
                             break;
                         default: break;
                     }

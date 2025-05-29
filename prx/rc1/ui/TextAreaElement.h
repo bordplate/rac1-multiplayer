@@ -9,14 +9,16 @@
 
 struct TextAreaElement: public ViewElement {
 public:
-    TextAreaElement(int x, int y, int width, int height) : ViewElement(x, y, width, height) {
+    TextAreaElement(int x, int y, int width, int height) : ViewElement(x, y, width, height), color(), text_options() {
         text_size = 1.0f;
         color = RGBA(0x88, 0xa8, 0xff, 0xc0);
 
         text_options.line_spacing = 15;
+        has_shadow = false;
     }
 
     Color color;
+    bool has_shadow;
 
     String text;
     TextOpt text_options;
