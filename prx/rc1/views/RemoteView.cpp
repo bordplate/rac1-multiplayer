@@ -172,7 +172,7 @@ ViewElement* RemoteView::create_element_with_type(u16 id, MPUIElementType elemen
     for (RemoteViewElement* current = first_element_; current != nullptr; current = current->next_element) {
         if (current->id == id) {
             Logger::error("Element with id %d already exists", id);
-            return nullptr;
+            return current->element;
         }
 
         if (current->next_element == nullptr) {
