@@ -25,6 +25,20 @@ void SyncedMoby::reset() {
     vars->status = SyncedMobyStatusWaiting;
 }
 
+void SyncedMoby::deactivate() {
+    Client* client = Game::shared().connected_client();
+    u32 id = ((u32)this - (u32)moby_ptr) / 0x100;
+    SyncedMobyVars* vars = &synced_moby_vars[id];
+
+    if (client != nullptr) {
+        Logger::debug("Sending delete packet for moby %d", vars->uuid);
+        client->send_ack(Packet::make_moby_delete_packet(vars->uuid));
+        memset(vars, 0, sizeof(SyncedMobyVars));
+
+        vars->status = SyncedMobyStatusReady;
+    }
+}
+
 void SyncedMoby::activate() {
     u32 id = ((u32)this - (u32)moby_ptr) / 0x100;
     SyncedMobyVars* vars = &synced_moby_vars[id];
@@ -94,18 +108,12 @@ void SyncedMoby::update() {
     }
 
     if (this->state < 0) {
-        if (client != nullptr) {
-            Logger::debug("Sending delete packet for moby %d", vars->uuid);
-            client->send_ack(Packet::make_moby_delete_packet(vars->uuid));
-            memset(vars, 0, sizeof(SyncedMobyVars));
-
-            vars->status = SyncedMobyStatusReady;
-        }
+        deactivate();
 
         return;
     }
 
-    if (client != nullptr && vars->uuid != 0) {
+    if (client != nullptr && vars->uuid != 0 && this->enabled == 1) {
         if (state >= 0) {
             Packet packet = Packet(sizeof(MPPacketMobyUpdate));
             packet.header->type = MP_PACKET_MOBY_UPDATE;

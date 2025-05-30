@@ -32,6 +32,7 @@ struct SyncedMoby : public Moby {
 public:
     void update();
     void activate();
+    void deactivate();
     SyncedMobyVars* get_vars();
 
     static void synced_update(SyncedMoby* moby);
