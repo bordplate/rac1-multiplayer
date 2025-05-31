@@ -56,6 +56,14 @@ _unlock_skillpoint:
     addr: 0x11b728
     replacedInstr: stdu r1, -0xa0(r1)
 
+metal_detector_spot_update_func:
+    addr: 0x3d91b8
+    replacedInstr: stdu r1, -0xa0(r1)
+
+skid_update_func:
+    addr: 0x45d0f8
+    replacedInstr: stdu r1, -0x160(r1)
+
 menu_item_tick:
     addr: 0x141408
     replacedInstr: stdu r1, -0xc0(r1)

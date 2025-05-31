@@ -191,6 +191,11 @@ struct Damage {
     float damage_dealt;
 };
 
+struct MetalDetectorSpotVars {
+    u8 unknown[0x18];
+    int bolts;
+};
+
 //
 // Various global variables
 //
