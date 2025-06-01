@@ -277,6 +277,7 @@ extern u8 latin_glyph_sizes;
 
 extern PlayerType player_type;
 
+void start_in_level_movie(u32 movie);
 void unlock_item(int item_id, uint8_t equip);
 void unlock_level(int level);
 void unlock_skillpoint(u8 skillpoint);

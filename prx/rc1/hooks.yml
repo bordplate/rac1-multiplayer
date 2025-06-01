@@ -44,6 +44,10 @@ goldBoltUpdate:
     addr: 0x1d9d48
     replacedInstr: stdu r1, -0x140(r1)
 
+_start_in_level_movie:
+    addr: 0x167e60
+    replacedInstr: stdu r1, -0x1a0(r1)
+
 _unlock_item:
     addr: 0x112e18
     replacedInstr: stdu r1, -0xb0(r1)

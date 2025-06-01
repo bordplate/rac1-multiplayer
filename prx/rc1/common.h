@@ -55,12 +55,13 @@ typedef enum ITEM {
 } ITEM;
 
 typedef enum EnableCommunicationsFlags {
-    ENABLE_ON_UNLOCK_ITEM     =0x00000001,
-    ENABLE_ON_UNLOCK_LEVEL    =0x00000002,
-    ENABLE_ON_PICKUP_GOLD_BOLT=0x00000004,
-    ENABLE_ON_GET_BOLTS       =0x00000008,
+    ENABLE_ON_UNLOCK_ITEM           = 1 << 0,
+    ENABLE_ON_UNLOCK_LEVEL          = 1 << 1,
+    ENABLE_ON_PICKUP_GOLD_BOLT      = 1 << 2,
+    ENABLE_ON_GET_BOLTS             = 1 << 3,
+    ENABLE_ON_START_IN_LEVEL_MOVIE  = 1 << 4,
 
-    ENABLE_ALL=                0xffffffff
+    ENABLE_ALL = 0xffffffff
 } EnableCommunicationsFlags;
 
 extern EnableCommunicationsFlags enable_communication_bitmap;

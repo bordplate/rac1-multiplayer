@@ -17,7 +17,9 @@
 
 bool use_custom_player_color = false;
 uint32_t custom_player_color = 0;
-EnableCommunicationsFlags enable_communication_bitmap = ENABLE_ALL;
+EnableCommunicationsFlags enable_communication_bitmap = (EnableCommunicationsFlags)(
+        ENABLE_ON_GET_BOLTS | ENABLE_ON_PICKUP_GOLD_BOLT | ENABLE_ON_UNLOCK_ITEM | ENABLE_ON_UNLOCK_LEVEL
+);
 
 extern "C" {
 void game_tick() {
@@ -38,6 +40,24 @@ void game_loop_intro_start_hook() {
     game_tick();
 
     SHK_CALL_HOOK(game_loop_intro_start);
+}
+
+SHK_HOOK(void, _start_in_level_movie, u32);
+void _start_in_level_movie_hook(u32 movie) {
+    if (!(enable_communication_bitmap & ENABLE_ON_START_IN_LEVEL_MOVIE)) {
+        start_in_level_movie(movie);
+    }
+
+    Client *client = Game::shared().client();
+    if (client != nullptr) {
+        Packet *packet = Packet::make_start_in_level_movie_packet(movie);
+        client->make_ack(packet, nullptr);
+        client->send(packet);
+    }
+}
+
+void start_in_level_movie(u32 movie) {
+    SHK_CALL_HOOK(_start_in_level_movie, movie);
 }
 
 SHK_HOOK(void, on_respawn);
@@ -338,6 +358,7 @@ void rc1_init() {
     SHK_BIND_HOOK(wrench_update_func, wrench_update_func_hook);
     SHK_BIND_HOOK(authenticate_game, authenticate_game_hook);
     SHK_BIND_HOOK(FUN_000784e8, FUN_000784e8_hook);
+    SHK_BIND_HOOK(_start_in_level_movie, _start_in_level_movie_hook);
     SHK_BIND_HOOK(on_respawn, on_respawn_hook);
     SHK_BIND_HOOK(cellGameBootCheck, cellGameBootCheckHook);
     SHK_BIND_HOOK(cellGameContentPermit, cellGameContentPermitHook);

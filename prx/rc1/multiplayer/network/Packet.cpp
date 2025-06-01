@@ -217,6 +217,19 @@ Packet* Packet::make_collected_gold_bolt_packet(int bolt_number) {
     return packet;
 }
 
+Packet* Packet::make_start_in_level_movie_packet(u32 movie) {
+    Packet* packet = new Packet(sizeof(MPPacketSetState));
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
+
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_START_IN_LEVEL_MOVIE;
+    body->value = movie;
+    body->offset = current_planet;
+
+    return packet;
+}
+
 Packet* Packet::make_unlock_item_packet(int item_id, bool equip) {
     Packet* packet = new Packet(sizeof(MPPacketSetState));
     packet->header->type = MP_PACKET_SET_STATE;

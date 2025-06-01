@@ -272,6 +272,7 @@ typedef struct {
 #define MP_STATE_TYPE_LEVEL_FLAG 15
 #define MP_STATE_TYPE_UNLOCK_SKILLPOINT 16
 #define MP_STATE_TYPE_COMMUNICATION_FLAGS 17
+#define MP_STATE_TYPE_START_IN_LEVEL_MOVIE 18
 
 typedef struct {
     u16 flags;
@@ -421,6 +422,7 @@ struct Packet {
     static Packet* make_player_respawned_packet(u8 spawn_id, u16 level_id);
     static Packet* make_game_state_changed_packet(GameState state);
     static Packet* make_collected_gold_bolt_packet(int bolt_number);
+    static Packet* make_start_in_level_movie_packet(u32 movie);
     static Packet* make_unlock_item_packet(int item_id, bool equip);
     static Packet* make_unlock_level_packet(int level);
     static Packet* make_unlock_skillpoint_packet(u8 skillpoint);
