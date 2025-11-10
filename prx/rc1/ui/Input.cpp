@@ -27,7 +27,7 @@ void Input::check_callback() {
 
         String result = String::format("%S", (wchar_t *)output_info_.pResultString);
 
-        if (result.length() <= 2) {
+        if (result.length() < 1) {
             if (has_callback_) {
                 callback_(this, callback_userdata_, 1);
             }
