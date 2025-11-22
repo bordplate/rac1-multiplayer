@@ -5,6 +5,10 @@
 HybridMoby::HybridMoby(Moby* moby, u16 _uid) {
     Logger::trace("Creating HybridMoby for %d", _uid);
 
+    if (moby == nullptr) {
+        Logger::error("HybridMoby %d created with null-moby", _uid);
+    }
+
     moby_ = moby;
     uid = _uid;
 }
@@ -105,7 +109,7 @@ void HybridMoby::monitor_pvar(u32 offset, u32 size) {
 }
 
 void HybridMoby::on_tick() {
-    if (game_state != PlayerControl) {
+    if (game_state != PlayerControl || moby_ == nullptr) {
         return;
     }
 
