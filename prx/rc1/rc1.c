@@ -261,6 +261,10 @@ void set_ratchet_animation_hook(u32 animation_id, char animation_frame) {
     volatile double duration;
     asm volatile("stfd 1, %0" : "=m"(duration));
 
+    if (current_planet == 15 && animation_id == 0x5f) {
+        return;
+    }
+
     SHK_CALL_HOOK(set_ratchet_animation, animation_id, animation_frame);
 
     _c_set_ratchet_animation_duration((int)duration);
