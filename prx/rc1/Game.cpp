@@ -151,8 +151,9 @@ void Game::on_render() {
 
     // If loading, we shouldn't render anything;
     if (game_state == 6) {
-        if (Game::shared().client()) {
-            Game::shared().client()->drop_receive();
+        if (client()) {
+            client()->send_ping();
+            client()->drop_receive();
         }
         return;
     }
@@ -163,6 +164,14 @@ void Game::on_render() {
 
     return;
 }
+
+void Game::on_bink_do_frame() {
+    if (client()) {
+        client()->send_ping();
+        client()->drop_receive();
+    }
+}
+
 
 void Game::transition_to(View *view) {
     Logger::trace("Starting transition to a new view");
@@ -363,4 +372,8 @@ extern "C" void _c_game_quit() {
 
 extern "C" void _c_on_respawn() {
     Game::shared().before_player_spawn();
+}
+
+extern "C" void _c_bink_do_frame() {
+    Game::shared().on_bink_do_frame();
 }

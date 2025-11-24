@@ -22,6 +22,8 @@ void _c_moby_update(Moby* moby);
 
 void _c_set_ratchet_animation_duration(u32 duration);
 
+void _c_bink_do_frame();
+
 #ifdef __cplusplus
 }
 #endif

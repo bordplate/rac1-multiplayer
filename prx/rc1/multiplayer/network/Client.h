@@ -50,6 +50,7 @@ public:
     void flush();
     void send_handshake();
     void send_ack(unsigned char id, unsigned char cycle);
+    void send_ping();
 
     virtual void on_tick();
     virtual void receive();
@@ -88,6 +89,7 @@ private:
     bool has_first_time_sync;
 
     int64_t last_packet_time_get_;
+    int64_t last_ping_;
 
     bool connected_;
     bool handshake_complete_;

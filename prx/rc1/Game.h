@@ -36,6 +36,7 @@ public:
 
     void on_tick();
     void on_render();
+    void on_bink_do_frame();
 
     void before_player_spawn();
 
@@ -60,6 +61,8 @@ private:
     Client* client_;
 
     int last_planet_;
+
+    int last_state_;
 
     int previous_user_option_camera_left_right_movement;
     int previous_user_option_camera_up_down_movement;

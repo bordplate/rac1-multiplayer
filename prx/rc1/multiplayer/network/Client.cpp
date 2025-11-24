@@ -341,6 +341,17 @@ void Client::drop_receive() {
     } while (received_ > 0);
 }
 
+void Client::send_ping() {
+    if (get_time() - last_ping_ > sync_interval) {
+        last_ping_ = get_time();
+
+        Packet* time_request_packet = Packet::make_time_request_packet();
+        send(time_request_packet);
+
+        flush();
+    }
+}
+
 void Client::request_server_time() {
     Logger::debug("Requesting server time");
 

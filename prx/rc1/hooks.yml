@@ -32,6 +32,10 @@ FUN_000784e8:
     addr: 0x68560
     replacedInstr: stdu r1, -0x70(r1)
 
+bink_do_frame:
+    addr: 0x5f0370
+    replacedInstr: stdu r1, -0x41e0(r1)
+
 cellGameBootCheck:
     addr: 0x4f66c4
     replacedInstr: stdu r1, -0x1b0(r1)
