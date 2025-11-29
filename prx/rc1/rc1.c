@@ -194,7 +194,13 @@ void _unlock_item_hook(int item_id, uint8_t equip) {
 
 // Make original unlock_item available to our code
 void unlock_item(int item_id, uint8_t equip) {
-    SHK_CALL_HOOK(_unlock_item, item_id, equip);
+    switch (item_id) {
+        case 0x31:
+            *((bool*)0x96bff1) = true;
+            break;
+        default:
+            SHK_CALL_HOOK(_unlock_item, item_id, equip);
+    }
 }
 
 SHK_HOOK(void, _unlock_level, int);
