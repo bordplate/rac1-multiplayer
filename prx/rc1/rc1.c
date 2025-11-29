@@ -203,12 +203,15 @@ void unlock_item(int item_id, uint8_t equip) {
     }
 }
 
+#define BULLSHIT_LEVEL_ARRAY ((u8*)0xB00100)
+#define BULLSHIT_LEVEL_ARRAY_SIZE 19 //
 SHK_HOOK(void, _unlock_level, int);
 void _unlock_level_hook(int level) {
     if (!(enable_communication_bitmap & ENABLE_ON_UNLOCK_LEVEL)) {
         MULTI_LOG("unlock_level communication disabled. acting autonomously.\n");
         unlock_level(level);
     }
+    BULLSHIT_LEVEL_ARRAY[level] = true; // Ensure the level is unlocked locally as well
     Client *client = Game::shared().client();
     if (client != nullptr) {
         Packet *packet = Packet::make_unlock_level_packet(level);
