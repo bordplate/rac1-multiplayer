@@ -37,6 +37,7 @@ public:
     void on_tick();
     void on_render();
     void on_bink_do_frame();
+    void on_save_operation(int action, void* savedata);
 
     void before_player_spawn();
 
@@ -50,6 +51,9 @@ public:
     void refresh_level_flags();
 
     void alert(String& message);
+
+    bool force_load_save_file;
+    bool have_save_file;
 private:
     Game() {
         previous_user_option_camera_left_right_movement = -1;
@@ -76,6 +80,9 @@ private:
     static ServerQueryCallback server_query_callback_;
 
     void check_level_flags();
+
+    void save(void* savedata);
+    void load();
 };
 
 

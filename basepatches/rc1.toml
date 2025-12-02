@@ -27,11 +27,8 @@
 0x4d2f6c = "nop"
 
 # Remove calls to display_prompt for save/load menu options
-#0x141810 = "nop"
-#0x141870 = "nop"
-#0x0e8a6c = "nop"
-#0x0e70c8: 0x60000000
-#0x0e70e8: 0x60000000
+0x141810 = "nop"
+0x141870 = "nop"
 
 # Sample for non in-place patching. Forces Visibomb for any item bought in the vendor.
 #[0x16d864]

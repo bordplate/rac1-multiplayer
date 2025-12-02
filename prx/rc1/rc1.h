@@ -53,8 +53,12 @@ extern int current_weapon;
 extern int planetUnlockedByServer;
 
 SHK_FUNCTION_DEFINE_STATIC_1(0x0f58d8, int, compute_animation, Moby*, moby);
+SHK_FUNCTION_DEFINE_STATIC_1(0xe7984, void, savedata_unk, void*, param_1);
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
+SHK_FUNCTION_DEFINE_STATIC_2(0xe8ca0, void*, load_savefile, int, operation, void*, unk);
+SHK_FUNCTION_DEFINE_STATIC_0(0x4e7404, void*, get_save_data);
 SHK_FUNCTION_DEFINE_STATIC_3(0x650764, int, sys_mmapper_allocate_memory, size_t, size, u64, flags, void*, addr);
+SHK_FUNCTION_DEFINE_STATIC_3(0x078178, int, display_prompt, int, p1, int, p2, int, p3);
 SHK_FUNCTION_DEFINE_STATIC_3(0x4e8470, void, new_game, int, p1, void*, p2, u64, p3);
 SHK_FUNCTION_DEFINE_STATIC_2(0x0e0854, void*, load_gadget_weapon_model, void*, ptr, int, unk2);
 SHK_FUNCTION_DEFINE_STATIC_2(0xb72b0, u64, transition_to_movement_state, u32, state, u32, unk2);

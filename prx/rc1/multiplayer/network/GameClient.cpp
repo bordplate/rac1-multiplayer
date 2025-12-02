@@ -14,6 +14,8 @@
 GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     mobys_.resize(MAX_MP_MOBYS);
     ip_ = ip;
+    port_ = port;
+    data_thread_id_ = -1;
 
     for(int i = 0; i < mobys_.capacity(); i++) {
         mobys_[i].moby = nullptr;
@@ -29,6 +31,8 @@ void GameClient::disconnect() {
     if (ratchet_moby == nullptr && current_planet == 0) {
         game_state = Movie;
     }
+
+    close_data_client();
 
     ServerListView* view = new ServerListView();
     Game::shared().transition_to(view);
@@ -52,7 +56,19 @@ void GameClient::reset() {
 
     Player::shared().spawn_id = 0;
 
+    close_data_client();
+
     Client::reset();
+}
+
+void GameClient::close_data_client() {
+    if (data_thread_id_ != -1) {
+        DataClient::stop = true;
+
+        sys_ppu_thread_join(data_thread_id_, nullptr);
+
+        data_thread_id_ = -1;
+    }
 }
 
 void GameClient::create_moby(MobyInfo* moby_info) {
@@ -466,6 +482,19 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             enable_communication_bitmap = (EnableCommunicationsFlags)packet->value;
             break;
         }
+        case MP_STATE_TYPE_SAVE_FILE_OPERATION: {
+            switch (packet->value) {
+                case 0:
+                    Logger::error("Server asked us to force save, but we don't support that yet.");
+                    break;
+                case 1:
+                    Game::shared().force_load_save_file = true;
+                    break;
+                default:
+                    Logger::error("Server asked us to perform uknown save file operation %d", packet->value);
+            }
+            break;
+        }
         default: {
             Logger::error("Server asked us to set unknown state type %d", packet->state_type);
         }
@@ -695,6 +724,29 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
 
                 remote_view_->handle_event((MPPacketUIEvent*)packet_data);
 
+                break;
+            }
+            case MP_PACKET_OPEN_DATA_STREAM: {
+                if (data_thread_id_ != -1) {
+                    Logger::warning("Server tried to open data stream, but it's already open");
+                    break;
+                }
+
+                MPPacketOpenDataStream* open_data_stream = (MPPacketOpenDataStream*)packet_data;
+
+                DataClientConnectionInfo connection_info = {
+                    &sockaddr_, open_data_stream->key
+                };
+
+                sys_ppu_thread_create(
+                    &data_thread_id_,
+                    (void(*)(uint64_t))&DataClient::start_data_client,
+                    (uint64_t)&connection_info,
+                    1000,
+                    0x1000,
+                    SYS_PPU_THREAD_CREATE_JOINABLE,
+                    "DataClient"
+                );
                 break;
             }
             default:

@@ -51,7 +51,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 
 #include "lib/types.h"
 
-#define MP_API_VERSION  9
+#define MP_API_VERSION  10
 
 #define MP_PACKET_CONNECT            1
 #define MP_PACKET_SYN                2
@@ -83,6 +83,8 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_MOBY_CREATE_FAILURE 28
 #define MP_PACKET_UI                  29
 #define MP_PACKET_UI_EVENT            30
+#define MP_PACKET_OPEN_DATA_STREAM    31
+#define MP_PACKET_FILE_UPLOAD         32
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -273,6 +275,7 @@ typedef struct {
 #define MP_STATE_TYPE_UNLOCK_SKILLPOINT 16
 #define MP_STATE_TYPE_COMMUNICATION_FLAGS 17
 #define MP_STATE_TYPE_START_IN_LEVEL_MOVIE 18
+#define MP_STATE_TYPE_SAVE_FILE_OPERATION 19
 
 typedef struct {
     u16 flags;
@@ -397,6 +400,19 @@ typedef struct {
     u16 level_id;
 } MPPacketSpawned;
 
+typedef struct {
+    u32 key;
+} MPPacketOpenDataStream;
+
+typedef struct {
+    u8 file_type;
+    u32 len;
+} MPPacketFileUpload;
+
+enum MPFileType {
+    MPFileTypeSavefile,
+};
+
 #pragma pack(pop)
 
 struct Packet {
@@ -433,6 +449,7 @@ struct Packet {
     static Packet* make_moby_create_failure_packet(u16 uuid, u8 reason);
     static Packet* make_ui_event_packet(u16 event_type, u16 element_id, u32 data);
     static Packet* make_ui_event_with_text_packet(u16 event_type, u16 element_id, u32 data, const char* text);
+    static Packet* make_file_upload_part_packet(u8 file_type, void* data, u32 len, u32 offset);
 };
 
 #endif

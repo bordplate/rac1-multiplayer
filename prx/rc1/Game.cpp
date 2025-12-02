@@ -40,6 +40,9 @@ void Game::start() {
 
     // "Temporary" hack for gold bolt stuff
     memset(blocked_bolts, 0, 100);
+
+    force_load_save_file = false;
+    have_save_file = false;
 }
 
 static Profiler full_tick_timer_("full tick");
@@ -111,9 +114,12 @@ void Game::on_tick() {
 
     if (client_) {
         client_->flush();
-    }
 
-    return;
+        if (force_load_save_file && have_save_file && DataClient::shared() != nullptr && DataClient::shared()->is_running()) {
+            force_load_save_file = false;
+            load();
+        }
+    }
 }
 
 void Game::before_player_spawn() {
@@ -351,6 +357,72 @@ void Game::check_level_flags() {
     }
 }
 
+void Game::on_save_operation(int action, void* savedata) {
+    if (client()) {
+        if (DataClient::shared() == nullptr || !DataClient::shared()->is_running()) {
+            if (action == 3) {  // Don't show error if we're just trying to autosave.
+                Logger::error("Couldn't autosave. DataClient not running.");
+                return;
+            }
+
+            String message = String("Saving and loading is not available. The server might not support it.");
+            alert(message);
+            return;
+        }
+
+        if (action == 0) {
+            if (DataClient::shared()->busy()) {
+                String message = String("A file operation is already in progress. Please try saving again in a moment.");
+                alert(message);
+                return;
+            }
+
+            save(savedata);
+        } else if (action == 1) {
+            if (!have_save_file) {
+                String message = String("There's no save file available to load. Either nothing is saved yet, or the server does not support save files.");
+                alert(message);
+                return;
+            }
+
+            if (DataClient::shared()->busy()) {
+                String message = String("A file operation is in progress, please wait a moment before loading the save again.");
+                alert(message);
+                return;
+            }
+
+            load();
+        } else if (action == 3) {
+            if (DataClient::shared()->busy()) {
+                Logger::error("Autosave failed! DataClient is busy");
+                return;
+            }
+
+            Logger::info("Autosaving...");
+
+            DataClient::transmit(MPFileTypeSavefile, savedata, 0xB0000);
+        } else {
+            Logger::error("Unknown save action!");
+        }
+    }
+}
+
+void Game::save(void* savedata) {
+    Logger::info("Saving...");
+
+    DataClient::transmit(MPFileTypeSavefile, savedata, 0xB0000);
+}
+
+void Game::load() {
+    void* data = (void*)0x1000000;
+
+    Logger::info("Loading savefile...");
+    load_savefile(0, data);
+
+    destination_planet = *(int*)((u32)data + 0x18);
+    should_load_destination_planet = true;
+}
+
 
 extern "C" void _c_game_tick() {
     Game::shared().on_tick();
@@ -376,4 +448,8 @@ extern "C" void _c_on_respawn() {
 
 extern "C" void _c_bink_do_frame() {
     Game::shared().on_bink_do_frame();
+}
+
+extern "C" void _c_on_save_operation(int action, void* savedata) {
+    Game::shared().on_save_operation(action, savedata);
 }

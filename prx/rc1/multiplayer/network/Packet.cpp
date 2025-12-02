@@ -370,3 +370,15 @@ Packet* Packet::make_ui_event_with_text_packet(u16 event_type, u16 element_id, u
 
     return packet;
 }
+
+Packet* Packet::make_file_upload_part_packet(u8 file_type, void* data, u32 len, u32 offset) {
+    Packet* packet = new Packet(sizeof(MPPacketFileUpload) + len);
+    packet->header->type = MP_PACKET_FILE_UPLOAD;
+    packet->header->size = sizeof(MPPacketFileUpload) + len;
+
+    MPPacketFileUpload* body = (MPPacketFileUpload*)packet->body;
+    body->file_type = file_type;
+    body->len = len;
+
+    return packet;
+}

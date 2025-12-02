@@ -69,9 +69,11 @@ public:
     bool connected() const { return connected_; }
     bool handshake_complete() const { return handshake_complete_; }
     long received() const { return received_; }
+protected:
+    struct sockaddr_in sockaddr_;
 private:
     int sockfd_;
-    struct sockaddr_in sockaddr_;
+
     char recv_buffer[RECV_BUFFER_SIZE];
     long received_;
 

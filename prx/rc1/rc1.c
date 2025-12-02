@@ -92,6 +92,12 @@ void bink_do_frame_hook(u32 param_1, u32 param_2) {
     _c_bink_do_frame();
 }
 
+
+SHK_HOOK(void, perform_save_action, void*, int, void*);
+void perform_save_action_hook(void* ptr1, int action, void* ptr2) {
+    _c_on_save_operation(action, ptr2);
+}
+
 SHK_HOOK(void, wrench_update_func, Moby *);
 void wrench_update_func_hook(Moby *moby) {
     SHK_CALL_HOOK(wrench_update_func, moby);
@@ -384,6 +390,7 @@ void rc1_init() {
     SHK_BIND_HOOK(metal_detector_spot_update_func, metal_detector_spot_update_func_hook);
     SHK_BIND_HOOK(skid_update_func, skid_update_func_hook);
     SHK_BIND_HOOK(bink_do_frame, bink_do_frame_hook);
+    SHK_BIND_HOOK(perform_save_action, perform_save_action_hook);
 
     METAL_DETECTOR_BOLT_MULTIPLIER = (u8)1;
 

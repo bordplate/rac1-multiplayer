@@ -17,6 +17,10 @@
 #include <rc1/multiplayer/HybridMoby.h>
 #include <rc1/multiplayer/MonitoredValue.h>
 
+#include "DataClient.h"
+
+#include <sys/ppu_thread.h>
+
 // Maximum amount of moby's we can deal with
 #define MAX_MP_MOBYS 1024
 
@@ -55,10 +59,13 @@ struct GameClient : public Client {
     static int connect_callback(void* packetData, unsigned int size, void* userdata);
 private:
     char* ip_;
+    u32 port_;
     Vector<MobyInfo> mobys_;
     Vector<HybridMoby*> hybrid_mobys_;
     Vector<MonitoredValue*> monitored_addresses_;
     long ticks_;
+
+    sys_ppu_thread_t data_thread_id_;
 
     bool connection_complete_;
 
@@ -66,6 +73,7 @@ private:
 
     void disconnect();
     void reset(); // override
+    void close_data_client();
     bool waiting_for_connect_;
 };
 
