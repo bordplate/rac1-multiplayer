@@ -25,7 +25,6 @@ PRX_OUT_DIR = $(PRX_BUILD_DIR)/tmp
 PRX_BUILD_IN_DIR = $(PRX_BUILD_DIR)/tmp
 PRX_BUILD_TMP_DIR = $(PRX_BUILD_DIR)/tmp
 PRX_BUILD_OUT_DIR = $(PRX_BUILD_DIR)/bin
-BIN2RPCS3PATCH = $(TOOLS_DIR)/bin2rpcs3patch.py
 GENERATEPATCHFILE = $(TOOLS_DIR)/generate_patch.py
 PKG_NPDRM = $(WINE) $(PS3_SDK)/Tools/psn_package_npdrm.exe
 
@@ -50,7 +49,7 @@ endif
 
 GENERATEPATCHFILEARGS = \
 	--input "$(LOADER_BUILD_DIR)/loader.text.inject.bin" "$(LOADER_BUILD_DIR)/loader.text.bin" --address $(LOADER_INJECT_ADDR) $(LOADER_START_ADDR) \
-	--output "$(LOADER_BUILD_DIR)/patch.txt" --append
+	--output "$(LOADER_BUILD_DIR)/patch.txt"
 
 SHKGENARGS = \
 	--tools_dir "$(TOOLS_DIR)" --elf_out_dir "$(LOADER_BUILD_DIR)" --prx_out_dir "$(PRX_OUT_DIR)" \
