@@ -1,0 +1,42 @@
+0x650CB4 = 0x9f18429d  # replace _sys_process_at_Exitspawn with sys_prx_start_module
+
+# redirect call to cellGameBootCheck
+0x4eef4c = [
+    "bla 0x4f66c4",
+    "nop"
+]
+
+# redirect call to cellGameContentPermit
+0x4eefe0 = 0x428074dd
+0x4eefe4 = "nop"
+
+0x013044 = 0x48000110
+0x0131C8 = 0x4800017C
+0x013358 = 0x4800005C
+0x013424 = 0x48000114
+0x13da40 = "nop"
+0x012480 = 0x428001fc
+
+# Don't play cutscenes after purchasing weapons from vendor
+0x16dd90 = "li r30, 0"
+
+# Don't force unlock current level when going to levels
+0x4d3170 = "nop"
+
+# Don't force current weapon to Bomb Glove if we don't have it
+0x4d2f6c = "nop"
+
+# Remove calls to display_prompt for save/load menu options
+#0x141810 = "nop"
+#0x141870 = "nop"
+#0x0e8a6c = "nop"
+#0x0e70c8: 0x60000000
+#0x0e70e8: 0x60000000
+
+# Sample for non in-place patching. Forces Visibomb for any item bought in the vendor.
+#[0x16d864]
+#in_place = false
+#instructions = [
+#    "li r3, 0x0d",
+##    "extsw r3,r3"  # Optionally add the instruction you replaced
+#]

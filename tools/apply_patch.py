@@ -7,12 +7,10 @@ def write_patch(patch_file, original_elf, output_file):
 
     with open(patch_file, "r") as txt:
         with open(output_file, "wb+") as elf:
-            while True:
-                line = txt.readline()
-                if line.strip() == "":
-                    break
+            for line in txt:
+                line = line.split("#")[0]
 
-                if line[0] == "#" or line[0] == "\n" or line[0] == "\r":
+                if line.strip() == "":
                     continue
 
                 where, what = line.split(": ")

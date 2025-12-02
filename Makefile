@@ -32,8 +32,6 @@ PKG_NPDRM = $(WINE) $(PS3_SDK)/Tools/psn_package_npdrm.exe
 # include game specific makefile settings
 include config_$(GAME).mk
 
-PATCH_FILE ?= $(RPCS3_DIR)/patches/patch.yml
-
 # handle GAME/DISC category
 ifeq ($(GAME_CAT), HDD)
 GAME_DIR ?= $(RPCS3_DIR)/dev_hdd0/game/$(GAME_ID)/USRDIR
@@ -42,16 +40,13 @@ GAME_DIR ?= $(RPCS3_DIR)/dev_hdd0/disc/$(GAME_ID)/PS3_GAME/USRDIR
 endif
 
 # merge user specified hooks files with the game specific one
-HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)/$(GAME_FOR_PATHS)/hooks.yml
+HOOKS_FILES := $(HOOKS_FILES) $(PRX_DIR)/$(GAME_FOR_PATHS)/hooks.toml
+PATCH_FILES = $(BASE_DIR)/basepatches/rc1.toml
 
 # workaround for hooks argument not accepting an empty list
 ifneq ($(HOOKS),)
 HOOKSARG = --hooks $(HOOKS)
 endif
-
-BIN2RPCS3PATCHARGS = \
-	--input "$(LOADER_BUILD_DIR)/loader.text.inject.bin" "$(LOADER_BUILD_DIR)/loader.text.bin" --address $(LOADER_INJECT_ADDR) $(LOADER_START_ADDR) \
-	--output "$(PATCH_FILE)" --indent 3 --replace_patch shk_elf_loader_$(GAME)
 
 GENERATEPATCHFILEARGS = \
 	--input "$(LOADER_BUILD_DIR)/loader.text.inject.bin" "$(LOADER_BUILD_DIR)/loader.text.bin" --address $(LOADER_INJECT_ADDR) $(LOADER_START_ADDR) \
@@ -60,8 +55,8 @@ GENERATEPATCHFILEARGS = \
 SHKGENARGS = \
 	--tools_dir "$(TOOLS_DIR)" --elf_out_dir "$(LOADER_BUILD_DIR)" --prx_out_dir "$(PRX_OUT_DIR)" \
 	--toc $(TOC) --hook_shared_text_range $(HOOK_SHARED_TEXT_BEGIN_ADDR) $(HOOK_SHARED_TEXT_END_ADDR) \
-	--hook_shared_data_range $(HOOK_SHARED_DATA_BEGIN_ADDR) $(HOOK_SHARED_DATA_END_ADDR) --patch_file "$(PATCH_FILE)" $(HOOKSARG) --hooks_file $(HOOKS_FILES) \
-	--game $(GAME) --loader_inject_addr $(LOADER_INJECT_ADDR) --loader_text_range $(LOADER_START_ADDR) $(LOADER_END_ADDR) \
+	--hook_shared_data_range $(HOOK_SHARED_DATA_BEGIN_ADDR) $(HOOK_SHARED_DATA_END_ADDR) $(HOOKSARG) --hooks_file $(HOOKS_FILES) \
+	--patch_file $(PATCH_FILES) --game $(GAME) --loader_inject_addr $(LOADER_INJECT_ADDR) --loader_text_range $(LOADER_START_ADDR) $(LOADER_END_ADDR) \
 	--sys_prx_load_module_addr $(LOADER_SYS_PRX_MODULE_LOAD_ADDR) --sys_prx_start_module_addr $(LOADER_SYS_PRX_MODULE_START_ADDR) --sce_np_drm_is_available2_addr $(LOADER_SCE_NP_DRM_IS_AVAILABLE_ADDR)
 
 all:
@@ -73,12 +68,8 @@ all:
 # generate build files
 	cd tools && $(PYTHON) shkgen.py $(SHKGENARGS)
 
-# base game patch
-	cp -f "basepatches/rc1.txt" "$(LOADER_BUILD_DIR)/patch.txt"
-
 # build loader
 	cd "$(LOADER_DIR)" && "$(MAKE)" binary LOADER_INJECT_ADDR=$(LOADER_INJECT_ADDR) LOADER_START_ADDR=$(LOADER_START_ADDR)
-	#$(PYTHON) "$(BIN2RPCS3PATCH)" $(BIN2RPCS3PATCHARGS)
 	$(PYTHON) "$(GENERATEPATCHFILE)" $(GENERATEPATCHFILEARGS)
 
 # build injection patch

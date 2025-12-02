@@ -62,53 +62,54 @@ TEMPLATE_FUNC = \
     SHK_FUNCTION_DEFINE_TOC_{N}( SHK_ELF_TOC, addr, ret, name{MACROPARAMS} )
 '''
 
-def formatRank( i ):
+def format_rank(i):
     if i == 1: return "1st"
     if i == 2: return "2nd"
     if i == 3: return "3rd"
     return f"{i}th"
 
-def genMacro( count, template ):
-    for i in range( count + 1 ):
-        macroParams = ""
-        for j in range( i ):
-            macroParams += f", a{1 +j}t, a{1 +j}"
+
+def gen_macro(count, template):
+    for i in range(count + 1):
+        macro_params = ""
+        for j in range(i):
+            macro_params += f", a{1 +j}t, a{1 +j}"
         
         params = ""
-        for j in range( i ):
+        for j in range(i):
             params += f"a{1 + j}t a{1 + j}"
             if j != i - 1:
                 params += ", "
             
         args = ""
-        for j in range( i ):
+        for j in range(i):
             args += f"a{1 + j}"
             if j != i - 1:
                 args += ", "
                 
-        paramDoc = ""
-        for j in range( i ):
-            paramDoc += TEMPLATE_PARAMDOC.replace( "{N}", str(1 + j) ).replace( "{RANK}", formatRank(1 + j) )
+        param_doc = ""
+        for j in range(i):
+            param_doc += TEMPLATE_PARAMDOC.replace("{N}", str(1 + j)).replace("{RANK}", format_rank(1 + j))
             
-        paramTypes = ""
-        for j in range( i ):
-            paramTypes += f"a{1 + j}t"
+        param_types = ""
+        for j in range(i):
+            param_types += f"a{1 + j}t"
             if j != i - 1:
-                paramTypes += ", "
+                param_types += ", "
 
-        print( template \
-              .replace( "{N}", str(i) ) \
-              .replace( "{PARAMDOC}", paramDoc ) \
-              .replace( "{MACROPARAMS}", macroParams ) \
-              .replace( "{PARAMS}", params ) \
-              .replace( "{PARAMTYPES}", paramTypes )
-              .replace( "{ARGS}", args ) + "\n" )
+        print(template
+              .replace("{N}", str(i))
+              .replace("{PARAMDOC}", param_doc)
+              .replace("{MACROPARAMS}", macro_params)
+              .replace("{PARAMS}", params)
+              .replace("{PARAMTYPES}", param_types)
+              .replace("{ARGS}", args) + "\n")
+
 
 def main():
     count = 16
-    genMacro( count, TEMPLATE_FUNC )
-    
-    pass
+    gen_macro(count, TEMPLATE_FUNC)
+
 
 if __name__ == '__main__':
     main()
