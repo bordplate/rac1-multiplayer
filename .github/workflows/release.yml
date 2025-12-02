@@ -14,6 +14,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
       - name: Set PS3_SDK path
         id: set_ps3_sdk
         run: |
@@ -47,7 +52,7 @@ jobs:
 
       - name: Create userconfig.mk
         run: |
-          echo "PYTHON = python3.11" > userconfig.mk
+          echo "PYTHON = python" > userconfig.mk
           echo "RPCS3_DIR = ${{ env.PS3_SDK }}/RPCS3/" >> userconfig.mk
         shell: pwsh
 
