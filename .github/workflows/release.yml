@@ -43,12 +43,11 @@ jobs:
       - name: Install Dependencies
         run: |
           choco install make
-          pip3 install -r requirements.txt
         shell: pwsh
 
       - name: Create userconfig.mk
         run: |
-          echo "PYTHON = python3" > userconfig.mk
+          echo "PYTHON = python3.11" > userconfig.mk
           echo "RPCS3_DIR = ${{ env.PS3_SDK }}/RPCS3/" >> userconfig.mk
         shell: pwsh
 

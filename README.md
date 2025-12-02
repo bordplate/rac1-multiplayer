@@ -55,7 +55,7 @@ repository.
 To build this project on Windows 10, you need:
 - chocolatey
 - make, installed through ``chocolatey install make``
-- python 3.8, available through ``py -3``
+- Python >3.11, available through ``py -3``
 - PS3 SDK compilers (check GitHub Action workflow mentioned above)
 - PS3_SDK environment variable that points to the root of the PS3 SDK
 - Cygwin/MinGW/WSL to access Linux tools such as ``sed`` and ``awk``. Must be available in the environment path.
