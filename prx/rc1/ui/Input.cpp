@@ -102,7 +102,7 @@ void Input::open_osk()
     CellOskDialogParam osk_param;
     osk_param.allowOskPanelFlg = CELL_OSKDIALOG_PANELMODE_LATIN;
     osk_param.firstViewPanel = CELL_OSKDIALOG_PANELMODE_LATIN;
-    osk_param.prohibitFlgs = CELL_OSKDIALOG_NO_SPACE | CELL_OSKDIALOG_NO_RETURN;
+    osk_param.prohibitFlgs = CELL_OSKDIALOG_NO_RETURN;
     CellOskDialogPoint point = {0.0, 0.0};
 
     osk_param.controlPoint = point;
