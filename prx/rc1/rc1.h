@@ -53,6 +53,7 @@ extern int current_weapon;
 extern int planetUnlockedByServer;
 
 SHK_FUNCTION_DEFINE_STATIC_1(0x0f58d8, int, compute_animation, Moby*, moby);
+SHK_FUNCTION_DEFINE_STATIC_1(0x16a658, int, reload_gadgetron_vendor_items, int, unk);
 SHK_FUNCTION_DEFINE_STATIC_1(0xe7984, void, savedata_unk, void*, param_1);
 SHK_FUNCTION_DEFINE_STATIC_1(0xe8888, void, perform_save_operation, int, operation);
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
@@ -225,6 +226,9 @@ extern u8 seen_planets[];
 
 // Game state
 extern GameState game_state;
+
+extern int gadgetron_state;
+extern int last_vendor_was_pda;
 
 // Frames since death/reload
 extern int frame_count;

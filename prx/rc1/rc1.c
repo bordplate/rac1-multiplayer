@@ -206,6 +206,12 @@ void _unlock_item_hook(int item_id, uint8_t equip) {
 // Make original unlock_item available to our code
 void unlock_item(int item_id, uint8_t equip) {
     SHK_CALL_HOOK(_unlock_item, item_id, equip);
+
+    // We can safely call the reload function outside of the vendor, but we don't want to call it if the player is
+    //   currently using the PDA.
+    if (last_vendor_was_pda == 0) {
+        reload_gadgetron_vendor_items(0);
+    }
 }
 
 SHK_HOOK(void, _unlock_level, int);

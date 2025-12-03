@@ -9,6 +9,9 @@ destination_planet = 0xa10704;
 seen_planets = 0x96ca20;
 galactic_map = 0x96c18c; /* warning! might not be trivial to change around */
 
+gadgetron_state = 0xe5a6ac;
+last_vendor_was_pda = 0xe5a690;
+
 player_bolts = 0x969CA0;
 player_pos = 0x969D60;
 player_rot = 0x969D70;
