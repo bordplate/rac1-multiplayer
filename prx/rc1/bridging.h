@@ -15,6 +15,7 @@ void cpp_start();
 
 void _c_game_tick();
 void _c_game_render();
+void _c_game_reset();
 
 void _c_on_respawn();
 

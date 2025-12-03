@@ -38,6 +38,10 @@ void Game::start() {
         userid = storage.get_int("userid");
     }
 
+    init();
+}
+
+void Game::init() {
     // "Temporary" hack for gold bolt stuff
     memset(blocked_bolts, 0, 100);
 
@@ -46,6 +50,18 @@ void Game::start() {
     manual_save_enabled = false;
 
     dialogs_dismissed = 0;
+}
+
+void Game::reset() {
+    init();
+
+    if (client_) {
+        if (DataClient::shared()->is_running()) {
+            DataClient::stop = true;
+        }
+
+        client_->disconnect();
+    }
 }
 
 static Profiler full_tick_timer_("full tick");
@@ -490,4 +506,8 @@ extern "C" void _c_bink_do_frame() {
 
 extern "C" void _c_on_save_operation(int action, void* savedata) {
     Game::shared().on_save_operation(action, savedata);
+}
+
+extern "C" void _c_game_reset() {
+    Game::shared().reset();
 }

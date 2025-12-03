@@ -31,6 +31,8 @@ public:
     int userid;
 
     void start();
+    void init();
+    void reset();
 
     void transition_to(View* view);
 

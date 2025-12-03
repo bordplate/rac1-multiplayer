@@ -71,11 +71,19 @@ void STUB_0006544c_hook(Moby *moby) {
     _c_moby_update(moby);
 }
 
+static int resets = 0;
+
 // Hook to avoid some consoles getting a "game is corrupted, restart the game" on game start
 // I think maybe it makes trophies not work?
 SHK_HOOK(void, authenticate_game);
 void authenticate_game_hook() {
     MULTI_LOG("Game totally authenticated\n");
+
+    if (resets > 0) {
+        _c_game_reset();
+    }
+
+    resets += 1;
 }
 
 SHK_HOOK(void, FUN_000784e8);
