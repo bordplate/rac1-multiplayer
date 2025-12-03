@@ -485,8 +485,6 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             int type = (int)(packet->offset >> 16) & 0xFF;
             int offset = (int)(packet->offset) & 0xFFFF;
 
-            Logger::debug("Setting level flag for %d; type: %d; %d->%d", level, type, offset, packet->value);
-
             if (type == MP_LEVEL_FLAG_TYPE_1) {
                 level_flags1[level * 0x10 + offset] = packet->value;
 
