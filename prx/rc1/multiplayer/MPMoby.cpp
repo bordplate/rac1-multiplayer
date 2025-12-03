@@ -35,10 +35,11 @@ void MPMoby::update() {
     }
 
     if (
-        vars->attached_to_parent && vars->parent && vars->parent->state >= 0 &&
-        vars->parent->p_class->joint_cnt > vars->parent_position_bone &&
+        vars->attached_to_parent && vars->parent && vars->parent->o_class == vars->parent_o_class &&
+        vars->parent->state >= 0 && vars->parent->p_class->joint_cnt > vars->parent_position_bone &&
         vars->parent->p_class->joint_cnt > vars->parent_transform_bone
     ) {
+        this->draw_distance = 0xff;
         Vec4 bone_position;
         get_bone_position(vars->parent, vars->parent_position_bone, &bone_position);
 
@@ -61,6 +62,8 @@ void MPMoby::update() {
 //        }
 
 //        idk(this);
+    } else if (vars->attached_to_parent) {
+        this->draw_distance = 0;
     }
 
     this->damage = -1;

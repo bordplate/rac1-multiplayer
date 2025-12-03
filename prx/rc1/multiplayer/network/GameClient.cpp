@@ -111,8 +111,10 @@ void GameClient::create_moby(MobyInfo* moby_info) {
         }
 
         Logger::info("Created attached moby %d to parent %d", moby_info->uuid, moby_info->parent_uuid);
-        vars->attached_to_parent = true;
         vars->parent = mobys_[moby_info->parent_uuid].moby;
+
+        vars->attached_to_parent = true;
+        vars->parent_o_class = vars->parent->o_class;
         moby->mode_bits = moby->mode_bits | 0x100;
     }
 
@@ -181,6 +183,8 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
     if (moby && moby->state >= 0 && moby->o_class != packet->o_class) {
         Logger::debug("[%d] Incoming o_class %d changed o_class %d for existing moby", packet->uuid, packet->o_class, moby->o_class);
 
+        Moby* old = moby;
+
         delete_moby(moby);
         moby_info->o_class = packet->o_class;
         moby_info->moby = nullptr;
@@ -192,6 +196,26 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
         }
 
         moby = moby_info->moby;
+
+        // Find MPMobys that reference this as a parent and update the reference
+        for (size_t i = 0; i <= mobys_.size(); i++) {
+            MobyInfo* moby_info = &mobys_[i];
+            if (moby_info->uuid != i || moby_info->moby == nullptr) {
+                continue;
+            }
+
+            MPMoby* child = (MPMoby*)moby_info->moby;
+            if (child->state < 0) {
+                continue;
+            }
+
+            MPMobyVars* vars = (MPMobyVars*)child->vars;
+
+            if (vars->attached_to_parent && vars->parent == old) {
+                Logger::debug("Updated child moby's parent after o_class change.");
+                vars->parent = moby;
+            }
+        }
     }
 
     if (!moby && moby_info->uuid == 0) {
@@ -212,7 +236,7 @@ void GameClient::update_moby(MPPacketMobyUpdate* packet) {
         moby = moby_info->moby;
     }
 
-    MPMobyVars* vars = (MPMobyVars*)(moby->vars);
+    MPMobyVars* vars = (MPMobyVars*)moby->vars;
 
     if (!vars->attached_to_parent) {
         moby->position.x = packet->x;

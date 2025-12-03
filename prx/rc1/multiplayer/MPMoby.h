@@ -12,6 +12,7 @@ typedef struct {
     u16 uuid;
     bool attached_to_parent;
     Moby* parent;
+    u16 parent_o_class;
     u8 parent_position_bone;
     u8 parent_transform_bone;
     char next_animation_id;
