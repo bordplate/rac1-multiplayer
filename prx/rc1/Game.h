@@ -51,9 +51,14 @@ public:
     void refresh_level_flags();
 
     void alert(String& message);
+    void alert_blocking(String& message);
+    void alert_blocking(String& message, int timeout_seconds);
 
+    bool manual_save_enabled;
     bool force_load_save_file;
     bool have_save_file;
+
+    int dialogs_dismissed;
 private:
     Game() {
         previous_user_option_camera_left_right_movement = -1;

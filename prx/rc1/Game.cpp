@@ -43,6 +43,9 @@ void Game::start() {
 
     force_load_save_file = false;
     have_save_file = false;
+    manual_save_enabled = false;
+
+    dialogs_dismissed = 0;
 }
 
 static Profiler full_tick_timer_("full tick");
@@ -298,9 +301,36 @@ void Game::connect_to(char* ip, int port) {
     current_view = 0;
 }
 
-void Game::alert(String& message) {
-    cellMsgDialogOpen2(CELL_MSGDIALOG_TYPE_SE_TYPE_NORMAL, message.c_str(), nullptr, nullptr, nullptr);
+void cb_dialog(int button_type, void* userdata) {
+    Game::shared().dialogs_dismissed += 1;
 }
+
+void Game::alert(String& message) {
+    cellMsgDialogOpen2(CELL_MSGDIALOG_TYPE_SE_TYPE_NORMAL, message.c_str(), cb_dialog, nullptr, nullptr);
+}
+
+void Game::alert_blocking(String &message) {
+    alert_blocking(message, 0);
+}
+
+void Game::alert_blocking(String& message, int timeout_seconds) {
+    alert(message);
+
+    int dd = dialogs_dismissed;
+    int64_t start_time = get_time();
+    while (dd == dialogs_dismissed) {
+        cellSysutilCheckCallback();
+
+        if (timeout_seconds > 0) {
+            int64_t current_time = get_time();
+            if (current_time - start_time > timeout_seconds * 1000) {
+                cellMsgDialogAbort();
+                break;
+            }
+        }
+    }
+}
+
 
 void Game::refresh_level_flags() {
     memcpy(&level_flags1_, level_flags1 + 0x10 * current_planet, 0x10);
@@ -366,14 +396,22 @@ void Game::on_save_operation(int action, void* savedata) {
             }
 
             String message = String("Saving and loading is not available. The server might not support it.");
-            alert(message);
+            alert_blocking(message, 10);
+            return;
+        }
+
+        if (!manual_save_enabled) {
+            if (action == 0 || action == 1) {
+                String message = String("Saving and loading is not enabled on this server.");
+                alert_blocking(message, 10);
+            }
             return;
         }
 
         if (action == 0) {
             if (DataClient::shared()->busy()) {
                 String message = String("A file operation is already in progress. Please try saving again in a moment.");
-                alert(message);
+                alert_blocking(message, 10);
                 return;
             }
 
@@ -381,13 +419,13 @@ void Game::on_save_operation(int action, void* savedata) {
         } else if (action == 1) {
             if (!have_save_file) {
                 String message = String("There's no save file available to load. Either nothing is saved yet, or the server does not support save files.");
-                alert(message);
+                alert_blocking(message, 10);
                 return;
             }
 
             if (DataClient::shared()->busy()) {
                 String message = String("A file operation is in progress, please wait a moment before loading the save again.");
-                alert(message);
+                alert_blocking(message, 10);
                 return;
             }
 

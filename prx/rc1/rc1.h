@@ -54,6 +54,7 @@ extern int planetUnlockedByServer;
 
 SHK_FUNCTION_DEFINE_STATIC_1(0x0f58d8, int, compute_animation, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_1(0xe7984, void, savedata_unk, void*, param_1);
+SHK_FUNCTION_DEFINE_STATIC_1(0xe8888, void, perform_save_operation, int, operation);
 SHK_FUNCTION_DEFINE_STATIC_2(0x4fe52c, void*, kalloc, void*, ptr, size_t, len);
 SHK_FUNCTION_DEFINE_STATIC_2(0xe8ca0, void*, load_savefile, int, operation, void*, unk);
 SHK_FUNCTION_DEFINE_STATIC_0(0x4e7404, void*, get_save_data);

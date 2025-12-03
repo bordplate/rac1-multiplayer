@@ -485,10 +485,15 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
         case MP_STATE_TYPE_SAVE_FILE_OPERATION: {
             switch (packet->value) {
                 case 0:
-                    Logger::error("Server asked us to force save, but we don't support that yet.");
+                    Logger::debug("Server told us to save.");
+                    perform_save_operation(3);
                     break;
                 case 1:
+                    Logger::debug("Server told us to load stored savefile.");
                     Game::shared().force_load_save_file = true;
+                    break;
+                case 2:
+                    Game::shared().manual_save_enabled = true;
                     break;
                 default:
                     Logger::error("Server asked us to perform uknown save file operation %d", packet->value);
