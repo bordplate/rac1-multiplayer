@@ -272,17 +272,6 @@ void metal_detector_spot_update_func_hook(Moby* moby) {
 
     SHK_CALL_HOOK(metal_detector_spot_update_func, moby);
 }
-#define PREVENT_DELETE_SKID *((bool*)0xB00001)
-SHK_HOOK(void, skid_update_func, Moby*);
-void skid_update_func_hook(Moby* moby) {
-    if (moby->state == 0) {
-        if (PREVENT_DELETE_SKID) {
-            moby->state = 1;
-            moby->update_distance = 0xff;
-        }
-    }
-    SHK_CALL_HOOK(skid_update_func, moby);
-}
 
 SHK_HOOK(void, menu_item_tick, MenuItem*);
 void menu_item_tick_hook(MenuItem* menu_item) {
@@ -417,7 +406,6 @@ void rc1_init() {
     SHK_BIND_HOOK(_spawn_moby, spawn_moby_hook);
     SHK_BIND_HOOK(_moby_get_damage, _moby_get_damage_hook);
     SHK_BIND_HOOK(metal_detector_spot_update_func, metal_detector_spot_update_func_hook);
-    SHK_BIND_HOOK(skid_update_func, skid_update_func_hook);
     SHK_BIND_HOOK(bink_do_frame, bink_do_frame_hook);
     SHK_BIND_HOOK(perform_save_action, perform_save_action_hook);
 

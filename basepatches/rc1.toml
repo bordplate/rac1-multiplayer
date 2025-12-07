@@ -43,10 +43,12 @@
 0x4a2eb4 = "addic r3, r3, 0x2"
 
 # aww heck guy patch
+## unlock item
 0x32d0d8 = "nop"
 0x32d0fc = "li r3, 49"
 0x32d100 = "bl 0x112e18"
 0x32d050 = "lis r3, 0xb0"
+## delete check
 0x32d054 = "addic r3, r3, 0x2"
 0x32d058 = "lbz r3, 0x31(r3)"
 
@@ -61,6 +63,10 @@
 # plumber
 0x4558b0 = "lis r3, 0xb0"
 0x4558b4 = "addic r3, r3, 0x100"
+
+# skid
+0x45d220 = "lis r3, 0xb0"
+0x45d224 = "addic r3, r3, 0x1e"
 
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
