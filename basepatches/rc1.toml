@@ -68,6 +68,10 @@
 0x45d220 = "lis r3, 0xb0"
 0x45d224 = "addic r3, r3, 0x1e"
 
+# skid agent
+0x45b2b8 = "lis r3, 0xb0"
+0x45b2bc = "addic r3, r3, 0x5"
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
