@@ -100,6 +100,10 @@ instructions = [
     "bl 0x112e18"
 ]
 
+# Fred
+0x1be6f0 = "lis r3, 0xb0"
+0x1be6f4 = "addic r3, r3, 0x2"
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
