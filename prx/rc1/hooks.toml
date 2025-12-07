@@ -37,7 +37,7 @@ addr = 0x5f0370
 replaced_instr = "stdu r1, -0x41e0(r1)"
 
 [perform_save_action]
- addr = 0x4e7a34
+addr = 0x4e7a34
 replaced_instr = "stdu r1, -0xa0(r1)"
 
 [cellGameBootCheck]

@@ -284,7 +284,7 @@ extern bool option_helpdesk_text;
 
 extern u8 latin_glyph_sizes;
 
-extern PlayerType player_type;
+extern u8 player_type;
 
 void start_in_level_movie(u32 movie);
 void unlock_item(int item_id, uint8_t equip);
