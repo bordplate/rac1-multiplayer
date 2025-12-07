@@ -39,8 +39,10 @@
 #]
 
 # helga patch
-0x4a2eb0 = "lis r3, 0xb0"
-0x4a2eb4 = "addic r3, r3, 0x2"
+0x4a2eb0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
 
 # aww heck guy patch
 ## unlock item
@@ -48,70 +50,195 @@
 0x32d0fc = "li r3, 49"
 0x32d100 = "bl 0x112e18"
 ## delete check
-0x32d050 = "lis r3, 0xb0"
-0x32d054 = "addic r3, r3, 0x2"
-0x32d058 = "lbz r3, 0x31(r3)"
+0x32d050 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x31(r3)"
+]
+
 
 # infobot patch
-0x44bd58 = "lis r4, 0xb0"
-0x44bd5c = "addic r4, r4, 0x100"
-0x44b9d0 = "lis r3, 0xb0"
-0x44b9d8 = "addic r3, r3, 0x100"
-0x44b940 = "lis r4, 0xb0"
-0x44b944 = "addic r4, r4, 0x100"
+0x44bd58 = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x100"
+]
+0x44b9d0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+0x44b940 = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x100"
+]
+
 
 # plumber
-0x4558b0 = "lis r3, 0xb0"
-0x4558b4 = "addic r3, r3, 0x100"
+0x4558b0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
 
 # skid
-0x45d220 = "lis r3, 0xb0"
-0x45d224 = "addic r3, r3, 0x1e"
+0x45d220 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x1e"
+]
 
 # skid agent
-0x45b2b8 = "lis r3, 0xb0"
-0x45b2bc = "addic r3, r3, 0x2"
+0x45b2b8 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
 
 # Big Al
-0x4a90b0 = "lis r3, 0xb0"
-0x4a90b4 = "addic r3, r3, 0x2"
-0x4a90d0 = "lis r4, 0xb0"
-0x4a90d4 = "addic r4, r4, 0x2"
+0x4a90b0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+0x4a90d0 = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x2"
+]
 
 # Suck Cannon
-0x1d5684 = "lis r3, 0xb0"
-0x1d5688 = "addic r3, r3, 0x2"
+0x1d5684 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
 
-# Bouncer
-0x4b1ba0 = "lis r3, 0xb0"
-0x4b1ba4 = "addic r3, r3, 0x100"
+
+## Bouncer
+0x4b1ba0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
 
 # Shady Salesman
-0x4b8cc8 = "lis r3, 0xb0"
-0x4b8ccc = "addic r3, r3, 0x2"
+0x4b8cc8 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
 
 # Hoverboard Girl
-0x4b0a04 = "lis r3, 0xb0"
-0x4b0a08 = "addic r3, r3, 0x2"
-[0x4b0c6c]
-in_place = false
-instructions = [
-    "li r3, 0x30",
-    "bl 0x112e18"
+0x4b0a04 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
 ]
 
 # Fred
 ## blarg
-0x1be6f0 = "lis r3, 0xb0"
-0x1be6f4 = "addic r3, r3, 0x2"
+0x1be6f0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
 ## pokitaru
-0x336388 = "lis r3, 0xb0"
-0x33638c = "addic r3, r3, 0x2"
-0x336400 = "lis r3, 0xb0"
-0x336404 = "addic r3, r3, 0x2"
-0x336408 = "lbz r3, 0x31(r3)"
-0x336414 = "lis r3, 0xb0"
-0x336418 = "addic r3, r3, 0x2"
+0x336388 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+0x336400 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x31(r3)"
+]
+0x336414 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# Commando
+0x1d8298 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+
+# Deserter
+0x1df97c = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+# pilot helmet
+0x23e1e4 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# magneboots
+0x2ba1d8 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# nanotech vendor
+0x24a8b8 = [
+    "lis r28, 0xb0",
+    "addic r28, r28, 0x2",
+    "lbz r3, 0x34(r28)" # premium nanotech
+]
+0x24a96c = "lbz r3, 0x35(r28)" # ultra nanotech
+0x24aa60 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x35(r3)" # ultra nanotech
+]
+0x24a940 = [
+    "nop",
+    "nop"
+]
+
+# bob
+0x4a4ce8 = "lis r3, 0xb0"
+0x4a4cf0 = "addic r3, r3, 0x2"
+
+# edwina
+0x3434dc = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+
+# sam
+0x4b7dfc = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+# Bolt Grabber
+0x267828 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# Gadgetron CEO
+0x28516c = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+
+# PDA taxi
+0x270eb8 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# tresspasser/hydrodisplacer
+0x183944 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# gold weapon vendor patch
+0x339d64 = "lis r5, 0xb0"
+0x339d74 = "addic r5, r5, 0x37"
+0x339c10 = "lis r5, 0xb0"
+0x339c20 = "addic r5, r5, 0x37"
+
+# fred
 [0x33666c]
 in_place = true
 instructions = [
@@ -121,33 +248,7 @@ instructions = [
     "nop"
 ]
 
-# Commando
-0x1d8298 = "lis r3, 0xb0"
-0x1d829c = "addic r3, r3, 0x100"
-
-# Deserter
-0x1df97c = "lis r3, 0xb0"
-0x1df980 = "addic r3, r3, 0x100"
-
-# pilot helmet
-0x23e1e4 = "lis r3, 0xb0"
-0x23e1e8 = "addic r3, r3, 0x2"
-
-# magneboots
-0x2ba1d8 = "lis r3, 0xb0"
-0x2ba1dc = "addic r3, r3, 0x2"
-
 # nanotech vendor
-0x24a8b8 = "lis r28, 0xb0"
-0x24a8bc = "addic r28, r28, 0x2"
-0x24a8c0 = "lbz r3, 0x34(r28)" # premium nanotech
-0x24a96c = "lbz r3, 0x35(r28)" # ultra nanotech
-0x24aa60 = "lis r3, 0xb0"
-0x24aa64 = "addic r3, r3, 0x2"
-0x24aa68 = "lbz r3, 0x35(r3)" # ultra nanotech
-
-0x24a940 = "nop"
-0x24a944 = "nop"
 [0x24aa10]
 in_place = true # true to replace hp setting instructions
 instructions = [
@@ -162,29 +263,25 @@ instructions = [
     "bl 0x112e18"
 ]
 
-# bob
-0x4a4ce8 = "lis r3, 0xb0"
-0x4a4cf0 = "addic r3, r3, 0x2"
+# Hoverboard Girl
+[0x4b0c6c]
+in_place = false
+instructions = [
+    "li r3, 0x30",
+    "bl 0x112e18"
+]
 
-# edwina
-0x3434dc = "lis r3, 0xb0"
-0x3434e0 = "addic r3, r3, 0x2"
-
-# sam
-0x4b7dfc = "lis r3, 0xb0"
-0x4b7e00 = "addic r3, r3, 0x100"
-
-# Bolt Grabber
-0x267828 = "lis r3, 0xb0"
-0x26782c = "addic r3, r3, 0x2"
-
-# Gadgetron CEO
-0x28516c = "lis r3, 0xb0"
-0x285170 = "addic r3, r3, 0x2"
-
-# PDA taxi
-0x270eb8 = "lis r3, 0xb0"
-0x270ebc = "addic r3, r3, 0x2"
+# gold weapon vendor patch
+[0x339ce4]
+in_place = false
+instructions = [
+    "stdu r3, -16(r1)", # push to stack
+    "li r3, 0x40",
+    "add r3, r3, r6",
+    "bl 0x112e18",
+    "ld r3, 0(r1)", # pop from stack
+    "addi r1, r1, 16" # pop from stack
+]
 
 # Codebot
 [0x27b8c8]
@@ -193,14 +290,3 @@ instructions = [
     "li r3, 0x32",
     "bl 0x112e18"
 ]
-
-# tresspasser/hydrodisplacer
-0x183944 = "lis r3, 0xb0"
-0x183948 = "addic r3, r3, 0x2"
-
-# gold weapon vendor patch
-## 0x339d64: ??? # lis r5, 0xB0
-## 0x339d74: ??? # addic r5, 0x37
-## 0x339c10: ??? # lis r5, 0xB0
-## 0x339c20: ??? # addic r5, 0x37
-## missing call to unlock_item
