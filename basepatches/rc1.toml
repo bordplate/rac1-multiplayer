@@ -37,3 +37,30 @@
 #    "li r3, 0x0d",
 ##    "extsw r3,r3"  # Optionally add the instruction you replaced
 #]
+
+# helga patch
+0x4a2eb0 = "lis r3, 0xb0"
+0x4a2eb4 = "addic r3, r3, 0x2"
+
+# aww heck guy patch
+0x32d0d8 = "nop"
+0x32d0fc = "li r3, 49"
+0x32d100 = "bl 0x112e18"
+0x32d050 = "lis r3, 0xb0"
+0x32d054 = "addic r3, r3, 0x2"
+0x32d058 = "lbz r3, 0x31(r3)"
+
+# infobot patch
+0x44bd58 = "lis r4, 0xb0"
+0x44bd5c = "addic r4, r4, 0x100"
+0x44b9d0 = "lis r3, 0xb0"
+0x44b9d8 = "addic r3, r3, 0x100"
+0x44b940 = "lis r4, 0xb0"
+0x44b944 = "addic r4, r4, 0x100"
+
+# gold weapon vendor patch
+## 0x339d64: ??? # lis r5, 0xB0
+## 0x339d74: ??? # addic r5, 0x37
+## 0x339c10: ??? # lis r5, 0xB0
+## 0x339c20: ??? # addic r5, 0x37
+## missing call to unlock_item
