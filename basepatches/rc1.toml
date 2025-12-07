@@ -116,6 +116,38 @@ instructions = [
 0x23e1e4 = "lis r3, 0xb0"
 0x23e1e8 = "addic r3, r3, 0x2"
 
+# magneboots
+0x2ba1d8 = "lis r3, 0xb0"
+0x2ba1dc = "addic r3, r3, 0x2"
+
+# nanotech vendor
+0x24a8b8 = "lis r28, 0xb0"
+0x24a8bc = "addic r28, r28, 0x2"
+0x24a8c0 = "lbz r3, 0x34(r28)" # premium nanotech
+0x24a96c = "lbz r3, 0x35(r28)" # ultra nanotech
+0x24aa60 = "lis r3, 0xb0"
+0x24aa64 = "addic r3, r3, 0x2"
+0x24aa68 = "lbz r3, 0x35(r3)" # ultra nanotech
+
+0x24a940 = "nop"
+0x24a944 = "nop"
+[0x24aa10]
+in_place = true # true to replace hp setting instructions
+instructions = [
+    "li r3, 0x35",
+    "bl 0x112e18"
+]
+
+[0x24a91c]
+in_place = false
+instructions = [
+    "li r3, 0x34",
+    "bl 0x112e18"
+]
+
+
+
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
