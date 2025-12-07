@@ -49,6 +49,11 @@ void Game::init() {
     have_save_file = false;
     manual_save_enabled = false;
 
+    previous_user_option_camera_left_right_movement = -1;
+    previous_user_option_camera_up_down_movement = -1;
+    previous_user_option_camera_rotation_speed = -1;
+    restored_camera_options_ = false;
+
     dialogs_dismissed = 0;
 }
 
