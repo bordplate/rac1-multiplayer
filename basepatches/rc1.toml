@@ -90,6 +90,16 @@
 0x4b8cc8 = "lis r3, 0xb0"
 0x4b8ccc = "addic r3, r3, 0x2"
 
+# Hoverboard Girl
+0x4b0a04 = "lis r3, 0xb0"
+0x4b0a08 = "addic r3, r3, 0x2"
+[0x4b0c6c]
+in_place = false
+instructions = [
+    "li r3, 0x30",
+    "bl 0x112e18"
+]
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
