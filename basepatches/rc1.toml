@@ -162,7 +162,9 @@ instructions = [
     "bl 0x112e18"
 ]
 
-
+# bob
+0x4a4ce8 = "lis r3, 0xb0"
+0x4a4cf0 = "addic r3, r3, 0x2"
 
 
 # gold weapon vendor patch
