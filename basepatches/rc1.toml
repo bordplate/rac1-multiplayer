@@ -78,6 +78,10 @@
 0x4a90d0 = "lis r4, 0xb0"
 0x4a90d4 = "addic r4, r4, 0x2"
 
+# Suck Cannon
+0x1d5684 = "lis r3, 0xb0"
+0x1d5688 = "addic r3, r3, 0x2"
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
