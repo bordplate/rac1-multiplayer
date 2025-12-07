@@ -170,6 +170,10 @@ instructions = [
 0x3434dc = "lis r3, 0xb0"
 0x3434e0 = "addic r3, r3, 0x2"
 
+# sam
+0x4b7dfc = "lis r3, 0xb0"
+0x4b7e00 = "addic r3, r3, 0x100"
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
