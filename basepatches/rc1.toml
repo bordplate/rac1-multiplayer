@@ -166,6 +166,9 @@ instructions = [
 0x4a4ce8 = "lis r3, 0xb0"
 0x4a4cf0 = "addic r3, r3, 0x2"
 
+# edwina
+0x3434dc = "lis r3, 0xb0"
+0x3434e0 = "addic r3, r3, 0x2"
 
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
