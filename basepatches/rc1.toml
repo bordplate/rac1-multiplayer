@@ -186,6 +186,14 @@ instructions = [
 0x270eb8 = "lis r3, 0xb0"
 0x270ebc = "addic r3, r3, 0x2"
 
+# Codebot
+[0x27b8c8]
+in_place = false
+instructions = [
+    "li r3, 0x32",
+    "bl 0x112e18"
+]
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
