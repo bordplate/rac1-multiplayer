@@ -182,6 +182,10 @@ instructions = [
 0x28516c = "lis r3, 0xb0"
 0x285170 = "addic r3, r3, 0x2"
 
+# PDA taxi
+0x270eb8 = "lis r3, 0xb0"
+0x270ebc = "addic r3, r3, 0x2"
+
 # gold weapon vendor patch
 ## 0x339d64: ??? # lis r5, 0xB0
 ## 0x339d74: ??? # addic r5, 0x37
