@@ -3,7 +3,7 @@
 //
 
 #include "DataClient.h"
-#include <errno.h>
+#include <netex/errno.h>
 
 #include "../../rc1.h"
 #include "rc1/Game.h"
@@ -18,7 +18,7 @@ ssize_t send_all(int sockfd, const void *buf, size_t len) {
     while (total < len) {
         ssize_t n = send(sockfd, p + total, len - total, 0);
         if (n < 0) {
-            if (errno == EINTR) {
+            if (sys_net_errno == EINTR) {
                 continue;
             }
 
