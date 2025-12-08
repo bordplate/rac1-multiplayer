@@ -134,6 +134,12 @@ void DataClient::run() {
         }
 
         if (should_transmit_) {
+            if (file_to_transmit_ == nullptr && file_size_ <= 0) {
+                Logger::warning("No data or zero length data in transmit path for DataClient.");
+                should_transmit_ = false;
+                continue;
+            }
+
             size_t packet_size = sizeof(MPPacketHeader) + sizeof(MPPacketFileUpload);
             u8 send_buffer[packet_size];
             MPPacketHeader header = {
@@ -158,6 +164,11 @@ void DataClient::run() {
 
                 ssize_t sent = send_all(sockfd_, (u8*)file_to_transmit_ + transmitted_, chunk_size);
 
+                if (sent < 0) {
+                    Logger::error("Failed to send data to data stream. Disconnecting.");
+                    return;
+                }
+
                 transmitted_ += sent;
                 remaining -= sent;
             } while (remaining > 0);
@@ -170,7 +181,12 @@ void DataClient::run() {
 }
 
 void DataClient::transmit(MPFileType file_type, void *data, size_t len) {
-    if (!data_client_->should_transmit_) {
+    if (data == nullptr || len == 0) {
+        Logger::warning("DataClient::transmit called with null data or zero length.");
+        return;
+    }
+
+    if (data_client_ && !data_client_->should_transmit_) {
         data_client_->should_transmit_ = true;
 
         data_client_->file_to_transmit_ = data;
