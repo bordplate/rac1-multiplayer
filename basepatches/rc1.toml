@@ -48,7 +48,7 @@
 ## unlock item
 0x32d0d8 = "nop"
 0x32d0fc = "li r3, 49"
-0x32d100 = "bl 0x112e18"
+0x32d100 = "bla 0x112e18"
 ## delete check
 0x32d050 = [
     "lis r3, 0xb0",
@@ -82,11 +82,11 @@
 # skid
 0x45d220 = [
     "lis r3, 0xb0",
-    "addic r3, r3, 0x1e"
+    "addic r3, r3, 0x2"
 ]
 
 # skid agent
-0x45b2b8 = [
+0x45b2b4 = [
     "lis r3, 0xb0",
     "addic r3, r3, 0x2"
 ]
@@ -232,6 +232,13 @@
     "addic r3, r3, 0x2"
 ]
 
+# codebot
+0x27b778 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x32(r3)"
+]
+
 # gold weapon vendor patch
 0x339d64 = "lis r5, 0xb0"
 0x339d74 = "addic r5, r5, 0x37"
@@ -242,25 +249,27 @@
 [0x33666c]
 in_place = true
 instructions = [
-    "nop",
     "li r3, 0x23",
-    "bl 0x112e18",
+    "bla 0x112e18",
+    "li r3, 0x1c",
     "nop"
 ]
 
 # nanotech vendor
-[0x24aa10]
+[0x24aa0c]
 in_place = true # true to replace hp setting instructions
 instructions = [
     "li r3, 0x35",
-    "bl 0x112e18"
+    "bla 0x112e18",
+    "li r3, 0x1"
 ]
 
 [0x24a91c]
 in_place = false
 instructions = [
     "li r3, 0x34",
-    "bl 0x112e18"
+    "bla 0x112e18",
+    "li r3, 0x1b"
 ]
 
 # Hoverboard Girl
@@ -268,7 +277,7 @@ instructions = [
 in_place = false
 instructions = [
     "li r3, 0x30",
-    "bl 0x112e18"
+    "bla 0x112e18"
 ]
 
 # gold weapon vendor patch
@@ -278,7 +287,7 @@ instructions = [
     "stdu r3, -16(r1)", # push to stack
     "li r3, 0x40",
     "add r3, r3, r6",
-    "bl 0x112e18",
+    "bla 0x112e18",
     "ld r3, 0(r1)", # pop from stack
     "addi r1, r1, 16" # pop from stack
 ]
@@ -288,5 +297,5 @@ instructions = [
 in_place = false
 instructions = [
     "li r3, 0x32",
-    "bl 0x112e18"
+    "bla 0x112e18"
 ]
