@@ -44,6 +44,9 @@ void Game::start() {
 void Game::init() {
     // "Temporary" hack for gold bolt stuff
     memset(blocked_bolts, 0, 100);
+    memset(metal_detector_bolt_multiplier, 1, 1);
+    memset(proxy_item_array, 0, proxy_item_array_size);
+    memset(proxy_level_array, 0, proxy_level_array_size);
 
     force_load_save_file = false;
     have_save_file = false;

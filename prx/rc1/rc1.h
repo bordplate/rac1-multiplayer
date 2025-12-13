@@ -52,6 +52,12 @@ extern int current_weapon;
 
 extern int planetUnlockedByServer;
 
+#define metal_detector_bolt_multiplier ((u8*)0xB00000)
+#define proxy_item_array ((u8*)0xB00002)
+#define proxy_item_array_size 54
+#define proxy_level_array ((u8*)0xB00100)
+#define proxy_level_array_size 19
+
 SHK_FUNCTION_DEFINE_STATIC_1(0x0f58d8, int, compute_animation, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_1(0x16a658, int, reload_gadgetron_vendor_items, int, unk);
 SHK_FUNCTION_DEFINE_STATIC_1(0xe7984, void, savedata_unk, void*, param_1);
