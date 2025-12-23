@@ -382,3 +382,15 @@ Packet* Packet::make_file_upload_part_packet(u8 file_type, void* data, u32 len, 
 
     return packet;
 }
+
+Packet* Packet::make_player_standing_on_moby_packet(u16 uuid) {
+    Packet* packet = new Packet(sizeof(MPPacketSetState));
+    packet->header->type = MP_PACKET_SET_STATE;
+    packet->header->size = sizeof(MPPacketSetState);
+
+    MPPacketSetState* body = (MPPacketSetState*)packet->body;
+    body->state_type = MP_STATE_TYPE_STANDING_ON_MOBY;
+    body->value = uuid;
+
+    return packet;
+}

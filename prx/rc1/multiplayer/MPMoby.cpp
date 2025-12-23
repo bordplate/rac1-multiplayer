@@ -8,6 +8,8 @@
 #include <rc1/rc1.h>
 #include <rc1/Game.h>
 
+#include "Player.h"
+
 void MPMoby::update() {
     // Don't check collision for Ratchet moby, because that apparently crashes the game on console only.
     if (this->o_class != 0) {
@@ -16,10 +18,44 @@ void MPMoby::update() {
 
     MPMobyVars* vars = (MPMobyVars*)(this->vars);
 
+    if (vars->flags & MP_MOBY_FLAG_MOVABLE_PLATFORM) {
+        Vec4 delta;
+        delta.x = position.x - vars->last_position.x;
+        delta.y = position.y - vars->last_position.y;
+        delta.z = position.z - vars->last_position.z;
+        delta.w = 1.0f;
+
+        get_moby_orientation_info(&vars->platform_orientation_info, &delta, &rotation, &rotation);
+
+        vars->last_position.x = position.x;
+        vars->last_position.y = position.y;
+        vars->last_position.z = position.z;
+    }
+
+    if (player_is_standing_on(this) && player_standing_on_moby != Player::shared().last_moby_standing_on) {
+        if (Game::shared().connected_client() != nullptr) {
+            Game::shared().connected_client()->send_ack(Packet::make_player_standing_on_moby_packet(
+                vars->uuid
+            ));
+        }
+
+        Player::shared().last_moby_standing_on = player_standing_on_moby;
+    }
+
+    if (!player_is_standing_on(this) && Player::shared().last_moby_standing_on == this) {
+        if (Game::shared().connected_client() != nullptr) {
+            Game::shared().connected_client()->send_ack(Packet::make_player_standing_on_moby_packet(
+                0
+            ));
+        }
+
+        Player::shared().last_moby_standing_on = nullptr;
+    }
+
     Damage* damage = this->get_damage(0x330000, 0);
 
     if (damage != nullptr) {
-        Logger::info("Moby %d took %f damage from o_class %d", this->uid, damage->damage_dealt, damage->source_o_class);
+        Logger::info("Moby %d took %f damage from o_class %d", vars->uuid, damage->damage_dealt, damage->source_o_class);
 
         if (Game::shared().client() != nullptr) {
             Game::shared().client()->send_ack(Packet::make_damage_packet(
@@ -68,6 +104,15 @@ void MPMoby::update() {
 
     this->damage = -1;
 
+    // Avoid players getting stuck in each other
+    if (collision != nullptr &&
+        position.x == player_pos.x &&
+        position.y == player_pos.y &&
+        position.z == player_pos.z
+    ) {
+        position.x += 0.5f;
+    }
+
     if (this->animation_id != vars->next_animation_id) {
         this->set_animation(vars->next_animation_id, 0, vars->animation_duration);
     }
@@ -96,6 +141,18 @@ MPMoby* MPMoby::spawn(unsigned short uuid, unsigned short o_class, unsigned shor
 
     if (vars) {
         vars->uuid = uuid;
+        vars->flags = flags;
+
+        if (flags & MP_MOBY_FLAG_MOVABLE_PLATFORM) {
+            Logger::debug("Making elevator for %d", moby->o_class);
+            moby->mode_bits |= 0x20;
+            vars->config_pointer1 = &vars->platform_configuration;
+            vars->config_pointer3 = &vars->platform_orientation_info;
+
+            vars->platform_configuration.unk1 = 0;
+            vars->platform_configuration.unk3_f1 = 4;
+            // *(u8 *)((int)vars + 0xef) = 0xd;
+        }
     }
 
     idk(moby);

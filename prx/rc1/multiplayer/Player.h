@@ -23,6 +23,8 @@ struct Player {
     Vec4 respawn_position;
     Vec4 respawn_rotation;
 
+    Moby* last_moby_standing_on;
+
     String username;
 
     GameState last_game_state;

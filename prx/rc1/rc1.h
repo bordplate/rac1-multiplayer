@@ -50,7 +50,6 @@ extern int game_ticks;
 
 extern int current_weapon;
 
-extern int planetUnlockedByServer;
 
 SHK_FUNCTION_DEFINE_STATIC_1(0x0f58d8, int, compute_animation, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_1(0x16a658, int, reload_gadgetron_vendor_items, int, unk);
@@ -233,6 +232,8 @@ extern int last_vendor_was_pda;
 // Frames since death/reload
 extern int frame_count;
 
+extern u32 n_frames_grounded;
+
 extern bool should_render_server_list;
 
 extern Moby* moby_ptr;
@@ -260,6 +261,8 @@ extern int player_state;
 extern int player_state_input;
 // The player's current HP.
 extern int player_health;
+
+extern Moby* player_standing_on_moby;
 
 extern Vec4 camera_pos;
 extern Vec4 camera_rot;

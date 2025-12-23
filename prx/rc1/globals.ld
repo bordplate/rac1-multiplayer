@@ -2,6 +2,7 @@ current_weapon = 0x969c7c;
 
 game_state = 0xA10708;
 frame_count = 0xA10710;
+n_frames_grounded = 0x969fe0;
 
 should_load_destination_planet = 0xa10700;
 current_planet = 0x969C70;
@@ -21,6 +22,7 @@ ratchet_moby = 0x96BD60;
 player_state = 0x96BD64;
 player_state_input = 0x96bd6c;
 player_health = 0x96BF88;
+player_standing_on_moby = 0x969fdc;
 animation_speed = 0x71F410;
 player_type = 0x96bd84;
 

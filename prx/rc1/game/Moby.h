@@ -207,6 +207,7 @@ __attribute__((aligned(1)));
 typedef struct Moby Moby;
 #endif
 
+SHK_FUNCTION_DEFINE_STATIC_4(0x112900, void, get_moby_orientation_info, void*, unk0, void*, unk1, Vec4*, rot1, Vec4*, rot);
 SHK_FUNCTION_DEFINE_STATIC_6(0x5e598, int, coll_mobys_sphere, float, param_1, Vec4*, param_2, int, param_3, u32, flags,
                              Moby*, param_5, int*, param_6);
 SHK_FUNCTION_DEFINE_STATIC_4(0x59e20, int, coll_sphere, Vec4*, position, float, param_2, int, flags, Moby*, moby);
@@ -216,6 +217,7 @@ SHK_FUNCTION_DEFINE_STATIC_5(0xf1ea0, int, idk2, void*, p1, s64, p2, u64, p3, s6
 SHK_FUNCTION_DEFINE_STATIC_1(0xefb38, void, delete_moby, Moby*, moby);
 
 SHK_FUNCTION_DEFINE_STATIC_1(0xf0f9c, u32, FUN_000f0f9c, void*, p1);
+SHK_FUNCTION_DEFINE_STATIC_1(0x117c60, u32, player_is_standing_on, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_1(0x502730, double, int_to_double, int, p1);
 SHK_FUNCTION_DEFINE_STATIC_1(0xef74c, int, moby_frame_data_something, void*, p1);
 SHK_FUNCTION_DEFINE_STATIC_1(0x502730, double, long_long_to_double, u64, p1);
