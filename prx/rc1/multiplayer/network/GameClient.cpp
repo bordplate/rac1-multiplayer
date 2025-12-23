@@ -294,10 +294,10 @@ void GameClient::change_moby_value(MPPacketChangeMobyValue* packet) {
     Moby* moby = nullptr;
 
     if (packet->flags & MP_MOBY_FLAG_FIND_BY_UUID) {
-        Logger::debug("Changing moby value by UUID %d", packet->id);
+        Logger::trace("Changing moby value by UUID %d", packet->id);
         moby = mobys_[packet->id].moby;
     } else if (packet->flags & MP_MOBY_FLAG_FIND_BY_UID) {
-        Logger::debug("Changing moby value by UID %d", packet->id);
+        Logger::trace("Changing moby value by UID %d", packet->id);
         moby = Moby::find_by_uid(packet->id);
     }
 
