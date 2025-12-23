@@ -294,10 +294,10 @@ void GameClient::change_moby_value(MPPacketChangeMobyValue* packet) {
     Moby* moby = nullptr;
 
     if (packet->flags & MP_MOBY_FLAG_FIND_BY_UUID) {
-        Logger::debug("Changing moby value by UUID %d", packet->id);
+        Logger::trace("Changing moby value by UUID %d", packet->id);
         moby = mobys_[packet->id].moby;
     } else if (packet->flags & MP_MOBY_FLAG_FIND_BY_UID) {
-        Logger::debug("Changing moby value by UID %d", packet->id);
+        Logger::trace("Changing moby value by UID %d", packet->id);
         moby = Moby::find_by_uid(packet->id);
     }
 
@@ -675,24 +675,30 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
         // We also wait a couple of frames after spawning to mitigate an unknown crash that occurs sometimes when we spawn
         //  mobys too quickly after spawn
         if (!handshake_complete()) {
+            do_ack_if_necessary(header);
             return false;
         }
 
         // Process packet
         switch (header->type) {
             case MP_PACKET_MOBY_CREATE:
+                if (game_state == PlanetLoading || game_state == Movie) return false;
                 create_moby((MPPacketMobyCreate*)packet_data);
                 break;
             case MP_PACKET_MOBY_UPDATE:
+                if (game_state == PlanetLoading || game_state == Movie) return false;
                 update_moby((MPPacketMobyUpdate*)packet_data);
                 break;
             case MP_PACKET_MOBY_EX:
+                if (game_state == PlanetLoading || game_state == Movie) return false;
                 update_moby_ex((MPPacketMobyExtended*)packet_data);
                 break;
             case MP_PACKET_CHANGE_MOBY_VALUE:
+                if (game_state == PlanetLoading || game_state == Movie) return false;
                 change_moby_value((MPPacketChangeMobyValue*)packet_data);
                 break;
             case MP_PACKET_MOBY_DELETE:
+                if (game_state == PlanetLoading || game_state == Movie) return false;
                 moby_delete((MPPacketMobyDelete*)packet_data);
                 break;
             case MP_PACKET_SET_STATE: {
@@ -726,6 +732,7 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
                 break;
             }
             case MP_PACKET_REGISTER_HYBRID_MOBY: {
+                if (game_state == PlanetLoading || game_state == Movie) return false;
                 register_hybrid_moby((MPPacketRegisterHybridMoby*)packet_data);
                 break;
             }
@@ -792,6 +799,8 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
                 }
         }
     }
+
+    do_ack_if_necessary(header);
 
     return true;
 }

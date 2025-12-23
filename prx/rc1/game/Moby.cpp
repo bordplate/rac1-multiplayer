@@ -33,17 +33,17 @@ void Moby::change_values(MPPacketChangeMobyValuePayload* changes, size_t num, u1
         if (payload->size == 1) {
             u8 temp_value = (u8)payload->value;
 
-            Logger::debug("Changing byte at offset %d to %d", payload->offset, temp_value);
+            Logger::trace("Changing byte at offset %d to %d", payload->offset, temp_value);
 
             memcpy(base_address + payload->offset, &temp_value, payload->size);
         } else if (payload->size == 2) {
             u16 temp_value = (u16)payload->value;
 
-            Logger::debug("Changing short at offset %d to %d", payload->offset, temp_value);
+            Logger::trace("Changing short at offset %d to %d", payload->offset, temp_value);
 
             memcpy(base_address + payload->offset, &temp_value, payload->size);
         } else {
-            Logger::debug("Changing int at offset %d to %d", payload->offset, payload->value);
+            Logger::trace("Changing int at offset %d to %d", payload->offset, payload->value);
             memcpy(base_address + payload->offset, &payload->value, payload->size);
         }
     }

@@ -95,6 +95,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_MOBY_FLAG_NO_COLLISION     0x2
 #define MP_MOBY_FLAG_ORIG_UDPATE_FUNC 0x4
 #define MP_MOBY_FLAG_ATTACHED_TO      0x8
+#define MP_MOBY_FLAG_MOVABLE_PLATFORM      0x10
 
 #define MP_CONTROLLER_FLAGS_PRESSED 1
 #define MP_CONTROLLER_FLAGS_HELD 2
@@ -276,6 +277,7 @@ typedef struct {
 #define MP_STATE_TYPE_COMMUNICATION_FLAGS 17
 #define MP_STATE_TYPE_START_IN_LEVEL_MOVIE 18
 #define MP_STATE_TYPE_SAVE_FILE_OPERATION 19
+#define MP_STATE_TYPE_STANDING_ON_MOBY 20
 
 typedef struct {
     u16 flags;
@@ -450,6 +452,7 @@ struct Packet {
     static Packet* make_ui_event_packet(u16 event_type, u16 element_id, u32 data);
     static Packet* make_ui_event_with_text_packet(u16 event_type, u16 element_id, u32 data, const char* text);
     static Packet* make_file_upload_part_packet(u8 file_type, void* data, u32 len, u32 offset);
+    static Packet* make_player_standing_on_moby_packet(u16 uuid);
 };
 
 #endif

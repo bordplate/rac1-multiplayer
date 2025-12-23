@@ -50,7 +50,6 @@ extern int game_ticks;
 
 extern int current_weapon;
 
-extern int planetUnlockedByServer;
 
 #define metal_detector_bolt_multiplier ((u8*)0xB00000)
 #define proxy_item_array ((u8*)0xB00002)
@@ -239,6 +238,8 @@ extern int last_vendor_was_pda;
 // Frames since death/reload
 extern int frame_count;
 
+extern u32 n_frames_grounded;
+
 extern bool should_render_server_list;
 
 extern Moby* moby_ptr;
@@ -266,6 +267,8 @@ extern int player_state;
 extern int player_state_input;
 // The player's current HP.
 extern int player_health;
+
+extern Moby* player_standing_on_moby;
 
 extern Vec4 camera_pos;
 extern Vec4 camera_rot;

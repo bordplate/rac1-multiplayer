@@ -185,8 +185,7 @@ void Game::on_render() {
     // If loading, we shouldn't render anything;
     if (game_state == 6) {
         if (client()) {
-            client()->send_ping();
-            client()->drop_receive();
+            client()->on_tick();
         }
         return;
     }
@@ -200,8 +199,7 @@ void Game::on_render() {
 
 void Game::on_bink_do_frame() {
     if (client()) {
-        client()->send_ping();
-        client()->drop_receive();
+        client()->on_tick();
     }
 }
 
