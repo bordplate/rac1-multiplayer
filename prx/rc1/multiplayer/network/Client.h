@@ -71,6 +71,8 @@ public:
     long received() const { return received_; }
 protected:
     struct sockaddr_in sockaddr_;
+
+    void do_ack_if_necessary(MPPacketHeader* packet);
 private:
     int sockfd_;
 

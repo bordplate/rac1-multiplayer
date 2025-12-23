@@ -223,6 +223,25 @@ void Client::send_ack(unsigned char id, unsigned char cycle) {
     send(ack_packet);
 }
 
+void Client::do_ack_if_necessary(MPPacketHeader* header) {
+    // If a packet requires acknowledgement, it has a value in the requires_ack field.
+    // We register that we got the packet and only process the packet if it hasn't been
+    // registered already.
+    if (header->requires_ack > 0 && header->type != MP_PACKET_ACK) {
+        // Always acknowledge first.
+        send_ack(header->requires_ack, header->ack_cycle);
+
+        // Check the table to see if we've processed this ack ID in this ack cycle.
+        if (acked_[header->requires_ack] != header->ack_cycle) {
+            Logger::trace("Acked %d, cycle: %d", header->requires_ack, header->ack_cycle);
+
+            // We haven't seen this packet before, so we add the cycle value to the acked table.
+            acked_[header->requires_ack] = header->ack_cycle;
+        }
+    }
+}
+
+
 bool Client::update(MPPacketHeader* header, void* packet_data) {
     //Logger::trace("Processing a received packet with type %d", header->type);
 
@@ -241,22 +260,10 @@ bool Client::update(MPPacketHeader* header, void* packet_data) {
 //        return false;
 //    }
 
-    // If a packet requires acknowledgement, it has a value in the requires_ack field.
-    // We register that we got the packet and only process the packet if it hasn't been
-    // registered already.
-    if (header->requires_ack > 0 && header->type != MP_PACKET_ACK) {
-        // Always acknowledge first.
-        send_ack(header->requires_ack, header->ack_cycle);
-
-        // Check the table to see if we've processed this ack ID in this ack cycle.
-        if (acked_[header->requires_ack] != header->ack_cycle) {
-            Logger::trace("Acked %d, cycle: %d", header->requires_ack, header->ack_cycle);
-
-            // We haven't seen this packet before, so we add the cycle value to the acked table.
-            acked_[header->requires_ack] = header->ack_cycle;
-        } else {
-            return false;
-        }
+    // Check the table to see if we've processed this ack ID in this ack cycle.
+    if (header->type != MP_PACKET_ACK && header->requires_ack > 0 && acked_[header->requires_ack] == header->ack_cycle) {
+        do_ack_if_necessary(header);
+        return false;
     }
 
     switch(header->type) {
