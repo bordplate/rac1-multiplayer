@@ -209,8 +209,20 @@ void _unlock_item_hook(int item_id, uint8_t equip) {
 // Make original unlock_item available to our code
 void unlock_item(int item_id, uint8_t equip) {
     switch(item_id) {
+        case 0x30: // Zoomerator
+            *((bool*)0x96bff0) = true;
+            break;
         case 0x31: // Raritanium
             *((bool*)0x96bff1) = true;
+            break;
+        case 0x32: // Codebot
+            *((bool*)0x96bff2) = true;
+            break;
+        case 0x34: // Premium Nanotech
+            *((bool*)0x96bff4) = true;
+            break;
+        case 0x35: // Ultra Nanotech
+            *((bool*)0x96bff5) = true;
             break;
         default:
             SHK_CALL_HOOK(_unlock_item, item_id, equip);
