@@ -483,6 +483,23 @@ void Game::load() {
 
     destination_planet = *(int*)((u32)data + 0x18);
     should_load_destination_planet = true;
+
+    // Initialize Proxy Array based on unlocked weapons/gadgets/levels
+
+    u8* unlock_array = (u8*)(0x96c140);
+    u8* level_array = (u8*)(0x96ca0c);
+
+    memcpy(proxy_item_array, unlock_array, 36);
+    memcpy(proxy_level_array, level_array, proxy_level_array_size);
+
+    // custom items also belong in proxy_item_array
+    proxy_item_array[48] = *((u8*)0x96bff0); // Zoomerator
+    proxy_item_array[49] = *((u8*)0x96bff1); // Raritanium
+    proxy_item_array[50] = *((u8*)0x96bff2); // Codebot
+    proxy_item_array[52] = *((u8*)0x96bff4); // Premium Nanotech
+    proxy_item_array[53] = *((u8*)0x96bff5); // Ultra Nanotech
+
+    memcpy((u8*)(proxy_item_array + 0x40), (u8*)0x969ca8, 10);
 }
 
 
