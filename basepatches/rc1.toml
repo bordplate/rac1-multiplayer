@@ -297,17 +297,17 @@ instructions = [
     "lbz r4, 0x30(r4)"
 ]
 
-# gold weapon vendor patch
-[0x339ce4]
-in_place = false
-instructions = [
-    "stdu r3, -16(r1)", # push to stack
-    "li r3, 0x40",
-    "add r3, r3, r6",
-    "bla 0x112e18",
-    "ld r3, 0(r1)", # pop from stack
-    "addi r1, r1, 16" # pop from stack
-]
+## gold weapon vendor patch
+#[0x339ce4]
+#in_place = false
+#instructions = [
+#    "stdu r3, -16(r1)", # push to stack
+#    "li r3, 0x40",
+#    "add r3, r3, r6",
+#    "bla 0x112e18",
+#    "ld r3, 0(r1)", # pop from stack
+#    "addi r1, r1, 16" # pop from stack
+#]
 
 # Codebot
 [0x27b8c8]

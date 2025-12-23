@@ -498,8 +498,6 @@ void Game::load() {
     proxy_item_array[50] = *((u8*)0x96bff2); // Codebot
     proxy_item_array[52] = *((u8*)0x96bff4); // Premium Nanotech
     proxy_item_array[53] = *((u8*)0x96bff5); // Ultra Nanotech
-
-    memcpy((u8*)(proxy_item_array + 0x40), (u8*)0x969ca8, 10);
 }
 
 
