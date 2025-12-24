@@ -55,6 +55,11 @@
     "addic r3, r3, 0x2",
     "lbz r3, 0x31(r3)"
 ]
+0x32d004 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x31(r3)"
+]
 
 
 # infobot patch
