@@ -488,7 +488,8 @@ void GameClient::update_set_state(MPPacketSetState* packet) {
             if (type == MP_LEVEL_FLAG_TYPE_1) {
                 level_flags1[level * 0x10 + offset] = packet->value;
 
-                if (current_planet == 1 && offset == 0) {  // Special hack to enable ship on Novalis when we get this flag
+                if (current_planet == 1 && offset == 0 && ratchet_moby != nullptr) {
+                    // Special hack to enable ship on Novalis when we get this flag
                     ratchets_ship->mode_bits &= 0xfffc;
                     ratchets_ship->collision = ratchets_ship->p_class->collision;
                 }
