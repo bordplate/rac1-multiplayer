@@ -51,7 +51,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 
 #include "lib/types.h"
 
-#define MP_API_VERSION  11
+#define MP_API_VERSION  12
 
 #define MP_PACKET_CONNECT            1
 #define MP_PACKET_SYN                2
