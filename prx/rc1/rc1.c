@@ -188,9 +188,12 @@ void goldBoltUpdateHook(Moby* moby) {
     ((GoldBolt*)moby)->update();
 }
 
+
+
 // Hook the item_unlock function
 SHK_HOOK(void, _unlock_item, int, uint8_t);
 void _unlock_item_hook(int item_id, uint8_t equip) {
+    proxy_item_array[item_id] = true;
     if (!(enable_communication_bitmap & ENABLE_ON_UNLOCK_ITEM)) {
         MULTI_LOG("unlock_item communication disabled. acting autonomously.\n");
         unlock_item(item_id, equip);
@@ -205,7 +208,26 @@ void _unlock_item_hook(int item_id, uint8_t equip) {
 
 // Make original unlock_item available to our code
 void unlock_item(int item_id, uint8_t equip) {
-    SHK_CALL_HOOK(_unlock_item, item_id, equip);
+    switch(item_id) {
+        case 0x30: // Zoomerator
+            *((bool*)0x96bff0) = true;
+            break;
+        case 0x31: // Raritanium
+            *((bool*)0x96bff1) = true;
+            break;
+        case 0x32: // Codebot
+            *((bool*)0x96bff2) = true;
+            break;
+        case 0x34: // Premium Nanotech
+            *((bool*)0x96bff4) = true;
+            break;
+        case 0x35: // Ultra Nanotech
+            *((bool*)0x96bff5) = true;
+            break;
+        default:
+            SHK_CALL_HOOK(_unlock_item, item_id, equip);
+            break;
+    }
 
     // We can safely call the reload function outside of the vendor, but we don't want to call it if the player is
     //   currently using the PDA.
@@ -216,6 +238,7 @@ void unlock_item(int item_id, uint8_t equip) {
 
 SHK_HOOK(void, _unlock_level, int);
 void _unlock_level_hook(int level) {
+    proxy_level_array[level] = true; // Ensure the level is unlocked locally as well
     if (!(enable_communication_bitmap & ENABLE_ON_UNLOCK_LEVEL)) {
         MULTI_LOG("unlock_level communication disabled. acting autonomously.\n");
         unlock_level(level);
@@ -246,27 +269,15 @@ void unlock_skillpoint(u8 skillpoint) {
     SHK_CALL_HOOK(_unlock_skillpoint, skillpoint);
 }
 
-#define METAL_DETECTOR_BOLT_MULTIPLIER *((u8*)0xB00000)
 SHK_HOOK(void, metal_detector_spot_update_func, Moby*);
 void metal_detector_spot_update_func_hook(Moby* moby) {
     if (moby->state == 0) {
         struct MetalDetectorSpotVars *vars = (struct MetalDetectorSpotVars *)(moby->vars);
 
-        vars->bolts = vars->bolts * METAL_DETECTOR_BOLT_MULTIPLIER;
+        vars->bolts = vars->bolts * *metal_detector_bolt_multiplier;
     }
 
     SHK_CALL_HOOK(metal_detector_spot_update_func, moby);
-}
-#define PREVENT_DELETE_SKID *((bool*)0xB00001)
-SHK_HOOK(void, skid_update_func, Moby*);
-void skid_update_func_hook(Moby* moby) {
-    if (moby->state == 0) {
-        if (PREVENT_DELETE_SKID) {
-            moby->state = 1;
-            moby->update_distance = 0xff;
-        }
-    }
-    SHK_CALL_HOOK(skid_update_func, moby);
 }
 
 SHK_HOOK(void, menu_item_tick, MenuItem*);
@@ -402,11 +413,8 @@ void rc1_init() {
     SHK_BIND_HOOK(_spawn_moby, spawn_moby_hook);
     SHK_BIND_HOOK(_moby_get_damage, _moby_get_damage_hook);
     SHK_BIND_HOOK(metal_detector_spot_update_func, metal_detector_spot_update_func_hook);
-    SHK_BIND_HOOK(skid_update_func, skid_update_func_hook);
     SHK_BIND_HOOK(bink_do_frame, bink_do_frame_hook);
     SHK_BIND_HOOK(perform_save_action, perform_save_action_hook);
-
-    METAL_DETECTOR_BOLT_MULTIPLIER = (u8)1;
 
     MULTI_LOG("Bound hooks\n");
 }

@@ -37,3 +37,301 @@
 #    "li r3, 0x0d",
 ##    "extsw r3,r3"  # Optionally add the instruction you replaced
 #]
+
+# helga patch
+0x4a2eb0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# aww heck guy patch
+## unlock item
+0x32d0d8 = "nop"
+0x32d0fc = "li r3, 49"
+0x32d100 = "bla 0x112e18"
+## delete check
+0x32d050 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x31(r3)"
+]
+
+
+# infobot patch
+0x44bd58 = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x100"
+]
+0x44b9d0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+0x44b940 = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x100"
+]
+
+
+# plumber
+0x4558b0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+
+# skid
+0x45d220 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# skid agent
+0x45b3d4 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+0x45b2b4 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# Big Al
+0x4a90b0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+0x4a90d0 = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x2"
+]
+
+# Suck Cannon
+0x1d5684 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+
+## Bouncer
+0x4b1ba0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+# Shady Salesman
+0x4b8cc8 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# Fred
+## blarg
+0x1be6f0 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+## pokitaru
+0x336388 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+0x336414 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# Commando
+0x1d8298 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+
+# Deserter
+0x1df97c = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+# pilot helmet
+0x23e1e4 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# magneboots
+0x2ba1d8 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# nanotech vendor
+0x24a8b8 = [
+    "lis r28, 0xb0",
+    "addic r28, r28, 0x2",
+    "lbz r3, 0x34(r28)" # premium nanotech
+]
+0x24a96c = "lbz r3, 0x35(r28)" # ultra nanotech
+0x24aa60 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x35(r3)" # ultra nanotech
+]
+0x24a940 = [
+    "nop",
+    "nop"
+]
+
+# bob
+0x4a4ce8 = "lis r3, 0xb0"
+0x4a4cf0 = "addic r3, r3, 0x2"
+
+# edwina
+0x3434dc = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+0x3434fc = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+
+# sam
+0x4b7dfc = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x100"
+]
+
+# Bolt Grabber
+0x267828 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# Gadgetron CEO
+0x285638 = "lis r3, 0xb0"
+0x285640 = "addic r3, r3, 0x2"
+0x0a8aa0 = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x2"
+]
+
+
+# PDA taxi
+0x270eb8 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# tresspasser/hydrodisplacer
+0x183944 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2"
+]
+
+# codebot
+0x27b778 = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x32(r3)"
+]
+
+# gold weapon vendor patch
+0x339d64 = "lis r5, 0xb0"
+0x339d74 = "addic r5, r5, 0x37"
+0x339c10 = "lis r5, 0xb0"
+0x339c20 = "addic r5, r5, 0x37"
+
+# fred
+[0x33666c]
+in_place = true
+instructions = [
+    "li r3, 0x23",
+    "bla 0x112e18",
+    "li r3, 0x1c",
+    "nop"
+]
+
+# nanotech vendor
+[0x24aa0c]
+in_place = true # true to replace hp setting instructions
+instructions = [
+    "li r3, 0x35",
+    "bla 0x112e18",
+    "li r3, 0x1"
+]
+
+[0x24a91c]
+in_place = false
+instructions = [
+    "li r3, 0x34",
+    "bla 0x112e18",
+    "li r3, 0x1b"
+]
+
+# Hoverboard Girl
+[0x4b0a08]
+in_place = false
+instructions = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x2",
+    "lbz r3, 0x30(r3)"
+]
+[0x4b0c6c]
+in_place = false
+instructions = [
+    "li r3, 0x30",
+    "li r4, 0x0",
+    "bla 0x112e18",
+    "lis r6, 0x72",
+    "lis r4, 0x4b",
+    "addi r4, r4, 0x618"
+]
+[0x0a892c]
+in_place = false
+instructions = [
+    "lis r4, 0xb0",
+    "addic r4, r4, 0x2",
+    "lbz r4, 0x30(r4)"
+]
+
+## gold weapon vendor patch
+#[0x339ce4]
+#in_place = false
+#instructions = [
+#    "stdu r3, -16(r1)", # push to stack
+#    "li r3, 0x40",
+#    "add r3, r3, r6",
+#    "bla 0x112e18",
+#    "ld r3, 0(r1)", # pop from stack
+#    "addi r1, r1, 16" # pop from stack
+#]
+
+# Codebot
+[0x27b8c8]
+in_place = false
+instructions = [
+    "li r3, 0x32",
+    "bla 0x112e18",
+    "li r3, 0x0"
+]
+
+# veldin -> novalis
+[0x4814dc]
+in_place = false
+instructions = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x40",
+    "lbz r3, 0x0(r3)"
+]
+
+# umbris -> batalia
+[0x375f3c]
+in_place = false
+instructions = [
+    "lis r3, 0xb0",
+    "addic r3, r3, 0x40",
+    "lbz r3, 0x1(r3)"
+]
