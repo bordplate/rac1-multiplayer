@@ -56,6 +56,7 @@ extern int current_weapon;
 #define proxy_item_array_size 54
 #define proxy_level_array ((u8*)0xB00100)
 #define proxy_level_array_size 19
+#define level_transitions ((u8*)0xB00040)
 
 SHK_FUNCTION_DEFINE_STATIC_1(0x0f58d8, int, compute_animation, Moby*, moby);
 SHK_FUNCTION_DEFINE_STATIC_1(0x16a658, int, reload_gadgetron_vendor_items, int, unk);

@@ -47,6 +47,8 @@ void Game::init() {
     memset(metal_detector_bolt_multiplier, 1, 1);
     memset(proxy_item_array, 0, proxy_item_array_size);
     memset(proxy_level_array, 0, proxy_level_array_size);
+    level_transitions[0] = 1; // Veldin -> Novalis
+    level_transitions[1] = 8; // Umbris -> Batalia
 
     force_load_save_file = false;
     have_save_file = false;
