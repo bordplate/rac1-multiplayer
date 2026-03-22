@@ -11,6 +11,8 @@
 
 #include <rc1/game/GoldBolt.h>
 
+#include "LevelConfigurationManager.h"
+
 GameClient::GameClient(char *ip, int port) : Client(ip, port) {
     mobys_.resize(MAX_MP_MOBYS);
     ip_ = ip;
@@ -334,19 +336,9 @@ void GameClient::moby_delete(MPPacketMobyDelete* packet) {
 
         delete_moby(moby);
     } else if (packet->flags & MP_MOBY_DELETE_FLAG_OCLASS) {
-        for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
-            if (moby->state >= 0 && moby->o_class == packet->value) {
-                moby->state = -1;
-                delete_moby(moby);
-            }
-        }
+        Moby::delete_all_by_o_class(packet->value);
     } else if (packet->flags & MP_MOBY_DELETE_FLAG_UID) {
-        for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
-            if (moby->state >= 0 && moby->uid == packet->value) {
-                moby->state = -1;
-                delete_moby(moby);
-            }
-        }
+        Moby::delete_by_uid(packet->value);
     }
 }
 
@@ -658,6 +650,21 @@ void GameClient::monitor_address(MPPacketMonitorAddress* packet) {
     monitored_addresses_.push_back(value);
 }
 
+void GameClient::update_level_configuration(MPPacketSetLevelConfiguration* packet) {
+    LevelConfiguration *config = &LevelConfigurationManager::level_configurations[packet->level];
+
+    for (size_t i = 0; i < packet->options; i++) {
+        MPPacketLevelConfigurationOption *option = (MPPacketLevelConfigurationOption*)
+        ((char*)packet + sizeof(MPPacketSetLevelConfiguration) + i * sizeof(MPPacketLevelConfigurationOption));
+
+        LevelConfigurationOption *o = new LevelConfigurationOption();
+        o->type = (LevelCongigurationType)option->option;
+        o->value = option->value;
+
+        config->options.push_back(o);
+    }
+}
+
 static Profiler client_update_timer_("client update");
 static Profiler game_update_timer_("game update");
 bool GameClient::update(MPPacketHeader *header, void *packet_data) {
@@ -784,6 +791,9 @@ bool GameClient::update(MPPacketHeader *header, void *packet_data) {
                 );
                 break;
             }
+            case MP_PACKET_LEVEL_CONFIGURATION:
+                update_level_configuration((MPPacketSetLevelConfiguration*)packet_data);
+                break;
             default:
                 Logger::error("Received %ld bytes of unknown packet %d:", received(), header->type);
                 Logger::error("> Advertised size: %d", sizeof(MPPacketHeader) + header->size);

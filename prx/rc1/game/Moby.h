@@ -193,6 +193,9 @@ struct Moby {
     static Moby* spawn(unsigned short o_class, unsigned short flags, uint16_t modeBits);
     static Moby* find_by_uid(u16 uid);
     static Moby* find_first_oclass(u16 o_class);
+
+    static void delete_by_uid(u16 uid);
+    static void delete_all_by_o_class(u16 o_class);
 #endif
 }
 

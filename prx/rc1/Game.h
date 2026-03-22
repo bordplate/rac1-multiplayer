@@ -43,6 +43,10 @@ public:
 
     void before_player_spawn();
 
+    void before_init_gameplay();
+    void after_init_gameplay();
+    void apply_level_configuration();
+
     Client* client();
     Client* connected_client();
 

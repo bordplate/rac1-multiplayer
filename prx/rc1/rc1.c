@@ -384,6 +384,17 @@ struct Damage* _moby_get_damage_hook(Moby* moby, u32 flags, u32 unk) {
     return damage;
 }
 
+SHK_HOOK(u64, init_gameplay);
+u64 init_gameplay_hook() {
+    _c_before_init_gameplay();
+
+    u64 ret = SHK_CALL_HOOK(init_gameplay);
+
+    _c_after_init_gameplay();
+
+    return ret;
+}
+
 struct Damage* moby_get_damage(Moby* moby, u32 flags, u32 unk) {
     return SHK_CALL_HOOK(_moby_get_damage, moby, flags, unk);
 }
@@ -419,6 +430,7 @@ void rc1_init() {
     SHK_BIND_HOOK(metal_detector_spot_update_func, metal_detector_spot_update_func_hook);
     SHK_BIND_HOOK(bink_do_frame, bink_do_frame_hook);
     SHK_BIND_HOOK(perform_save_action, perform_save_action_hook);
+    SHK_BIND_HOOK(init_gameplay, init_gameplay_hook);
 
     MULTI_LOG("Bound hooks\n");
 }

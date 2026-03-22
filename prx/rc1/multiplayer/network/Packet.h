@@ -85,6 +85,7 @@ Here is an example of how a packet with type set to MP_PACKET_MOBY_UPDATE and no
 #define MP_PACKET_UI_EVENT            30
 #define MP_PACKET_OPEN_DATA_STREAM    31
 #define MP_PACKET_FILE_UPLOAD         32
+#define MP_PACKET_LEVEL_CONFIGURATION 33
 
 #define MP_PACKET_FLAG_RPC           0x1
 
@@ -410,6 +411,19 @@ typedef struct {
     u8 file_type;
     u32 len;
 } MPPacketFileUpload;
+
+typedef struct {
+    u8 level;
+    u8 options;
+} MPPacketSetLevelConfiguration;
+
+typedef struct {
+    u8 option;
+    u32 value;
+} MPPacketLevelConfigurationOption;
+
+#define MP_LEVEL_CONFIG_OPTION_BLOCK_MOBY_UID   1
+#define MP_LEVEL_CONFIG_OPTION_BLOCK_OCLASS     2
 
 enum MPFileType {
     MPFileTypeSavefile,

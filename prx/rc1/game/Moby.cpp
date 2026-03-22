@@ -108,3 +108,21 @@ Moby* Moby::find_first_oclass(u16 o_class) {
 
     return nullptr;
 }
+
+void Moby::delete_by_uid(u16 uid) {
+    for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
+        if (moby->state >= 0 && moby->uid == uid) {
+            moby->state = -1;
+            delete_moby(moby);
+        }
+    }
+}
+
+void Moby::delete_all_by_o_class(u16 o_class) {
+    for (Moby* moby = moby_ptr; moby <= moby_ptr_end; moby++) {
+        if (moby->state >= 0 && moby->o_class == o_class) {
+            moby->state = -1;
+            delete_moby(moby);
+        }
+    }
+}

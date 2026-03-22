@@ -19,6 +19,9 @@ void _c_game_reset();
 
 void _c_on_respawn();
 
+void _c_before_init_gameplay();
+void _c_after_init_gameplay();
+
 void _c_moby_update(Moby* moby);
 
 void _c_set_ratchet_animation_duration(u32 duration);

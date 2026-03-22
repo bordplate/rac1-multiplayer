@@ -20,6 +20,10 @@ replaced_instr = "stdu r1, -0x240(r1)"
 addr = 0x5046b0
 replaced_instr = "stdu r1, -0x90(r1)"
 
+[init_gameplay]
+addr = 0xdcf58
+replaced_instr = "stdu r1, -0x240(r1)"
+
 [on_respawn]
 addr = 0x7f018
 replaced_instr = "stdu r1, -0xb0(r1)"
