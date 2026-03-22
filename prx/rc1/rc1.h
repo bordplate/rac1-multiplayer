@@ -269,6 +269,8 @@ extern int player_state_input;
 // The player's current HP.
 extern int player_health;
 
+extern short remove_clank_backpack;
+
 extern Moby* player_standing_on_moby;
 
 extern Vec4 camera_pos;

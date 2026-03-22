@@ -41,6 +41,8 @@ coll_output = 0xa10940;
 n_coll_mobys = 0xa10950;
 coll_moby_out = 0xa10958;
 
+remove_clank_backpack = 0x96bfb8;
+
 ratchets_ship = 0x964570;
 
 mclass_table = 0xa34c00;

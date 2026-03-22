@@ -330,13 +330,17 @@ Moby* spawn_moby_hook(u16 o_class) {
             break;
         case 601: // Clank Backpack
             Player::shared().backpack_moby = RatchetAttachmentMoby::make_synced_moby(moby, 5, 5);
-            Player::shared().backpack_moby->activate();
+            if (remove_clank_backpack == 0) {
+                Player::shared().backpack_moby->activate();
+            }
             break;
         case 607: // Heli pack
         case 608: // Thruster pack
         case 609: // Hydro pack
             Player::shared().backpack_attachment_moby = RatchetAttachmentMoby::make_synced_moby(moby, 5, 5);
-            Player::shared().backpack_attachment_moby->activate();
+            if (remove_clank_backpack == 0) {
+                Player::shared().backpack_attachment_moby->activate();
+            }
             break;
         case 1289: // O2 Mask
         case 1290: // Pilots helmet
