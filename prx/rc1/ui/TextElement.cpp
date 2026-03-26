@@ -26,6 +26,10 @@ TextElement::~TextElement() {
 }
 
 void TextElement::render() {
+    if (!visible) {
+        return;
+    }
+    
     // Render shadow first, if any.
     if (this->has_shadow) {
         Color shadow_color = {0xD0, 0x10, 0x10, 0x10};
