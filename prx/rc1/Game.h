@@ -83,6 +83,7 @@ private:
     bool reload_level_flags_;
     u8 level_flags1_[0x10];
     u8 level_flags2_[0x100];
+    bool skillpoints[30];
 
     static ServerQueryCallback server_query_callback_;
 

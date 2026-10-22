@@ -261,6 +261,8 @@ void unlock_level(int level) {
 
 SHK_HOOK(void, _unlock_skillpoint, u8);
 void _unlock_skillpoint_hook(u8 skillpoint) {
+    if (skillpoints[skillpoint]) return;
+    skillpoints[skillpoint] = true;
     Client *client = Game::shared().client();
     if (client != nullptr) {
         Packet *packet = Packet::make_unlock_skillpoint_packet(skillpoint);

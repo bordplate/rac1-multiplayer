@@ -50,6 +50,7 @@ extern int game_ticks;
 
 extern int current_weapon;
 
+extern bool skillpoints[30];
 
 #define metal_detector_bolt_multiplier ((u8*)0xB00000)
 #define proxy_item_array ((u8*)0xB00002)
