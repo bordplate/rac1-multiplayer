@@ -20,6 +20,7 @@ uint32_t custom_player_color = 0;
 EnableCommunicationsFlags enable_communication_bitmap = (EnableCommunicationsFlags)(
         ENABLE_ON_GET_BOLTS | ENABLE_ON_PICKUP_GOLD_BOLT | ENABLE_ON_UNLOCK_ITEM | ENABLE_ON_UNLOCK_LEVEL
 );
+bool skillpoints[30] = {0};
 
 extern "C" {
 void game_tick() {
