@@ -53,6 +53,7 @@ struct GameClient : public Client {
     void refresh_hybrid_mobys();
     void clear_hybrid_mobys();
     void monitor_address(MPPacketMonitorAddress* packet);
+    void update_level_configuration(MPPacketSetLevelConfiguration* packet);
     bool update(MPPacketHeader* header, void* packet_data);
     void on_tick();
 

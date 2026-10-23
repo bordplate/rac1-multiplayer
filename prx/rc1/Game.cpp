@@ -13,6 +13,7 @@
 #include <sys/random_number.h>
 #include <sysutil/sysutil_msgdialog.h>
 
+#include "multiplayer/network/LevelConfigurationManager.h"
 #include "views/StartView.h"
 
 #include "rc1/multiplayer/Player.h"
@@ -103,20 +104,32 @@ void Game::on_tick() {
         previous_user_option_camera_left_right_movement = user_option_camera_left_right_movement;
         previous_user_option_camera_up_down_movement = user_option_camera_up_down_movement;
         previous_user_option_camera_rotation_speed = user_option_camera_rotation_speed;
+        previous_option_music_volume = option_music_volume;
+        previous_option_sound_volume = option_sound_volume;
     }
 
     if (previous_user_option_camera_left_right_movement != user_option_camera_left_right_movement ||
     previous_user_option_camera_up_down_movement != user_option_camera_up_down_movement ||
-    previous_user_option_camera_rotation_speed != user_option_camera_rotation_speed) {
+    previous_user_option_camera_rotation_speed != user_option_camera_rotation_speed ||
+    previous_option_music_volume != option_music_volume ||
+    previous_option_sound_volume != option_sound_volume
+
+    ) {
         previous_user_option_camera_left_right_movement = user_option_camera_left_right_movement;
         previous_user_option_camera_up_down_movement = user_option_camera_up_down_movement;
         previous_user_option_camera_rotation_speed = user_option_camera_rotation_speed;
+        previous_option_music_volume = option_music_volume;
+        previous_option_sound_volume = option_sound_volume;
 
         PersistentStorage storage = PersistentStorage("settings.conf");
 
         storage.set("user_option_camera_left_right_movement", user_option_camera_left_right_movement);
         storage.set("user_option_camera_up_down_movement", user_option_camera_up_down_movement);
         storage.set("user_option_camera_rotation_speed", user_option_camera_rotation_speed);
+
+        storage.set("option_music_volume", option_music_volume);
+        storage.set("option_sound_volume", option_sound_volume);
+
     }
 
     // Pass inputs to the current view and send to server
@@ -166,6 +179,12 @@ void Game::before_player_spawn() {
             if (storage.index_of("user_option_camera_rotation_speed") >= 0)
                 user_option_camera_rotation_speed = storage.get_int("user_option_camera_rotation_speed");
 
+            if (storage.index_of("option_music_volume") >= 0)
+                option_music_volume = storage.get_int("option_music_volume");
+
+            if (storage.index_of("option_sound_volume") >= 0)
+                option_sound_volume = storage.get_int("option_sound_volume");
+
             restored_camera_options_ = true;
         }
 
@@ -206,6 +225,34 @@ void Game::on_bink_do_frame() {
     }
 }
 
+void Game::before_init_gameplay() {
+
+}
+
+void Game::after_init_gameplay() {
+    apply_level_configuration();
+}
+
+void Game::apply_level_configuration() {
+    LevelConfiguration *config = &LevelConfigurationManager::level_configurations[current_planet];
+
+    Logger::debug("Applying %d level configurations for planet %d", config->options.size(), current_planet);
+    for (int i = 0; i < config->options.size(); i++) {
+        LevelConfigurationOption *option = config->options[i];
+        switch (option->type) {
+            case LEVEL_CONFIGURATION_TYPE_BLOCK_MOBY_UID:
+                Moby::delete_by_uid(option->value);
+                Logger::debug("Blocked moby UID %d", option->value);
+                break;
+            case LEVEL_CONFIGURATION_TYPE_BLOCK_MOBY_O_CLASS:
+                Moby::delete_all_by_o_class(option->value);
+                Logger::debug("Blocked moby OClass %d", option->value);
+                break;
+            default:
+                Logger::error("Unknown level configuration type %d", option->type);
+        }
+    }
+}
 
 void Game::transition_to(View *view) {
     Logger::trace("Starting transition to a new view");
@@ -534,4 +581,12 @@ extern "C" void _c_on_save_operation(int action, void* savedata) {
 
 extern "C" void _c_game_reset() {
     Game::shared().reset();
+}
+
+extern "C" void _c_before_init_gameplay() {
+    Game::shared().before_init_gameplay();
+}
+
+extern "C" void _c_after_init_gameplay() {
+    Game::shared().after_init_gameplay();
 }

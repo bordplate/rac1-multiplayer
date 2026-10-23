@@ -43,6 +43,10 @@ public:
 
     void before_player_spawn();
 
+    void before_init_gameplay();
+    void after_init_gameplay();
+    void apply_level_configuration();
+
     Client* client();
     Client* connected_client();
 
@@ -78,6 +82,8 @@ private:
     int previous_user_option_camera_left_right_movement;
     int previous_user_option_camera_up_down_movement;
     int previous_user_option_camera_rotation_speed;
+    int previous_option_music_volume;
+    int previous_option_sound_volume;
     bool restored_camera_options_;
 
     bool reload_level_flags_;

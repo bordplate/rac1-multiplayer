@@ -41,6 +41,8 @@ coll_output = 0xa10940;
 n_coll_mobys = 0xa10950;
 coll_moby_out = 0xa10958;
 
+remove_clank_backpack = 0x96bfb8;
+
 ratchets_ship = 0x964570;
 
 mclass_table = 0xa34c00;
@@ -50,6 +52,8 @@ user_option_camera_up_down_movement = 0x71fb3c;
 user_option_camera_rotation_speed = 0x71fb40;
 option_helpdesk_voice = 0x71fb58;
 option_helpdesk_text = 0x71fb59;
+option_music_volume = 0x71fb48;
+option_sound_volume = 0x71fb4c;
 
 latin_glyph_sizes = 0x736c50;
 

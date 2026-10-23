@@ -128,7 +128,11 @@ int cellGameBootCheckHook(unsigned int* type, unsigned int* attributes, CellGame
     // Check if digital version exists and use that. Otherwise fall back to disc. If no disc then we just crash
     CellFsErrno ebootStat = cellFsOpendir("/dev_hdd0/game/NPEA00385/", &fd);
     if (ebootStat == CELL_FS_ENOENT) {
-        src = "BCES01503";
+        if (cellFsOpendir("/dev_hdd0/game/NPUA80643/", &fd) == CELL_FS_ENOENT) {
+            src = "BCES01503";
+        } else {
+            src = "NPUA80643";
+        }
     } else {
         src = "NPEA00385";
     }
@@ -154,27 +158,45 @@ int cellGameContentPermitHook(char* contentInfoPath, char* usrdirPath) {
     // Check if digital version exists and use that. Otherwise fall back to disc. If no disc then we just crash
     CellFsErrno ebootStat = cellFsOpendir("/dev_hdd0/game/NPEA00385/", &fd);
     if (ebootStat == CELL_FS_ENOENT) {
-        src = "/dev_bdvd/PS3_GAME";
+        if (cellFsOpendir("/dev_hdd0/game/BCES01503/", &fd) == CELL_FS_ENOENT) {
+            if (cellFsOpendir("/dev_hdd0/game/NPUA80643/", &fd) == CELL_FS_ENOENT) {
+                src = "/dev_bdvd/PS3_GAME";
+            } else {
+                src = "/dev_hdd0/game/NPUA80643";
+            }
+        } else {
+            src = "/dev_hdd0/game/BCES01503";
+        }
     } else {
         src = "/dev_hdd0/game/NPEA00385";
     }
+
+    int len = 0;
+
     while (*src) {
         *contentInfoPath = *src;
         contentInfoPath++;
         src++;
+        len+=1;
     }
     *contentInfoPath = '\0';  // Null terminate the string
 
-    if (ebootStat == CELL_FS_ENOENT) {
-        src = "/dev_bdvd/PS3_GAME/USRDIR";
-    } else {
-        src = "/dev_hdd0/game/NPEA00385/USRDIR";
-    }
+    const char *usrdirStr = "/USRDIR";
+
+    src -= len;
+
     while (*src) {
         *usrdirPath = *src;
         usrdirPath++;
         src++;
     }
+
+    while (*usrdirStr) {
+        *usrdirPath = *usrdirStr;
+        usrdirPath++;
+        usrdirStr++;
+    }
+
     *usrdirPath = '\0';  // Null terminate the string
 
     MULTI_LOG("Done the thing\n");
@@ -337,13 +359,17 @@ Moby* spawn_moby_hook(u16 o_class) {
             break;
         case 601: // Clank Backpack
             Player::shared().backpack_moby = RatchetAttachmentMoby::make_synced_moby(moby, 5, 5);
-            Player::shared().backpack_moby->activate();
+            if (remove_clank_backpack == 0) {
+                Player::shared().backpack_moby->activate();
+            }
             break;
         case 607: // Heli pack
         case 608: // Thruster pack
         case 609: // Hydro pack
             Player::shared().backpack_attachment_moby = RatchetAttachmentMoby::make_synced_moby(moby, 5, 5);
-            Player::shared().backpack_attachment_moby->activate();
+            if (remove_clank_backpack == 0) {
+                Player::shared().backpack_attachment_moby->activate();
+            }
             break;
         case 1289: // O2 Mask
         case 1290: // Pilots helmet
@@ -387,6 +413,17 @@ struct Damage* _moby_get_damage_hook(Moby* moby, u32 flags, u32 unk) {
     return damage;
 }
 
+SHK_HOOK(u64, init_gameplay);
+u64 init_gameplay_hook() {
+    _c_before_init_gameplay();
+
+    u64 ret = SHK_CALL_HOOK(init_gameplay);
+
+    _c_after_init_gameplay();
+
+    return ret;
+}
+
 struct Damage* moby_get_damage(Moby* moby, u32 flags, u32 unk) {
     return SHK_CALL_HOOK(_moby_get_damage, moby, flags, unk);
 }
@@ -422,6 +459,7 @@ void rc1_init() {
     SHK_BIND_HOOK(metal_detector_spot_update_func, metal_detector_spot_update_func_hook);
     SHK_BIND_HOOK(bink_do_frame, bink_do_frame_hook);
     SHK_BIND_HOOK(perform_save_action, perform_save_action_hook);
+    SHK_BIND_HOOK(init_gameplay, init_gameplay_hook);
 
     MULTI_LOG("Bound hooks\n");
 }
