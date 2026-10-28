@@ -51,7 +51,6 @@ void Game::init() {
     level_transitions[0] = 1; // Veldin -> Novalis
     level_transitions[1] = 8; // Umbris -> Batalia
 
-
     force_load_save_file = false;
     have_save_file = false;
     manual_save_enabled = false;
