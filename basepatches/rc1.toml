@@ -340,3 +340,17 @@ instructions = [
     "addic r3, r3, 0x40",
     "lbz r3, 0x1(r3)"
 ]
+
+# ammo crash fix
+[0xfc728]
+in_place = false
+instructions = [
+    "lbzx r6, r28, r3",
+    "cmpwi r6, 0xff",
+    "beq end",
+    "rlwinm r5, r6, 0x0, 0x18, 0x19",
+    "cmpwi r5, 0x40",
+    "beq end",
+    "ba 0xfc794",
+    "end:"
+]

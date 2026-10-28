@@ -20,6 +20,7 @@ uint32_t custom_player_color = 0;
 EnableCommunicationsFlags enable_communication_bitmap = (EnableCommunicationsFlags)(
         ENABLE_ON_GET_BOLTS | ENABLE_ON_PICKUP_GOLD_BOLT | ENABLE_ON_UNLOCK_ITEM | ENABLE_ON_UNLOCK_LEVEL
 );
+bool skillpoints[30] = {0};
 
 extern "C" {
 void game_tick() {
@@ -242,9 +243,13 @@ void unlock_item(int item_id, uint8_t equip) {
             break;
         case 0x34: // Premium Nanotech
             *((bool*)0x96bff4) = true;
+            *((u32*)0x71fb28) = 5;
+            *((u32*)0x96bf88) = 5;
             break;
         case 0x35: // Ultra Nanotech
             *((bool*)0x96bff5) = true;
+            *((u32*)0x71fb28) = 8;
+            *((u32*)0x96bf88) = 8;
             break;
         default:
             SHK_CALL_HOOK(_unlock_item, item_id, equip);
@@ -279,6 +284,8 @@ void unlock_level(int level) {
 
 SHK_HOOK(void, _unlock_skillpoint, u8);
 void _unlock_skillpoint_hook(u8 skillpoint) {
+    if (skillpoints[skillpoint]) return;
+    skillpoints[skillpoint] = true;
     Client *client = Game::shared().client();
     if (client != nullptr) {
         Packet *packet = Packet::make_unlock_skillpoint_packet(skillpoint);
